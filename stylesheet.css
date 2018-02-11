@@ -1,0 +1,15 @@
+.places-grid {
+	spacing: 24px;
+}
+
+.recent-files-header {
+	spacing: 12px;
+	margin: 12px;
+}
+
+.place-label {
+	background-color: rgba(0,0,0,0.4);
+	border-radius: 2px;
+	padding-left: 2px;
+	padding-right: 2px;
+}
