@@ -4,7 +4,6 @@ const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const St = imports.gi.St;
 const Main = imports.ui.main;
-const AppDisplay = imports.ui.appDisplay;
 const PopupMenu = imports.ui.popupMenu;
 const IconGrid = imports.ui.iconGrid;
 const ShellEntry = imports.ui.shellEntry;
@@ -100,14 +99,15 @@ const PlaceButton = new Lang.Class({
 			y_fill: true,
 		});
 		
-		this.actor.set_child( new PlaceIcon(this._info).actor );
+		this.placeIcon = new PlaceIcon(this._info);
+		this.actor.set_child( this.placeIcon.actor );
 		
-        this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
-        
+		this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
+		
 		//----------------
 		
 		this._menu = null;
-        this._menuManager = new PopupMenu.PopupMenuManager(this);
+		this._menuManager = new PopupMenu.PopupMenuManager(this);
 		
 	},
 	
@@ -116,85 +116,86 @@ const PlaceButton = new Lang.Class({
 	},
 	
 	_onMenuPoppedDown: function() {
-        this.actor.sync_hover();
-        this.emit('menu-state-changed', false);
-    },
-    
+		this.actor.sync_hover();
+		this.emit('menu-state-changed', false);
+	},
+	
 	popupMenu: function() {
-        this.actor.fake_release();
+		this.actor.fake_release();
 
-        if (!this._menu) {
-            this._menu = new PlaceIconMenu(this);
-            this._menu.connect('open-state-changed', Lang.bind(this, function (menu, isPoppedUp) {
-                if (!isPoppedUp)
-                    this._onMenuPoppedDown();
-            }));
+		if (!this._menu) {
+			this._menu = new PlaceIconMenu(this);
+			this._menu.connect('open-state-changed', Lang.bind(this, function (menu, isPoppedUp) {
+				if (!isPoppedUp)
+					this._onMenuPoppedDown();
+			}));
 
-            this._menuManager.addMenu(this._menu);
-        }
+			this._menuManager.addMenu(this._menu);
+		}
 
-        this.emit('menu-state-changed', true);
+		this.emit('menu-state-changed', true);
 
-        this.actor.set_hover(true);
-        this._menu.popup();
-        this._menuManager.ignoreRelease();
-//        this.emit('sync-tooltip');
+		this.actor.set_hover(true);
+		this._menu.popup();
+		this._menuManager.ignoreRelease();
+//		this.emit('sync-tooltip');
 
-        return false;
-    },
-    
-    _onButtonPress: function(actor, event) {
-        let button = event.get_button();
-        if (button == 1) {
-            this._onClicked();
-        } else if (button == 3) {
-            this.popupMenu();
-            return Clutter.EVENT_STOP;
-        }
-        return Clutter.EVENT_PROPAGATE;
-    },
-    
+		return false;
+	},
+	
+	_onButtonPress: function(actor, event) {
+		let button = event.get_button();
+		if (button == 1) {
+			this._onClicked();
+		} else if (button == 3) {
+			this.popupMenu();
+			return Clutter.EVENT_STOP;
+		}
+		return Clutter.EVENT_PROPAGATE;
+	},
+	
 	
 });
 Signals.addSignalMethods(PlaceButton.prototype);
 
 const PlaceIconMenu = new Lang.Class({
-    Name: 'PlaceIconMenu',
-    Extends: PopupMenu.PopupMenu,
+	Name: 'PlaceIconMenu',
+	Extends: PopupMenu.PopupMenu,
 
-    _init: function(source) {
-        let side = St.Side.LEFT;
-        if (Clutter.get_default_text_direction() == Clutter.TextDirection.RTL)
-            side = St.Side.RIGHT;
+	_init: function(source) {
+		let side = St.Side.LEFT;
+		if (Clutter.get_default_text_direction() == Clutter.TextDirection.RTL)
+			side = St.Side.RIGHT;
 
-        this.parent(source.actor, 0.5, side);
+		this.parent(source.actor, 0.5, side);
 
-        // We want to keep the item hovered while the menu is up
-        this.blockSourceEvents = true;
+		// We want to keep the item hovered while the menu is up
+		this.blockSourceEvents = true;
 
-        this._source = source;
+		this._source = source;
 
-        this.actor.add_style_class_name('app-well-menu');
+		this.actor.add_style_class_name('app-well-menu');
 
-        // Chain our visibility and lifecycle to that of the source
-        source.actor.connect('notify::mapped', Lang.bind(this, function () {
-            if (!source.actor.mapped)
-                this.close();
-        }));
-        source.actor.connect('destroy', Lang.bind(this, this.destroy));
+		// Chain our visibility and lifecycle to that of the source
+		source.actor.connect('notify::mapped', Lang.bind(this, function () {
+			if (!source.actor.mapped)
+				this.close();
+		}));
+		source.actor.connect('destroy', Lang.bind(this, this.destroy));
 
-        Main.uiGroup.add_actor(this.actor);
-    },
+		Main.uiGroup.add_actor(this.actor);
+	},
 
-    _redisplay: function() {
-        this.removeAll();
+	_redisplay: function() {
+		this.removeAll();
 
-		this._appendMenuItem(_("Open")).connect('activate', Lang.bind(this, this._onClicked));
+		this._appendMenuItem(_("Open") + " " + this._source._info.name).connect('activate', Lang.bind(this, this._onClicked));
 		
 		let couldBeRemoved = this._source._category == 'bookmarks';
 		if(couldBeRemoved) {
 			this._appendSeparator();
-//			this._appendMenuItem(_("Rename")).connect('activate', Lang.bind(this, this._onRename)); //TODO
+			//this._appendMenuItem(_("Rename")).connect('activate', Lang.bind(this, this._onRename)); //TODO
+			this._addRenameEntryAndButtons();
 			this._appendMenuItem(_("Remove")).connect('activate', Lang.bind(this, this._onRemove));
 		}
 		
@@ -211,118 +212,210 @@ const PlaceIconMenu = new Lang.Class({
 			this._appendMenuItem(_("Unmount")).connect('activate', Lang.bind(this, this._onUnmount));
 		}
 		
-//		if( this._source._info.name == _("Trash") ){ //TODO
-//			this._appendSeparator();
-//			this._appendMenuItem(_("Empty")).connect('activate', Lang.bind(this, this._onEmpty));
-//		}
-    },
+		if( this._source._info.name == _("Trash") ){
+			this._appendSeparator();
+			this._appendMenuItem(_("Empty")).connect('activate', Lang.bind(this, this._onEmptyTrash));
+			//FIXME connecter des signaux pour changer l'icône
+		}
+
+		if( this._source._info.name == _("Recent Files") ){
+			this._appendSeparator();
+			this._appendMenuItem(_("Clear")).connect('activate', Lang.bind(this, this._onEmptyRecent));
+		}
+	},
 	
 	_onRename: function() {
-		//TODO ?
+		//TODO
+		log('on rename');
+//		this._getMenuItems().forEach(function(i){ i.visible = false; });
+		this.renameItem.actor.visible = false;
+		this.renameEntryItem.actor.visible = true;
+	
+		global.stage.set_key_focus(this.entry);
+	},
+	
+	_addRenameEntryAndButtons: function() {
+		this.renameItem = new PopupMenu.PopupBaseMenuItem({
+			reactive: true,
+			activate: true,
+			hover: true,
+			style_class: null,
+			can_focus: false
+		});
+        let renameItemButton = new St.Button({
+		    label: _("Rename")
+        });
+		this.renameItem.actor.add( renameItemButton );
+		
+		this.renameEntryItem = new PopupMenu.PopupBaseMenuItem({
+			reactive: false,
+			activate: true,
+			hover: true,
+			style_class: null,
+			can_focus: false
+		});
+        
+        this.entry = new St.Entry({
+        	hint_text: _('Type a name...'),
+			track_hover: true,
+			x_expand: true,
+			secondary_icon: new St.Icon({
+				icon_name: 'ok-symbolic',
+				icon_size: 16,
+				style_class: 'system-status-icon',
+				y_align: Clutter.ActorAlign.CENTER,
+			}),
+        });
+        
+        this.renameEntryItem.actor.add( this.entry );
+		
+        this.addMenuItem(this.renameItem);
+        this.addMenuItem(this.renameEntryItem);
+        
+        renameItemButton.connect('clicked', Lang.bind(this, this._onRename));
+        
+        this.entry.connect('secondary-icon-clicked', Lang.bind(this, this._actuallyRename));
+        
+		this.renameEntryItem.actor.visible = false;
+	},	
+		
+	_actuallyRename: function() {
+	
+		let content = Shell.get_file_contents_utf8_sync(PLACES_MANAGER._bookmarksFile.get_path());
+		let lines = content.split('\n');
+
+		let currentUri = this._source._info.file.get_uri();
+		
+		for (let i = 0; i < lines.length; i++) {
+			let line = lines[i];
+			let components = line.split(' ');
+
+			if (!components[0] || currentUri == components[0]) {
+				lines[i] = components[0] + " " + this.entry.get_text();
+			} else {
+				//rien ??
+			}
+		}
+		
+		content = '';
+		for(var i = 0; i< lines.length; i++){
+			content += lines[i] + '\n';
+		}
+		
+		GLib.file_set_contents(PLACES_MANAGER._bookmarksFile.get_path(), content);
+		
+		this.emit('bookmarks-updated'); // FIXME??
+	
 	},
 	
 	_onRemove: function() {
 
-        let content = Shell.get_file_contents_utf8_sync(PLACES_MANAGER._bookmarksFile.get_path());
-        let lines = content.split('\n');
+		let content = Shell.get_file_contents_utf8_sync(PLACES_MANAGER._bookmarksFile.get_path());
+		let lines = content.split('\n');
 
-        let currentUri = this._source._info.file.get_uri();
-        
-        for (let i = 0; i < lines.length; i++) {
-            let line = lines[i];
-            let components = line.split(' ');
+		let currentUri = this._source._info.file.get_uri();
+		
+		for (let i = 0; i < lines.length; i++) {
+			let line = lines[i];
+			let components = line.split(' ');
 
 			if (!components[0] || currentUri == components[0]) {
 				lines.splice(i, 1);
 			} else {
 				//rien ??
 			}
-        }
-        
-        content = '';
-        for(var i = 0; i< lines.length; i++){
-	        content += lines[i] + '\n';
+		}
+		
+		content = '';
+		for(var i = 0; i< lines.length; i++){
+			content += lines[i] + '\n';
 		}
 		
 		GLib.file_set_contents(PLACES_MANAGER._bookmarksFile.get_path(), content);
 		
-        this.emit('bookmarks-updated'); // FIXME??
-    },
+		this.emit('bookmarks-updated'); // FIXME??
+	},
 	
 	_onUnmount: function() {
 		let mountOp = new ShellMountOperation.ShellMountOperation(this._source._info._mount);
 
 		if (this._source._info._mount.can_unmount())
 			this._source._info._mount.eject_with_operation(Gio.MountUnmountFlags.NONE,
-                                            mountOp.mountOp,
-					    null, // Gio.Cancellable
-					    Lang.bind(this, this._ejectFinish));
+											mountOp.mountOp,
+						null, // Gio.Cancellable
+						Lang.bind(this, this._ejectFinish));
 		else
 			this._source._info._mount.unmount_with_operation(Gio.MountUnmountFlags.NONE,
-		                                          mountOp.mountOp,
-					                  null, // Gio.Cancellable
-					                  Lang.bind(this, this._unmountFinish));
-	
+				mountOp.mountOp,
+				null, // Gio.Cancellable
+				Lang.bind(this, this._unmountFinish)
+			);
+
 	},
 	
 	_onEject: function() {
-        let mountOp = new ShellMountOperation.ShellMountOperation(this._source._info._mount);
+		let mountOp = new ShellMountOperation.ShellMountOperation(this._source._info._mount);
 
 		if (this._source._info._mount.can_eject())
 			this._source._info._mount.eject_with_operation(Gio.MountUnmountFlags.NONE,
-                                            mountOp.mountOp,
-					    null, // Gio.Cancellable
-					    Lang.bind(this, this._ejectFinish));
+				mountOp.mountOp,
+				null, // Gio.Cancellable
+				Lang.bind(this, this._ejectFinish)
+			);
 		else
 			this._source._info._mount.unmount_with_operation(Gio.MountUnmountFlags.NONE,
-		                                          mountOp.mountOp,
-					                  null, // Gio.Cancellable
-					                  Lang.bind(this, this._unmountFinish));
+				mountOp.mountOp,
+				null, // Gio.Cancellable
+				Lang.bind(this, this._unmountFinish)
+			);
 	},
 
-    _unmountFinish: function(mount, result) {
+	_unmountFinish: function(mount, result) {
 		try {
 			mount.unmount_with_operation_finish(result);
 		} catch(e) {
 			this._reportFailure(e);
 		}
-    },
+	},
 
-    _ejectFinish: function(mount, result) {
+	_ejectFinish: function(mount, result) {
 		try {
 			mount.eject_with_operation_finish(result);
 		} catch(e) {
 			this._reportFailure(e);
 		}
-    },
+	},
 	
-	_onEmpty: function() {
-		
+	_onEmptyTrash: function() {
+		Util.trySpawnCommandLine("rm -r " + GLib.build_pathv('/', [GLib.get_user_data_dir(), 'Trash']));
+	},
+	
+	_onEmptyRecent: function() {
+		RECENT_MANAGER.purge_items();
 	},
 	
 	_onClicked: function() {
 		this._source._onClicked();
 	},
 	
-    _appendSeparator: function () {
-        let separator = new PopupMenu.PopupSeparatorMenuItem();
-        this.addMenuItem(separator);
-    },
+	_appendSeparator: function () {
+		let separator = new PopupMenu.PopupSeparatorMenuItem();
+		this.addMenuItem(separator);
+	},
 
-    _appendMenuItem: function(labelText) {
-        // FIXME: app-well-menu-item style
-        let item = new PopupMenu.PopupMenuItem(labelText);
-        this.addMenuItem(item);
-        return item;
-    },
+	_appendMenuItem: function(labelText) {
+		// FIXME: app-well-menu-item style
+		let item = new PopupMenu.PopupMenuItem(labelText);
+		this.addMenuItem(item);
+		return item;
+	},
 
-    popup: function(activatingButton) {
-        this._redisplay();
-        this.open();
-    },
+	popup: function(activatingButton) {
+		this._redisplay();
+		this.open();
+	},
 });
 Signals.addSignalMethods(PlaceIconMenu.prototype);
-
 
 const BookmarksGrid = new Lang.Class({
 	Name: 'BookmarksGrid',
@@ -419,7 +512,7 @@ const RecentFilesHeader = new Lang.Class({
 	Extends: St.BoxLayout,
 	
 	_init: function(list) {
-		this._list = list;		
+		this._list = list;
 		
 		this.parent({
 			vertical: false,
@@ -436,8 +529,8 @@ const RecentFilesHeader = new Lang.Class({
 			track_hover: true,
 			y_expand: false,
 			primary_icon: new St.Icon({
-		        icon_name: 'edit-find-symbolic',
-		        icon_size: 16,
+				icon_name: 'edit-find-symbolic',
+				icon_size: 16,
 				style_class: 'system-status-icon',
 				y_align: Clutter.ActorAlign.CENTER,
 			}),
@@ -456,7 +549,7 @@ const RecentFilesHeader = new Lang.Class({
 		
 		this.searchEntry.connect('secondary-icon-clicked', Lang.bind(this, this._onIconRelease));
 
-		//----------------------------		
+		//--------------------------------
 	
 		this.clearButton = new St.Button({
 			child: new St.Label({
@@ -501,7 +594,7 @@ const RecentFilesHeader = new Lang.Class({
 		this.add(new St.BoxLayout({x_expand: true,}));
 		this.add(this.searchEntry);
 		this.add(this.settingsButton);
-		this.add(this.clearButton);
+//		this.add(this.clearButton);
 		this.add(new St.BoxLayout({x_expand: true,}));
 	},
 	
@@ -522,6 +615,7 @@ const RecentFilesHeader = new Lang.Class({
 	
 	_redisplay: function() {
 		this._list._redisplay();
+		this._onIconRelease();
 	},
 	
 	setSize: function() {
@@ -619,7 +713,7 @@ const RecentFilesLayout = new Lang.Class({
 		
 		let monitor = Main.layoutManager.primaryMonitor;
 		
-		this.actor.width = Math.floor(monitor.width * 0.5 - Math.abs(PADDING) * 0.5);// - 200; //FIXME pas sérieux
+		this.actor.width = Math.floor(monitor.width * 0.5 - Math.abs(PADDING) * 0.5) - 2;// - 200; //FIXME pas sérieux
 		this.actor.height = Math.floor(monitor.height * 0.9);//200; //FIXME pas sérieux
 		
 		this.setScrollviewposition();
@@ -682,8 +776,6 @@ const RecentFileButton = new Lang.Class({
 		});
 		this.actor.set_child(content);
 
-		this._termsChangedId = 0;
-
 		let titleBox = new St.BoxLayout({ style_class: 'list-search-result-title' });
 
 		content.add(titleBox, {
@@ -721,6 +813,14 @@ const RecentFileButton = new Lang.Class({
 	},
 	
 	truncate: function() {
+		/*
+		this.uri's format is "file:///home/user/blabla/file.txt" or "file:///usr/bin/blabla/file.txt"
+		this function will return "~/blabla/" or "/usr/bin/blabla/" since everyone already knows:
+		- that the file is a file
+		- what the name is (since it's displayed with this.label)
+		- what is the ~ path
+		The only left issue is special characters (%20 instead of spaces for example).
+		*/
 		let temp = this.uri.split('/');
 		let temp2 = "/";
 	
@@ -729,7 +829,18 @@ const RecentFileButton = new Lang.Class({
 				temp2 += temp[i] + '/';
 			}
 		}
+		
+		let home = GLib.get_home_dir();
+		if(temp2.substr(0, home.length) == home){
+			temp2 = "~" + temp2.substr(home.length, temp2.length);
+		}
+		
+//		temp2.replace('%20', ' ');
+		
 		return temp2;
+
+//		return GLib.build_pathv('/', [temp2]);
+
 	},
 	
 	activate: function() {
@@ -743,6 +854,9 @@ let RECENT_MANAGER;
 let PLACES_MANAGER;
 let PADDING;
 
+let PLACES_ACTOR;
+let RECENT_FILES_ACTOR;
+
 //---------------------------------------------------------------------------------------------------
 
 function enable() {
@@ -750,7 +864,7 @@ function enable() {
 	PLACES_MANAGER = new PlaceDisplay.PlacesManager();
 	RECENT_MANAGER = new Gtk.RecentManager();
 	
-	let scrollview = new St.ScrollView({
+	PLACES_ACTOR = new St.ScrollView({
 		x_fill: true,
 		y_fill: true,
 		x_align: St.Align.MIDDLE,
@@ -764,27 +878,30 @@ function enable() {
 	PADDING = SETTINGS.get_int('padding');
 	
 	let monitor = Main.layoutManager.primaryMonitor;
-	scrollview.width = Math.floor(monitor.width * 0.5 - Math.abs(PADDING) * 0.5);
-	scrollview.height = Math.floor(monitor.height * 0.9);//8); //FIXME pas sérieux
+	PLACES_ACTOR.width = Math.floor(monitor.width * 0.5 - Math.abs(PADDING) * 0.5) - 2;
+	PLACES_ACTOR.height = Math.floor(monitor.height * 0.9);//8); //FIXME pas sérieux
 	
 	let tempPadding = 0;
 	if(PADDING > 0) { tempPadding = PADDING; } 
-	scrollview.set_position(
+	PLACES_ACTOR.set_position(
 		monitor.x + Math.floor(tempPadding),
-		monitor.y + Math.floor(monitor.height/2 - scrollview.height/2)
+		monitor.y + Math.floor(monitor.height/2 - PLACES_ACTOR.height/2)
 	);
 	
-	scrollview.add_actor(new BookmarksGrid().actor);
+	PLACES_ACTOR.add_actor(new BookmarksGrid().actor);
 	
-	Main.layoutManager._backgroundGroup.add_actor(scrollview);
-	Main.layoutManager._backgroundGroup.add_actor(new RecentFilesLayout().actor);
+	RECENT_FILES_ACTOR = new RecentFilesLayout().actor;
+	
+	Main.layoutManager._backgroundGroup.add_actor(PLACES_ACTOR);
+	Main.layoutManager._backgroundGroup.add_actor(RECENT_FILES_ACTOR);
 	
 }
 
 //-------------------------------------------------
 
 function disable() {
-	
+	PLACES_ACTOR.destroy();
+	RECENT_FILES_ACTOR.destroy();
 }
 
 //-------------------------------------------------
