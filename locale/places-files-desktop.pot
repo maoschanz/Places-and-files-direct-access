@@ -1,0 +1,93 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-04-13 12:23+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Trash"
+msgstr ""
+
+msgid "Recent Files"
+msgstr ""
+
+msgid "Other Locations"
+msgstr ""
+
+msgid "Places"
+msgstr ""
+
+msgid "Open"
+msgstr ""
+
+msgid "Rename"
+msgstr ""
+
+msgid "Remove"
+msgstr ""
+
+msgid "Eject"
+msgstr ""
+
+msgid "Unmount"
+msgstr ""
+
+msgid "Empty"
+msgstr ""
+
+msgid "Appearance"
+msgstr ""
+
+msgid "Filters"
+msgstr ""
+
+msgid "About"
+msgstr ""
+
+msgid "Places icon size:"
+msgstr ""
+
+msgid "Recent files icon size:"
+msgstr ""
+
+msgid "Number of recent files listed:"
+msgstr ""
+
+msgid "Lateral padding:"
+msgstr ""
+
+msgid "Report bugs or ideas"
+msgstr ""
+
+msgid "Type here to search..."
+msgstr ""
+
+msgid "Clear List"
+msgstr ""
+
+msgid "All files"
+msgstr ""
+
+msgid "Clear"
+msgstr ""
+
+msgid "Open parent folder"
+msgstr ""
+
+msgid "Type a name..."
+msgstr ""
+
+msgid "Remove from the list"
+msgstr ""
