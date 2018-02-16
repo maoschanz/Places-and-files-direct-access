@@ -33,6 +33,10 @@ function init() {
 	Convenience.initTranslations();
 }
 
+function trierDate(x,y) {
+	return y.get_modified() - x.get_modified();
+}
+
 //-------------------------------------------------
 /* do not edit this section */
 
@@ -59,28 +63,6 @@ let injections=[];
 
 //--------------------------------------------------------------
 
-let SETTINGS;
-
-const PlaceIcon = new Lang.Class({
-	Name: 'PlaceIcon',
-	Extends: IconGrid.BaseIcon,
-	
-	_init: function(info) {
-		this.parent(
-			info.name,
-			{ createIcon:
-				Lang.bind(this, function() {
-					return (new St.Icon({
-						gicon: info.icon,
-						icon_size: SETTINGS.get_int('places-icon-size')
-					}));
-				})
-			}
-		);
-		this.label.style_class = 'place-label';
-	},
-});
-
 const PlaceButton = new Lang.Class({
 	Name: 'PlaceButton',
 	
@@ -106,7 +88,8 @@ const PlaceButton = new Lang.Class({
 	
 	_onClicked: function() {
 		this.placeIcon.animateZoomOut();
-		Gio.app_info_launch_default_for_uri(this._info.file.get_uri(), global.create_app_launch_context(0, -1));
+		Util.trySpawnCommandLine('nautilus ' + this._info.file.get_uri()); //FIXME
+//		Gio.app_info_launch_default_for_uri(this._info.file.get_uri(), global.create_app_launch_context(0, -1));
 	},
 	
 	_onMenuPoppedDown: function() {
@@ -118,7 +101,7 @@ const PlaceButton = new Lang.Class({
 		this.actor.fake_release();
 
 		if (!this._menu) {
-			this._menu = new PlaceIconMenu(this);
+			this._menu = new PlaceButtonMenu(this);
 			this._menu.connect('open-state-changed', Lang.bind(this, function (menu, isPoppedUp) {
 				if (!isPoppedUp) this._onMenuPoppedDown();
 			}));
@@ -148,8 +131,8 @@ const PlaceButton = new Lang.Class({
 });
 Signals.addSignalMethods(PlaceButton.prototype);
 
-const PlaceIconMenu = new Lang.Class({
-	Name: 'PlaceIconMenu',
+const PlaceButtonMenu = new Lang.Class({
+	Name: 'PlaceButtonMenu',
 	Extends: PopupMenu.PopupMenu,
 
 	_init: function(source) {
@@ -212,9 +195,6 @@ const PlaceIconMenu = new Lang.Class({
 	},
 	
 	_onRename: function() {
-		//TODO
-//		log('on rename');
-//		this._getMenuItems().forEach(function(i){ i.visible = false; });
 		this.renameItem.actor.visible = false;
 		this.renameEntryItem.actor.visible = true;
 	
@@ -260,14 +240,12 @@ const PlaceIconMenu = new Lang.Class({
         this.addMenuItem(this.renameEntryItem);
         
         renameItemButton.connect('clicked', Lang.bind(this, this._onRename));
-        
         this.entry.connect('secondary-icon-clicked', Lang.bind(this, this._actuallyRename));
         
 		this.renameEntryItem.actor.visible = false;
 	},	
 		
 	_actuallyRename: function() {
-	
 		let content = Shell.get_file_contents_utf8_sync(PLACES_MANAGER._bookmarksFile.get_path());
 		let lines = content.split('\n');
 
@@ -279,20 +257,14 @@ const PlaceIconMenu = new Lang.Class({
 
 			if (currentUri == components[0]) {
 				lines[i] = components[0] + " " + this.entry.get_text();
-			} else {
-				//rien ??
 			}
 		}
-		
 		content = '';
 		for(var i = 0; i< lines.length; i++){
 			content += lines[i] + '\n';
 		}
-		
 		GLib.file_set_contents(PLACES_MANAGER._bookmarksFile.get_path(), content);
-		
-		this.emit('bookmarks-updated'); // FIXME??
-	
+		this.emit('bookmarks-updated');
 	},
 	
 	_onRemove: function() {
@@ -309,12 +281,10 @@ const PlaceIconMenu = new Lang.Class({
 				lines.splice(i, 1);
 			}
 		}
-		
 		content = '';
 		for(var i = 0; i< lines.length; i++){
 			content += lines[i] + '\n';
 		}
-		
 		GLib.file_set_contents(PLACES_MANAGER._bookmarksFile.get_path(), content);
 		this.emit('bookmarks-updated');
 	},
@@ -322,35 +292,36 @@ const PlaceIconMenu = new Lang.Class({
 	_onUnmount: function() {
 		let mountOp = new ShellMountOperation.ShellMountOperation(this._source._info._mount);
 
-		if (this._source._info._mount.can_unmount())
+		if (this._source._info._mount.can_unmount()) {
 			this._source._info._mount.eject_with_operation(Gio.MountUnmountFlags.NONE,
 											mountOp.mountOp,
 						null, // Gio.Cancellable
 						Lang.bind(this, this._ejectFinish));
-		else
+		} else {
 			this._source._info._mount.unmount_with_operation(Gio.MountUnmountFlags.NONE,
 				mountOp.mountOp,
 				null, // Gio.Cancellable
 				Lang.bind(this, this._unmountFinish)
 			);
-
+		}
 	},
 	
 	_onEject: function() {
 		let mountOp = new ShellMountOperation.ShellMountOperation(this._source._info._mount);
 
-		if (this._source._info._mount.can_eject())
+		if (this._source._info._mount.can_eject()) {
 			this._source._info._mount.eject_with_operation(Gio.MountUnmountFlags.NONE,
 				mountOp.mountOp,
 				null, // Gio.Cancellable
 				Lang.bind(this, this._ejectFinish)
 			);
-		else
+		} else {
 			this._source._info._mount.unmount_with_operation(Gio.MountUnmountFlags.NONE,
 				mountOp.mountOp,
 				null, // Gio.Cancellable
 				Lang.bind(this, this._unmountFinish)
 			);
+		}
 	},
 
 	_unmountFinish: function(mount, result) {
@@ -370,7 +341,7 @@ const PlaceIconMenu = new Lang.Class({
 	},
 	
 	_onEmptyTrash: function() {
-		Util.trySpawnCommandLine("rm -r " + GLib.build_pathv('/', [GLib.get_user_data_dir(), 'Trash']));
+		Util.trySpawnCommandLine("rm -r " + GLib.build_pathv('/', [GLib.get_user_data_dir(), 'Trash'])); //FIXME
 	},
 	
 	_onEmptyRecent: function() {
@@ -387,7 +358,6 @@ const PlaceIconMenu = new Lang.Class({
 	},
 
 	_appendMenuItem: function(labelText) {
-		// FIXME: app-well-menu-item style
 		let item = new PopupMenu.PopupMenuItem(labelText);
 		this.addMenuItem(item);
 		return item;
@@ -398,10 +368,10 @@ const PlaceIconMenu = new Lang.Class({
 		this.open();
 	},
 });
-Signals.addSignalMethods(PlaceIconMenu.prototype);
+Signals.addSignalMethods(PlaceButtonMenu.prototype);
 
-const BookmarksGrid = new Lang.Class({
-	Name: 'BookmarksGrid',
+const PlacesGrid = new Lang.Class({
+	Name: 'PlacesGrid',
 	Extends: IconGrid.IconGrid,
 	
 	_init: function() {
@@ -429,7 +399,6 @@ const BookmarksGrid = new Lang.Class({
 		this.placesManager.connect('bookmarks-updated', Lang.bind(this, this.redisplay));
 		
 		this.buildItems();
-		
 	},
 	
 	/*
@@ -467,17 +436,164 @@ const BookmarksGrid = new Lang.Class({
 		this.removeAll();
 		this.buildItems();
 	},
-	
-		/*
-		TODO 
-		
-		il faut ajouter un le domaine de traduction btw
-		et quasi tout renommer mdrrr
-		*/
-		
 });
 
-//--------------------------------------
+const PlaceIcon = new Lang.Class({
+	Name: 'PlaceIcon',
+	Extends: IconGrid.BaseIcon,
+	
+	_init: function(info) {
+		this.parent(
+			info.name,
+			{ createIcon:
+				Lang.bind(this, function() {
+					return (new St.Icon({
+						gicon: info.icon,
+						icon_size: SETTINGS.get_int('places-icon-size')
+					}));
+				})
+			}
+		);
+		this.label.style_class = 'place-label';
+	},
+});
+
+//--------------------------------------------------------
+
+/*
+This class is a fork of ListSearchResult or SearchResult (in search.js version 3.26)
+*/
+const RecentFileButton = new Lang.Class({
+	Name: 'RecentFileButton',
+	
+	_init: function(icon, label, uri) {
+		this.icon = new St.Icon({
+			gicon: icon,
+			style_class: 'popup-menu-icon', 
+			icon_size: SETTINGS.get_int('recent-files-icon-size')
+		});
+		this.label = label;
+		this.uri = uri;
+		this.displayedUri = this.truncateUri();
+		
+		this.actor = new St.Button({
+			reactive: true,
+			can_focus: true,
+			track_hover: true,
+			x_align: St.Align.START,
+			x_fill: true,
+			y_fill: true,
+			style_class: 'list-search-result',
+		});
+
+		this.actor._delegate = this;
+		this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
+		
+		this._menu = null;
+		this._menuManager = new PopupMenu.PopupMenuManager(this);
+		
+		let content = new St.BoxLayout({
+			style_class: 'list-search-result-content',
+			vertical: false
+		});
+		this.actor.set_child(content);
+
+		let titleBox = new St.BoxLayout({ style_class: 'list-search-result-title' });
+
+		content.add(titleBox, {
+			x_fill: true,
+			y_fill: false,
+			x_align: St.Align.START,
+			y_align: St.Align.MIDDLE
+		});
+
+		if (icon) titleBox.add(this.icon);
+
+		let title = new St.Label({ text: this.label });
+		titleBox.add(title, {
+			x_fill: false,
+			y_fill: false,
+			x_align: St.Align.START,
+			y_align: St.Align.MIDDLE
+		});
+
+		this.actor.label_actor = title;
+
+		if (this.uri) {
+			this._descriptionLabel = new St.Label({ style_class: 'list-search-result-description', text: this.displayedUri });
+			content.add(this._descriptionLabel, {
+				x_fill: false,
+				y_fill: false,
+				x_align: St.Align.START,
+				y_align: St.Align.MIDDLE
+			});
+		}
+	},
+	
+	_onButtonPress: function(actor, event) {
+		let button = event.get_button();
+		if (button == 1) {
+			this.activate();
+		} else if (button == 3) {
+			this.popupMenu();
+			return Clutter.EVENT_STOP;
+		}
+		return Clutter.EVENT_PROPAGATE;
+	},
+	
+	truncateUri: function() {
+		/*
+		this.uri's format is "file:///home/user/blabla/file.txt" or "file:///usr/bin/blabla/file.txt"
+		this function will return "~/blabla/" or "/usr/bin/blabla/" since everyone already knows:
+		- that the file is a file
+		- what the name is (since it's displayed with this.label)
+		- what is the ~ path
+		The only left issue is special characters (%20 instead of spaces for example).
+		*/
+		let temp = this.uri.split('/');
+		let temp2 = "/";
+	
+		for(var i = 0; i < temp.length; i++){
+			if ((i > 2) && (i != temp.length-1)) {
+				temp2 += temp[i] + '/';
+			}
+		}
+		let home = GLib.get_home_dir();
+		if(temp2.substr(0, home.length) == home){
+			temp2 = "~" + temp2.substr(home.length, temp2.length);
+		}
+		return temp2;
+	},
+	
+	activate: function() {
+		Gio.app_info_launch_default_for_uri(this.uri, global.create_app_launch_context(0, -1));
+	},
+	
+	_onMenuPoppedDown: function() {
+		this.actor.sync_hover();
+		this.emit('menu-state-changed', false);
+	},
+	
+	popupMenu: function() {
+		this.actor.fake_release();
+
+		if (!this._menu) {
+			this._menu = new RecentFileMenu(this);
+			this._menu.connect('open-state-changed', Lang.bind(this, function (menu, isPoppedUp) {
+				if (!isPoppedUp) this._onMenuPoppedDown();
+			}));
+			this._menuManager.addMenu(this._menu);
+		}
+
+		this.emit('menu-state-changed', true);
+		this.actor.set_hover(true);
+		this._menu.popup();
+		this._menuManager.ignoreRelease();
+
+		return false;
+	},
+});
+Signals.addSignalMethods(RecentFileButton.prototype);
 
 const RecentFilesHeader = new Lang.Class({
 	Name: 'RecentFilesHeader',
@@ -571,6 +687,49 @@ const RecentFilesHeader = new Lang.Class({
 	},
 });
 
+const RecentFilesLayout = new Lang.Class({
+	Name: 'RecentFilesLayout',
+	
+	_init: function() {
+	
+		this.actor = new St.BoxLayout({
+			vertical: true,
+		});
+		
+		this.scrollview = new St.ScrollView({
+			x_fill: true,
+			y_fill: true,
+			x_align: St.Align.MIDDLE,
+			y_align: St.Align.MIDDLE,
+			x_expand: true,
+			y_expand: true,
+			style_class: 'vfade',
+			hscrollbar_policy: Gtk.PolicyType.NEVER,
+		});
+		
+		let monitor = Main.layoutManager.primaryMonitor;
+		this.actor.width = Math.floor(monitor.width * 0.5 - Math.abs(PADDING) * 0.5) - 2;// - 200; //FIXME pas sérieux
+		this.actor.height = Math.floor(monitor.height * 0.9);//200; //FIXME pas sérieux
+		
+		this.setScrollviewposition();
+		
+		let list = new RecentFilesList();
+		let header = new RecentFilesHeader(list);
+		
+		this.actor.add(header);
+		this.scrollview.add_actor(list.actor);
+		this.actor.add(this.scrollview);
+	},
+	
+	setScrollviewposition: function() {
+		let monitor = Main.layoutManager.primaryMonitor;
+		this.actor.set_position(
+			monitor.x + Math.floor(monitor.width/2 + PADDING * 0.5),
+			monitor.y + Math.floor(monitor.height/2) - Math.floor(this.actor.height/2)
+		);
+	},
+});
+
 /*
 This class is a fork of ListSearchResult or SearchResult (in search.js version 3.26)
 */
@@ -641,10 +800,6 @@ const RecentFilesList = new Lang.Class({
 	},
 });
 
-function trierDate(x,y) {
-	return y.get_modified() - x.get_modified();
-}
-
 const RecentFileMenu = new Lang.Class({
 	Name: 'RecentFileMenu',
 	Extends: PopupMenu.PopupMenu,
@@ -712,7 +867,6 @@ const RecentFileMenu = new Lang.Class({
 	},
 
 	_appendMenuItem: function(labelText) {
-		// FIXME: app-well-menu-item style
 		let item = new PopupMenu.PopupMenuItem(labelText);
 		this.addMenuItem(item);
 		return item;
@@ -725,189 +879,9 @@ const RecentFileMenu = new Lang.Class({
 });
 Signals.addSignalMethods(RecentFileMenu.prototype);
 
-const RecentFilesLayout = new Lang.Class({
-	Name: 'RecentFilesLayout',
-	
-	_init: function() {
-	
-		this.actor = new St.BoxLayout({
-			vertical: true,
-		});
-		
-		this.scrollview = new St.ScrollView({
-			x_fill: true,
-			y_fill: true,
-			x_align: St.Align.MIDDLE,
-			y_align: St.Align.MIDDLE,
-			x_expand: true,
-			y_expand: true,
-			style_class: /*'all-apps */ 'vfade',
-			hscrollbar_policy: Gtk.PolicyType.NEVER,
-		});
-		
-		let monitor = Main.layoutManager.primaryMonitor;
-		this.actor.width = Math.floor(monitor.width * 0.5 - Math.abs(PADDING) * 0.5) - 2;// - 200; //FIXME pas sérieux
-		this.actor.height = Math.floor(monitor.height * 0.9);//200; //FIXME pas sérieux
-		
-		this.setScrollviewposition();
-		
-		let list = new RecentFilesList();
-		let header = new RecentFilesHeader(list);
-		
-		this.actor.add(header);
-		this.scrollview.add_actor(list.actor);
-		this.actor.add(this.scrollview);
-	},
-	
-	setScrollviewposition: function() {
-		let monitor = Main.layoutManager.primaryMonitor;
-		this.actor.set_position(
-			monitor.x + Math.floor(monitor.width/2 + PADDING * 0.5),
-			monitor.y + Math.floor(monitor.height/2) - Math.floor(this.actor.height/2)
-		);
-	},
-});
-
-/*
-This class is a fork of ListSearchResult or SearchResult (in search.js version 3.26)
-*/
-const RecentFileButton = new Lang.Class({
-	Name: 'RecentFileButton',
-	
-	_init: function(icon, label, uri) {
-		this.icon = new St.Icon({
-			gicon: icon,
-			style_class: 'popup-menu-icon', 
-			icon_size: SETTINGS.get_int('recent-files-icon-size')
-		});
-		this.label = label;
-		this.uri = uri;
-		this.displayedUri = this.truncateUri();
-		
-		this.actor = new St.Button({
-			reactive: true,
-			can_focus: true,
-			track_hover: true,
-			x_align: St.Align.START,
-			x_fill: true,
-			y_fill: true,
-			style_class: 'list-search-result',
-		});
-
-		this.actor._delegate = this;
-		this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
-		
-		this._menu = null;
-		this._menuManager = new PopupMenu.PopupMenuManager(this);
-		
-		let content = new St.BoxLayout({
-			style_class: 'list-search-result-content',
-			vertical: false
-		});
-		this.actor.set_child(content);
-
-		let titleBox = new St.BoxLayout({ style_class: 'list-search-result-title' });
-
-		content.add(titleBox, {
-			x_fill: true,
-			y_fill: false,
-			x_align: St.Align.START,
-			y_align: St.Align.MIDDLE
-		});
-
-		if (icon) {
-			titleBox.add(this.icon);
-		}
-
-		let title = new St.Label({ text: this.label });
-		titleBox.add(title, {
-			x_fill: false,
-			y_fill: false,
-			x_align: St.Align.START,
-			y_align: St.Align.MIDDLE
-		});
-
-		this.actor.label_actor = title;
-
-		if (this.uri) {
-			this._descriptionLabel = new St.Label({ style_class: 'list-search-result-description', text: this.displayedUri });
-			content.add(this._descriptionLabel, {
-				x_fill: false,
-				y_fill: false,
-				x_align: St.Align.START,
-				y_align: St.Align.MIDDLE
-			});
-		}
-	},
-	
-	_onButtonPress: function(actor, event) {
-		let button = event.get_button();
-		if (button == 1) {
-			this.activate();
-		} else if (button == 3) {
-			this.popupMenu();
-			return Clutter.EVENT_STOP;
-		}
-		return Clutter.EVENT_PROPAGATE;
-	},
-	
-	truncateUri: function() {
-		/*
-		this.uri's format is "file:///home/user/blabla/file.txt" or "file:///usr/bin/blabla/file.txt"
-		this function will return "~/blabla/" or "/usr/bin/blabla/" since everyone already knows:
-		- that the file is a file
-		- what the name is (since it's displayed with this.label)
-		- what is the ~ path
-		The only left issue is special characters (%20 instead of spaces for example).
-		*/
-		let temp = this.uri.split('/');
-		let temp2 = "/";
-	
-		for(var i = 0; i < temp.length; i++){
-			if ((i > 2) && (i != temp.length-1)) {
-				temp2 += temp[i] + '/';
-			}
-		}
-		
-		let home = GLib.get_home_dir();
-		if(temp2.substr(0, home.length) == home){
-			temp2 = "~" + temp2.substr(home.length, temp2.length);
-		}
-		
-		return temp2;
-	},
-	
-	activate: function() {
-		Gio.app_info_launch_default_for_uri(this.uri, global.create_app_launch_context(0, -1));
-	},
-	
-	_onMenuPoppedDown: function() {
-		this.actor.sync_hover();
-		this.emit('menu-state-changed', false);
-	},
-	
-	popupMenu: function() {
-		this.actor.fake_release();
-
-		if (!this._menu) {
-			this._menu = new RecentFileMenu(this);
-			this._menu.connect('open-state-changed', Lang.bind(this, function (menu, isPoppedUp) {
-				if (!isPoppedUp) this._onMenuPoppedDown();
-			}));
-			this._menuManager.addMenu(this._menu);
-		}
-
-		this.emit('menu-state-changed', true);
-		this.actor.set_hover(true);
-		this._menu.popup();
-		this._menuManager.ignoreRelease();
-
-		return false;
-	},
-});
-Signals.addSignalMethods(RecentFileButton.prototype);
-
 //-------------------------------------------------------
+
+let SETTINGS;
 
 let RECENT_MANAGER;
 let PLACES_MANAGER;
@@ -941,13 +915,13 @@ function enable() {
 	PLACES_ACTOR.height = Math.floor(monitor.height * 0.9);//8); //FIXME pas sérieux
 	
 	let tempPadding = 0;
-	if(PADDING > 0) { tempPadding = PADDING; } 
+	if(PADDING > 0) tempPadding = PADDING;
 	PLACES_ACTOR.set_position(
 		monitor.x + Math.floor(tempPadding),
 		monitor.y + Math.floor(monitor.height/2 - PLACES_ACTOR.height/2)
 	);
 	
-	PLACES_ACTOR.add_actor(new BookmarksGrid().actor);
+	PLACES_ACTOR.add_actor(new PlacesGrid().actor);
 	
 	RECENT_FILES_ACTOR = new RecentFilesLayout().actor;
 	
