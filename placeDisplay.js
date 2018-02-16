@@ -19,6 +19,9 @@ const Gettext = imports.gettext.domain('gnome-shell-extensions');
 const _ = Gettext.gettext;
 //const N_ = function(x) { return x; }
 
+const Gettext2 = imports.gettext.domain('places-files-desktop');
+const _S = Gettext2.gettext;
+
 const BACKGROUND_SCHEMA = 'org.gnome.desktop.background';
 
 const Hostname1Iface = '<node> \
@@ -297,15 +300,15 @@ var PlacesManager = new Lang.Class({
 
         this._places.special.push(new PlaceInfo('special',
                                                 Gio.File.new_for_uri('recent:///'),
-                                                _("Recent Files")));
+                                                _S("Recent Files")));
 
         this._places.special.push(new PlaceInfo('special',
                                                 Gio.File.new_for_uri('other-locations:///'),
-                                                _("Other Locations")));
+                                                _S("Other Locations")));
 
         this._places.special.push(new PlaceInfo('special',
                                                 Gio.File.new_for_uri('trash:///'),
-                                                _("Trash")));
+                                                _S("Trash")));
 
         let specials = [];
         let dirs = DEFAULT_DIRECTORIES.slice();

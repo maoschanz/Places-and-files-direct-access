@@ -7,6 +7,12 @@
 	margin: 12px;
 }
 
+.recent-files-list {
+	background-color: rgba(0,0,0,0.4);
+	border-radius: 6px;
+	padding: 6px;
+}
+
 .place-label {
 	background-color: rgba(0,0,0,0.4);
 	border-radius: 2px;

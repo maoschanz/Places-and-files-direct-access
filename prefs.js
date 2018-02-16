@@ -65,8 +65,8 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		
 		//---------------------------------------------------------------
 		
-		this.filtersPage = this.add_page('filters', _("Filters"));
 		this.appearancePage = this.add_page('appearance', _("Appearance"));
+		this.filtersPage = this.add_page('filters', _("Filters"));
 		this.aboutPage = this.add_page('about', _("About"));
 
 		this.SETTINGS = Convenience.getSettings('org.gnome.shell.extensions.places-files-desktop');
@@ -177,7 +177,7 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		
 		let listNumber = new Gtk.SpinButton();
 		listNumber.set_sensitive(true);
-		listNumber.set_range(0, 100);
+		listNumber.set_range(0, 300);
 		listNumber.set_value(0);
 		listNumber.set_value(this.SETTINGS.get_int('number-of-recent-files'));
 		listNumber.set_increments(1, 2);
