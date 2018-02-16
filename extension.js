@@ -10,18 +10,13 @@ const ShellEntry = imports.ui.shellEntry;
 const Shell = imports.gi.Shell;
 const Gtk = imports.gi.Gtk;
 const Util = imports.misc.util;
-
-const Mainloop = imports.mainloop;
-
 const ShellMountOperation = imports.ui.shellMountOperation;
-
 const Signals = imports.signals;
 const Tweener = imports.ui.tweener;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Convenience = Me.imports.convenience;
-
 const PlaceDisplay = Me.imports.placeDisplay;
 
 const Gettext = imports.gettext.domain('places-files-desktop');
@@ -38,7 +33,6 @@ function trierDate(x,y) {
 }
 
 //-------------------------------------------------
-/* do not edit this section */
 
 function injectToFunction(parent, name, func) {
 	let origin = parent[name];
@@ -109,11 +103,9 @@ const PlaceButton = new Lang.Class({
 		}
 
 		this.emit('menu-state-changed', true);
-
 		this.actor.set_hover(true);
 		this._menu.popup();
 		this._menuManager.ignoreRelease();
-
 		return false;
 	},
 	
@@ -127,7 +119,6 @@ const PlaceButton = new Lang.Class({
 		}
 		return Clutter.EVENT_PROPAGATE;
 	},
-	
 });
 Signals.addSignalMethods(PlaceButton.prototype);
 
@@ -387,16 +378,14 @@ const PlacesGrid = new Lang.Class({
 		this.actor.y_fill = true;
 		this.actor.x_align = St.Align.MIDDLE;
 		this.actor.y_align = St.Align.MIDDLE;
-		this.actor.height = Math.floor(monitor.height * 0.9 - 10);//0.8 - 10); //FIXME pas sérieux
+		this.actor.height = Math.floor(monitor.height * 0.9 - 10); //FIXME pas sérieux
 		
 		this._placesItem = new Array();
 		
-		this.placesManager = PLACES_MANAGER;
-		
-		this.placesManager.connect('special-updated', Lang.bind(this, this.redisplay ));
-		this.placesManager.connect('devices-updated', Lang.bind(this, this.redisplay ));
-		this.placesManager.connect('network-updated', Lang.bind(this, this.redisplay ));
-		this.placesManager.connect('bookmarks-updated', Lang.bind(this, this.redisplay));
+		PLACES_MANAGER.connect('special-updated', Lang.bind(this, this.redisplay ));
+		PLACES_MANAGER.connect('devices-updated', Lang.bind(this, this.redisplay ));
+		PLACES_MANAGER.connect('network-updated', Lang.bind(this, this.redisplay ));
+		PLACES_MANAGER.connect('bookmarks-updated', Lang.bind(this, this.redisplay));
 		
 		this.buildItems();
 	},
@@ -424,7 +413,7 @@ const PlacesGrid = new Lang.Class({
 	},
 	   
 	buildCategory: function(id) { 
-		let places = this.placesManager.get(id);
+		let places = PLACES_MANAGER.get(id);
 
 		for (let i = 0; i < places.length; i++){
 			this._placesItem.push( new PlaceButton(places[i], id) );
@@ -922,7 +911,6 @@ function enable() {
 	);
 	
 	PLACES_ACTOR.add_actor(new PlacesGrid().actor);
-	
 	RECENT_FILES_ACTOR = new RecentFilesLayout().actor;
 	
 	Main.layoutManager._backgroundGroup.add_actor(PLACES_ACTOR);
