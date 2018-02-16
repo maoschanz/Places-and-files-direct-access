@@ -28,6 +28,8 @@ function init() {
 	Convenience.initTranslations();
 }
 
+//-------------------------------------------------
+
 function trierDate(x,y) {
 	return y.get_modified() - x.get_modified();
 }
@@ -173,11 +175,11 @@ const PlaceButtonMenu = new Lang.Class({
 			this._appendMenuItem(_("Unmount")).connect('activate', Lang.bind(this, this._onUnmount));
 		}
 		
-		if( this._source._info.name == _("Trash") ){
-			this._appendSeparator();
-			this._appendMenuItem(_("Empty")).connect('activate', Lang.bind(this, this._onEmptyTrash));
-			//FIXME connecter des signaux pour changer l'icône
-		}
+//		if( this._source._info.name == _("Trash") ){
+//			this._appendSeparator();
+//			this._appendMenuItem(_("Empty")).connect('activate', Lang.bind(this, this._onEmptyTrash));
+//			//FIXME connecter des signaux pour changer l'icône
+//		}
 
 		if( this._source._info.name == _("Recent Files") ){
 			this._appendSeparator();
@@ -821,8 +823,8 @@ const RecentFileMenu = new Lang.Class({
 
 		this._appendMenuItem(_("Open") + " " + this._source.label).connect('activate', Lang.bind(this, this._onOpen));
 		this._appendMenuItem(_("Open parent folder")).connect('activate', Lang.bind(this, this._onParent));
-//		this._appendSeparator();
-//		this._appendMenuItem(_("Remove from the list")).connect('activate', Lang.bind(this, this._onRemove));
+		this._appendSeparator();
+		this._appendMenuItem(_("Remove from the list")).connect('activate', Lang.bind(this, this._onRemove));
 	},
 	
 	_onParent: function() {
@@ -847,7 +849,7 @@ const RecentFileMenu = new Lang.Class({
 	},
 	
 	_onRemove: function() {
-		// TODO
+		RECENT_MANAGER.remove_item(this._source.uri);
 	},
 	
 	_appendSeparator: function () {
