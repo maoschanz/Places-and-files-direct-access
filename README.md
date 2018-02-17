@@ -6,7 +6,7 @@ Here is a GNOME Shell extension providing an access to devices, bookmarks and re
 
 ## Manual installation
 
-Download files and put them in an "`emoji-selector@maestroschan.fr`" folder to `~/.local/share/gnome-shell/extensions/`
+Download files and put them in an "`places-and-files-on-desktop@maestroschan.fr`" folder, in `~/.local/share/gnome-shell/extensions/`
 
 You may need to restart the gnome shell environnment ("logout and login again", or `alt` + `f2` + `r` + `enter`).
 
