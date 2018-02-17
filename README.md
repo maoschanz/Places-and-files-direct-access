@@ -6,9 +6,9 @@ Here is a GNOME Shell extension providing an access to devices, bookmarks and re
 
 ## Manual installation
 
-Download files and put them in an "`places-and-files-on-desktop@maestroschan.fr`" folder, in `~/.local/share/gnome-shell/extensions/`
+Download files and put them in the folder "`~/.local/share/gnome-shell/extensions/places-and-files-on-desktop@maestroschan.fr`"
 
-You may need to restart the gnome shell environnment ("logout and login again", or `alt` + `f2` + `r` + `enter`).
+You may need to restart the gnome shell environnment ("logout and login again", or `alt` + `f2` then `r` then `enter`).
 
 ## Features
 
