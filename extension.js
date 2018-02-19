@@ -175,11 +175,11 @@ const PlaceButtonMenu = new Lang.Class({
 			this._appendMenuItem(_("Unmount")).connect('activate', Lang.bind(this, this._onUnmount));
 		}
 		
-//		if( this._source._info.name == _("Trash") ){
-//			this._appendSeparator();
-//			this._appendMenuItem(_("Empty")).connect('activate', Lang.bind(this, this._onEmptyTrash));
-//			//FIXME connecter des signaux pour changer l'icône
-//		}
+		if( this._source._info.name == _("Trash") ){
+			this._appendSeparator();
+			this._appendMenuItem(_("Empty")).connect('activate', Lang.bind(this, this._onEmptyTrash));
+			//FIXME connecter des signaux pour changer l'icône
+		}
 
 		if( this._source._info.name == _("Recent Files") ){
 			this._appendSeparator();
@@ -202,9 +202,9 @@ const PlaceButtonMenu = new Lang.Class({
 			style_class: null,
 			can_focus: false
 		});
-        let renameItemButton = new St.Button({
-		    label: _("Rename")
-        });
+		let renameItemButton = new St.Button({
+			label: _("Rename")
+		});
 		this.renameItem.actor.add( renameItemButton );
 		
 		this.renameEntryItem = new PopupMenu.PopupBaseMenuItem({
@@ -214,9 +214,9 @@ const PlaceButtonMenu = new Lang.Class({
 			style_class: null,
 			can_focus: false
 		});
-        
-        this.entry = new St.Entry({
-        	hint_text: _('Type a name...'),
+		
+		this.entry = new St.Entry({
+			hint_text: _('Type a name...'),
 			track_hover: true,
 			x_expand: true,
 			secondary_icon: new St.Icon({
@@ -225,16 +225,16 @@ const PlaceButtonMenu = new Lang.Class({
 				style_class: 'system-status-icon',
 				y_align: Clutter.ActorAlign.CENTER,
 			}),
-        });
-        
-        this.renameEntryItem.actor.add( this.entry );
+		});
 		
-        this.addMenuItem(this.renameItem);
-        this.addMenuItem(this.renameEntryItem);
-        
-        renameItemButton.connect('clicked', Lang.bind(this, this._onRename));
-        this.entry.connect('secondary-icon-clicked', Lang.bind(this, this._actuallyRename));
-        
+		this.renameEntryItem.actor.add( this.entry );
+		
+		this.addMenuItem(this.renameItem);
+		this.addMenuItem(this.renameEntryItem);
+		
+		renameItemButton.connect('clicked', Lang.bind(this, this._onRename));
+		this.entry.connect('secondary-icon-clicked', Lang.bind(this, this._actuallyRename));
+		
 		this.renameEntryItem.actor.visible = false;
 	},	
 		
@@ -334,7 +334,17 @@ const PlaceButtonMenu = new Lang.Class({
 	},
 	
 	_onEmptyTrash: function() {
-		Util.trySpawnCommandLine("rm -r " + GLib.build_pathv('/', [GLib.get_user_data_dir(), 'Trash'])); //FIXME
+		//code from gnome-shell-trash-extension, by Axel von Bertoldi (https://github.com/bertoldia/gnome-shell-trash-extension)
+		let trash_file = Gio.file_new_for_uri("trash:///");
+		
+		let children = trash_file.enumerate_children('*', 0, null);
+		let child_info = null;
+		while ((child_info = children.next_file(null)) != null) {
+			let child = trash_file.get_child(child_info.get_name());
+			child.delete(null);
+		}
+		
+		this._source.placeIcon.update();
 	},
 	
 	_onEmptyRecent: function() {
@@ -447,7 +457,21 @@ const PlaceIcon = new Lang.Class({
 		);
 		this.label.style_class = 'place-label';
 	},
+	
+	update: function() {
+		log("462 ---------");
+		//this.icon = this.createIcon();
+		//this._createIconTexture(SETTINGS.get_int('places-icon-size'));
+	},
 });
+
+//FIXME 
+/*
+
+Gjs-Message: JS WARNING: [/home/roschan/.local/share/gnome-shell/extensions/places-and-files-on-desktop@maestroschan.fr/extension.js 340]: Too many arguments to method Gio.File.enumerate_children: expected 3, got 4
+Gjs-Message: JS WARNING: [/home/roschan/.local/share/gnome-shell/extensions/places-and-files-on-desktop@maestroschan.fr/extension.js 342]: Too many arguments to method Gio.FileEnumerator.next_file: expected 1, got 2
+
+*/
 
 //--------------------------------------------------------
 
@@ -840,7 +864,6 @@ const RecentFileMenu = new Lang.Class({
 				temp2 += temp[i] + '/';
 			}
 		}
-		log(temp2);
 		return temp2;
 	},
 	
@@ -884,6 +907,12 @@ let RECENT_FILES_ACTOR;
 //-------------------------------------------------------
 
 function enable() {
+
+	if (Main.layoutManager._backgroundGroup.pafod_exists) {
+		disable();
+	}
+	Main.layoutManager._backgroundGroup.pafod_exists = true;
+	
 	SETTINGS = Convenience.getSettings('org.gnome.shell.extensions.places-files-desktop');
 	PLACES_MANAGER = new PlaceDisplay.PlacesManager();
 	RECENT_MANAGER = new Gtk.RecentManager();
@@ -924,6 +953,8 @@ function enable() {
 function disable() {
 	PLACES_ACTOR.destroy();
 	RECENT_FILES_ACTOR.destroy();
+	
+	Main.layoutManager._backgroundGroup.pafod_exists = false;
 }
 
 //-------------------------------------------------
