@@ -65,7 +65,7 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		
 		//---------------------------------------------------------------
 		
-		this.appearancePage = this.add_page('appearance', _("Appearance"));
+		this.generalPage = this.add_page('general', _("Main settings"));
 		this.filtersPage = this.add_page('filters', _("Filters"));
 		this.aboutPage = this.add_page('about', _("About"));
 
@@ -129,6 +129,31 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 			}
 		}));
 		
+		//-------------------------------------------------------
+		
+		let labelPosition = _("Display on:");
+		
+		let positionCombobox = new Gtk.ComboBoxText({
+			visible: true,
+			can_focus: true,
+			halign: Gtk.Align.END,
+			valign: Gtk.Align.CENTER
+		});
+		
+		positionCombobox.append('desktop', _("Desktop"));
+		positionCombobox.append('overview', _("Empty overview"));
+		
+		positionCombobox.active_id = this.SETTINGS.get_string('position');
+		
+		positionCombobox.connect("changed", (widget) => {
+			this.SETTINGS.set_string('position', widget.get_active_id());
+		});
+		
+		let positionBox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 10});
+		positionBox.pack_start(new Gtk.Label({ label: labelPosition, halign: Gtk.Align.START }), false, false, 0);
+		positionBox.pack_end(positionCombobox, false, false, 0);
+		this.generalPage.add_widget(positionBox);
+		
 		//----------------------------------------------
 		
 		let labelGridSize = _("Places icon size:");
@@ -148,7 +173,7 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		let gridBox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 15 });
 		gridBox.pack_start(new Gtk.Label({ label: labelGridSize, use_markup: true, halign: Gtk.Align.START }), false, false, 0);
 		gridBox.pack_end(gridSize, false, false, 0);
-		this.appearancePage.add_widget(gridBox);
+		this.generalPage.add_widget(gridBox);
 		
 		//-------------------------------------------------------
 		
@@ -169,7 +194,7 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		let listBox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 15 });
 		listBox.pack_start(new Gtk.Label({ label: labelListSize, use_markup: true, halign: Gtk.Align.START }), false, false, 0);
 		listBox.pack_end(listSize, false, false, 0);
-		this.appearancePage.add_widget(listBox);
+		this.generalPage.add_widget(listBox);
 		
 		//-------------------------------------------------------
 		
@@ -190,7 +215,7 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		let numberBox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 15 });
 		numberBox.pack_start(new Gtk.Label({ label: labelListNumber, use_markup: true, halign: Gtk.Align.START }), false, false, 0);
 		numberBox.pack_end(listNumber, false, false, 0);
-		this.appearancePage.add_widget(numberBox);
+		this.generalPage.add_widget(numberBox);
 		
 		//-------------------------------------------------------
 		
@@ -211,7 +236,29 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		let paddingBox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 15 });
 		paddingBox.pack_start(new Gtk.Label({ label: labelPadding, use_markup: true, halign: Gtk.Align.START }), false, false, 0);
 		paddingBox.pack_end(padding, false, false, 0);
-		this.appearancePage.add_widget(paddingBox);
+		this.generalPage.add_widget(paddingBox);
+		
+		//-------------------------------------------------------
+		
+		let labelSearch = _("Search in paths:");
+		
+		let searchSwitch = new Gtk.Switch();
+		searchSwitch.set_sensitive(true);
+		searchSwitch.set_state(false);
+		searchSwitch.set_state(this.SETTINGS.get_boolean('search-in-path'));
+		
+		searchSwitch.connect('notify::active', Lang.bind(this, function(w){
+			if (w.active) {
+				this.SETTINGS.set_boolean('search-in-path', true);
+			} else {
+				this.SETTINGS.set_boolean('search-in-path', false);
+			}
+		}));
+		
+		let searchBox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 15 });
+		searchBox.pack_start(new Gtk.Label({ label: labelSearch, use_markup: true, halign: Gtk.Align.START }), false, false, 0);
+		searchBox.pack_end(searchSwitch, false, false, 0);
+		this.generalPage.add_widget(searchBox);
 		
 		//--------------------------
 		

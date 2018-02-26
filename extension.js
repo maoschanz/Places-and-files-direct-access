@@ -30,7 +30,7 @@ const _ = Gettext.gettext;
 function init() {
 	Convenience.initTranslations();
 	
-	SETTINGS = Convenience.getSettings('org.gnome.shell.extensions.places-files-desktop');
+//	SETTINGS = Convenience.getSettings('org.gnome.shell.extensions.places-files-desktop');
 	PLACES_MANAGER = new PlaceDisplay.PlacesManager();
 	RECENT_MANAGER = new Gtk.RecentManager();
 }
@@ -740,7 +740,7 @@ const RecentFilesHeader = new Lang.Class({
 	_onSearchTextChanged: function() {
 		let searched = this.searchEntry.get_text().toLowerCase();
 		let SEARCH_IN_PATH = true;
-		if (SEARCH_IN_PATH) { //FIXME
+		if (SETTINGS.get_boolean('search-in-path')) {
 			this._list._files.forEach(function(f){
 				f.actor.visible = f.displayedPath.toLowerCase().includes(searched) || f.label.toLowerCase().includes(searched);
 			});
@@ -977,46 +977,70 @@ let PADDING;
 
 function enable() {
 	
-//	SETTINGS = Convenience.getSettings('org.gnome.shell.extensions.places-files-desktop');
+	SETTINGS = Convenience.getSettings('org.gnome.shell.extensions.places-files-desktop');
 //	PLACES_MANAGER = new PlaceDisplay.PlacesManager();
 //	RECENT_MANAGER = new Gtk.RecentManager();
 	
-//	if (Main.layoutManager._backgroundGroup.PLACES_ACTOR) {
-//		Main.layoutManager._backgroundGroup.PLACES_ACTOR.destroy();
-//	}
-
 	Main.layoutManager._backgroundGroup.PLACES_ACTOR = new St.ScrollView({
-			x_fill: true,
-			y_fill: true,
-			x_align: St.Align.MIDDLE,
-			y_align: St.Align.MIDDLE,
-			x_expand: true,
-			y_expand: true,
-			style_class: 'vfade',
-			hscrollbar_policy: Gtk.PolicyType.NEVER,
-		});
+		x_fill: true,
+		y_fill: true,
+		x_align: St.Align.MIDDLE,
+		y_align: St.Align.MIDDLE,
+		x_expand: true,
+		y_expand: true,
+		style_class: 'vfade',
+		hscrollbar_policy: Gtk.PolicyType.NEVER,
+	});
 	
 	PADDING = SETTINGS.get_int('padding');
-	
 	let monitor = Main.layoutManager.primaryMonitor;
-	Main.layoutManager._backgroundGroup.PLACES_ACTOR.width = Math.floor(monitor.width * 0.5 - Math.abs(PADDING) * 0.5) - 2;
-	Main.layoutManager._backgroundGroup.PLACES_ACTOR.height = Math.floor(monitor.height * 0.9);//8); //FIXME pas sérieux
-	
-	let tempPadding = 0;
-	if(PADDING > 0) tempPadding = PADDING;
-	Main.layoutManager._backgroundGroup.PLACES_ACTOR.set_position(
-		monitor.x + Math.floor(tempPadding),
-		monitor.y + Math.floor(monitor.height/2 - Main.layoutManager._backgroundGroup.PLACES_ACTOR.height/2)
-	);
 	
 	Main.layoutManager._backgroundGroup.PLACES_GRID = new PlacesGrid();
-	Main.layoutManager._backgroundGroup.PLACES_ACTOR.add_actor(Main.layoutManager._backgroundGroup.PLACES_GRID.actor);
-	
 	Main.layoutManager._backgroundGroup.RECENT_FILES_LIST = new RecentFilesLayout();
-	Main.layoutManager._backgroundGroup.RECENT_FILES_ACTOR = Main.layoutManager._backgroundGroup.RECENT_FILES_LIST.actor;
 	
-	Main.layoutManager._backgroundGroup.add_actor(Main.layoutManager._backgroundGroup.PLACES_ACTOR);
-	Main.layoutManager._backgroundGroup.add_actor(Main.layoutManager._backgroundGroup.RECENT_FILES_ACTOR);
+	if (SETTINGS.get_string('position') == "overview") {
+		
+		//FIXME
+		
+		
+		Main.layoutManager._backgroundGroup.PLACES_ACTOR.width = Math.floor(monitor.width * 0.5 - Math.abs(PADDING) * 0.5) - 2;
+		Main.layoutManager._backgroundGroup.PLACES_ACTOR.height = Math.floor(monitor.height * 0.9);//8); //FIXME pas sérieux
+		
+		let tempPadding = 0;
+		if(PADDING > 0) tempPadding = PADDING;
+		Main.layoutManager._backgroundGroup.PLACES_ACTOR.set_position(
+			monitor.x + Math.floor(tempPadding),
+			monitor.y + Math.floor(monitor.height/2 - Main.layoutManager._backgroundGroup.PLACES_ACTOR.height/2)
+		);
+		
+		Main.layoutManager._backgroundGroup.PLACES_ACTOR.add_actor(Main.layoutManager._backgroundGroup.PLACES_GRID.actor);
+		
+		Main.layoutManager._backgroundGroup.RECENT_FILES_ACTOR = Main.layoutManager._backgroundGroup.RECENT_FILES_LIST.actor;
+		
+		Main.layoutManager._backgroundGroup.add_actor(Main.layoutManager._backgroundGroup.PLACES_ACTOR);
+		Main.layoutManager._backgroundGroup.add_actor(Main.layoutManager._backgroundGroup.RECENT_FILES_ACTOR);
+		
+		//TODO
+		
+	} else {
+	
+		Main.layoutManager._backgroundGroup.PLACES_ACTOR.width = Math.floor(monitor.width * 0.5 - Math.abs(PADDING) * 0.5) - 2;
+		Main.layoutManager._backgroundGroup.PLACES_ACTOR.height = Math.floor(monitor.height * 0.9);//8); //FIXME pas sérieux
+		
+		let tempPadding = 0;
+		if(PADDING > 0) tempPadding = PADDING;
+		Main.layoutManager._backgroundGroup.PLACES_ACTOR.set_position(
+			monitor.x + Math.floor(tempPadding),
+			monitor.y + Math.floor(monitor.height/2 - Main.layoutManager._backgroundGroup.PLACES_ACTOR.height/2)
+		);
+		
+		Main.layoutManager._backgroundGroup.PLACES_ACTOR.add_actor(Main.layoutManager._backgroundGroup.PLACES_GRID.actor);
+		
+		Main.layoutManager._backgroundGroup.RECENT_FILES_ACTOR = Main.layoutManager._backgroundGroup.RECENT_FILES_LIST.actor;
+		
+		Main.layoutManager._backgroundGroup.add_actor(Main.layoutManager._backgroundGroup.PLACES_ACTOR);
+		Main.layoutManager._backgroundGroup.add_actor(Main.layoutManager._backgroundGroup.RECENT_FILES_ACTOR);
+	}
 }
 
 //-------------------------------------------------
