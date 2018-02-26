@@ -14,6 +14,9 @@ const ShellMountOperation = imports.ui.shellMountOperation;
 const Signals = imports.signals;
 const Tweener = imports.ui.tweener;
 
+const Clipboard = St.Clipboard.get_default();
+const CLIPBOARD_TYPE = St.ClipboardType.CLIPBOARD;
+
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Convenience = Me.imports.convenience;
@@ -26,6 +29,10 @@ const _ = Gettext.gettext;
 
 function init() {
 	Convenience.initTranslations();
+	
+	SETTINGS = Convenience.getSettings('org.gnome.shell.extensions.places-files-desktop');
+	PLACES_MANAGER = new PlaceDisplay.PlacesManager();
+	RECENT_MANAGER = new Gtk.RecentManager();
 }
 
 //-------------------------------------------------
@@ -489,7 +496,9 @@ const RecentFileButton = new Lang.Class({
 		});
 		this.label = label;
 		this.uri = uri;
-		this.displayedUri = this.truncateUri();
+		let file = Gio.File.new_for_uri(this.uri);
+		this.path = file.get_path();
+		this.displayedPath = this.truncatePath();
 		
 		this.actor = new St.Button({
 			reactive: true,
@@ -535,7 +544,7 @@ const RecentFileButton = new Lang.Class({
 		this.actor.label_actor = title;
 
 		if (this.uri) {
-			this._descriptionLabel = new St.Label({ style_class: 'list-search-result-description', text: this.displayedUri });
+			this._descriptionLabel = new St.Label({ style_class: 'list-search-result-description', text: this.displayedPath });
 			content.add(this._descriptionLabel, {
 				x_fill: false,
 				y_fill: false,
@@ -556,28 +565,23 @@ const RecentFileButton = new Lang.Class({
 		return Clutter.EVENT_PROPAGATE;
 	},
 	
-	truncateUri: function() {
-		/*
-		this.uri's format is "file:///home/user/blabla/file.txt" or "file:///usr/bin/blabla/file.txt"
-		this function will return "~/blabla/" or "/usr/bin/blabla/" since everyone already knows:
-		- that the file is a file
-		- what the name is (since it's displayed with this.label)
-		- what is the ~ path
-		The only left issue is special characters (%20 instead of spaces for example).
-		*/
-		let temp = this.uri.split('/');
-		let temp2 = "/";
-	
-		for(var i = 0; i < temp.length; i++){
-			if ((i > 2) && (i != temp.length-1)) {
-				temp2 += temp[i] + '/';
+	truncatePath: function() {
+		let retValue = "";
+		if(this.path == null) {
+			retValue = this.uri;
+		} else {
+			let temp = this.path.split("/");
+			for(var i = 0; i < temp.length-1; i++){
+				retValue += temp[i] + "/";
+			}
+			let home = GLib.get_home_dir();
+			let a = "";
+			if(retValue.substr(0, home.length) == home){
+				a = "~" + retValue.substr(home.length, retValue.length);
+				retValue = a;
 			}
 		}
-		let home = GLib.get_home_dir();
-		if(temp2.substr(0, home.length) == home){
-			temp2 = "~" + temp2.substr(home.length, temp2.length);
-		}
-		return temp2;
+		return retValue;
 	},
 	
 	activate: function() {
@@ -672,10 +676,54 @@ const RecentFilesHeader = new Lang.Class({
 		});
 		
 		this.settingsButton.connect('clicked', Lang.bind(this, this.openSettings));
+
+		//--------------------------------
+	
+//		this.pasteButton = new St.Button({
+//			child: new St.Label({
+//				text: _("Paste"),
+//				x_expand: true,
+//				y_expand: true,
+//				y_align: Clutter.ActorAlign.CENTER,
+//			}),
+//			accessible_name: _("Paste"),
+//			y_align: Clutter.ActorAlign.CENTER,
+//			style_class: 'button',
+//			reactive: true,
+//			can_focus: true,
+//			track_hover: true,
+//			y_expand: false,
+//			y_fill: true
+//		});
+//		
+//		this.pasteButton.connect('clicked', Lang.bind(this, this.openSettings));
+
+//		//--------------------------------
+//	
+//		this.newButton = new St.Button({
+//			child: new St.Label({
+//				text: _("New"),
+//				x_expand: true,
+//				y_expand: true,
+//				y_align: Clutter.ActorAlign.CENTER,
+//			}),
+//			accessible_name: _("New"),
+//			y_align: Clutter.ActorAlign.CENTER,
+//			style_class: 'button',
+//			reactive: true,
+//			can_focus: true,
+//			track_hover: true,
+//			y_expand: false,
+//			y_fill: true
+//		});
+//		
+//		this.pasteButton.connect('clicked', Lang.bind(this, this.openSettings));
 		
 		ShellEntry.addContextMenu(this.searchEntry, null);
 		
 		this.add(new St.BoxLayout({x_expand: true,}));
+//		this.add(this.newButton);
+//		this.add(this.pasteButton);
 		this.add(this.searchEntry);
 		this.add(this.settingsButton);
 		this.add(new St.BoxLayout({x_expand: true,}));
@@ -691,9 +739,16 @@ const RecentFilesHeader = new Lang.Class({
 	
 	_onSearchTextChanged: function() {
 		let searched = this.searchEntry.get_text().toLowerCase();
-		this._list._files.forEach(function(f){
-			f.actor.visible = f.label.toLowerCase().includes(searched);
-		});
+		let SEARCH_IN_PATH = true;
+		if (SEARCH_IN_PATH) { //FIXME
+			this._list._files.forEach(function(f){
+				f.actor.visible = f.displayedPath.toLowerCase().includes(searched) || f.label.toLowerCase().includes(searched);
+			});
+		} else {
+			this._list._files.forEach(function(f){
+				f.actor.visible = f.label.toLowerCase().includes(searched);
+			});
+		}
 	},
 	
 	_redisplay: function() {
@@ -734,6 +789,7 @@ const RecentFilesLayout = new Lang.Class({
 		this.actor.add(header);
 		this.scrollview.add_actor(list.actor);
 		this.actor.add(this.scrollview);
+//		this.actor.add(header); //TODO
 	},
 	
 	setScrollviewposition: function() {
@@ -846,7 +902,12 @@ const RecentFileMenu = new Lang.Class({
 		this.removeAll();
 
 		this._appendMenuItem(_("Open") + " " + this._source.label).connect('activate', Lang.bind(this, this._onOpen));
+		//this._appendMenuItem(_("Open with")).connect('activate', Lang.bind(this, this._onOpenWith));
+		this._appendSeparator();
 		this._appendMenuItem(_("Open parent folder")).connect('activate', Lang.bind(this, this._onParent));
+		if(this._source.path != null) {
+			this._appendMenuItem(_("Copy path")).connect('activate', Lang.bind(this, this._onCopyPath));
+		}
 		this._appendSeparator();
 		this._appendMenuItem(_("Remove from the list")).connect('activate', Lang.bind(this, this._onRemove));
 	},
@@ -867,8 +928,16 @@ const RecentFileMenu = new Lang.Class({
 		return temp2;
 	},
 	
+	_onCopyPath: function() {
+		Clipboard.set_text(CLIPBOARD_TYPE, this._source.path);
+	},
+	
 	_onOpen: function() {
 		this._source.activate();
+	},
+	
+	_onOpenWith: function() {
+		//TODO
 	},
 	
 	_onRemove: function() {
@@ -901,60 +970,66 @@ let RECENT_MANAGER;
 let PLACES_MANAGER;
 let PADDING;
 
-let PLACES_ACTOR;
-let RECENT_FILES_ACTOR;
+//let PLACES_ACTOR;
+//let RECENT_FILES_ACTOR;
 
 //-------------------------------------------------------
 
 function enable() {
+	
+//	SETTINGS = Convenience.getSettings('org.gnome.shell.extensions.places-files-desktop');
+//	PLACES_MANAGER = new PlaceDisplay.PlacesManager();
+//	RECENT_MANAGER = new Gtk.RecentManager();
+	
+//	if (Main.layoutManager._backgroundGroup.PLACES_ACTOR) {
+//		Main.layoutManager._backgroundGroup.PLACES_ACTOR.destroy();
+//	}
 
-	if (Main.layoutManager._backgroundGroup.pafod_exists) {
-		disable();
-	}
-	Main.layoutManager._backgroundGroup.pafod_exists = true;
-	
-	SETTINGS = Convenience.getSettings('org.gnome.shell.extensions.places-files-desktop');
-	PLACES_MANAGER = new PlaceDisplay.PlacesManager();
-	RECENT_MANAGER = new Gtk.RecentManager();
-	
-	PLACES_ACTOR = new St.ScrollView({
-		x_fill: true,
-		y_fill: true,
-		x_align: St.Align.MIDDLE,
-		y_align: St.Align.MIDDLE,
-		x_expand: true,
-		y_expand: true,
-		style_class: 'vfade',
-		hscrollbar_policy: Gtk.PolicyType.NEVER,
-	});
+	Main.layoutManager._backgroundGroup.PLACES_ACTOR = new St.ScrollView({
+			x_fill: true,
+			y_fill: true,
+			x_align: St.Align.MIDDLE,
+			y_align: St.Align.MIDDLE,
+			x_expand: true,
+			y_expand: true,
+			style_class: 'vfade',
+			hscrollbar_policy: Gtk.PolicyType.NEVER,
+		});
 	
 	PADDING = SETTINGS.get_int('padding');
 	
 	let monitor = Main.layoutManager.primaryMonitor;
-	PLACES_ACTOR.width = Math.floor(monitor.width * 0.5 - Math.abs(PADDING) * 0.5) - 2;
-	PLACES_ACTOR.height = Math.floor(monitor.height * 0.9);//8); //FIXME pas sérieux
+	Main.layoutManager._backgroundGroup.PLACES_ACTOR.width = Math.floor(monitor.width * 0.5 - Math.abs(PADDING) * 0.5) - 2;
+	Main.layoutManager._backgroundGroup.PLACES_ACTOR.height = Math.floor(monitor.height * 0.9);//8); //FIXME pas sérieux
 	
 	let tempPadding = 0;
 	if(PADDING > 0) tempPadding = PADDING;
-	PLACES_ACTOR.set_position(
+	Main.layoutManager._backgroundGroup.PLACES_ACTOR.set_position(
 		monitor.x + Math.floor(tempPadding),
-		monitor.y + Math.floor(monitor.height/2 - PLACES_ACTOR.height/2)
+		monitor.y + Math.floor(monitor.height/2 - Main.layoutManager._backgroundGroup.PLACES_ACTOR.height/2)
 	);
 	
-	PLACES_ACTOR.add_actor(new PlacesGrid().actor);
-	RECENT_FILES_ACTOR = new RecentFilesLayout().actor;
+	Main.layoutManager._backgroundGroup.PLACES_GRID = new PlacesGrid();
+	Main.layoutManager._backgroundGroup.PLACES_ACTOR.add_actor(Main.layoutManager._backgroundGroup.PLACES_GRID.actor);
 	
-	Main.layoutManager._backgroundGroup.add_actor(PLACES_ACTOR);
-	Main.layoutManager._backgroundGroup.add_actor(RECENT_FILES_ACTOR);
+	Main.layoutManager._backgroundGroup.RECENT_FILES_LIST = new RecentFilesLayout();
+	Main.layoutManager._backgroundGroup.RECENT_FILES_ACTOR = Main.layoutManager._backgroundGroup.RECENT_FILES_LIST.actor;
+	
+	Main.layoutManager._backgroundGroup.add_actor(Main.layoutManager._backgroundGroup.PLACES_ACTOR);
+	Main.layoutManager._backgroundGroup.add_actor(Main.layoutManager._backgroundGroup.RECENT_FILES_ACTOR);
 }
 
 //-------------------------------------------------
 
 function disable() {
-	PLACES_ACTOR.destroy();
-	RECENT_FILES_ACTOR.destroy();
-	
-	Main.layoutManager._backgroundGroup.pafod_exists = false;
+	Main.layoutManager._backgroundGroup.PLACES_ACTOR.destroy();
+	Main.layoutManager._backgroundGroup.RECENT_FILES_ACTOR.destroy();
+	Main.layoutManager._backgroundGroup.PLACES_ACTOR = null;
+	Main.layoutManager._backgroundGroup.RECENT_FILES_ACTOR = null;
+	Main.layoutManager._backgroundGroup.PLACES_GRID = null;
+	Main.layoutManager._backgroundGroup.RECENT_FILES_LIST = null;
+//	Main.layoutManager._backgroundGroup.PLACES_GRID.destroy();
+//	Main.layoutManager._backgroundGroup.RECENT_FILES_LIST.destroy();
 }
 
 //-------------------------------------------------
