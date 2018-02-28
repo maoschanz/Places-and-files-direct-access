@@ -13,6 +13,8 @@ const Util = imports.misc.util;
 const ShellMountOperation = imports.ui.shellMountOperation;
 const Signals = imports.signals;
 const Tweener = imports.ui.tweener;
+//const Workspace = imports.ui.workspace;
+//const Overview = imports.ui.overview; //??
 
 const Clipboard = St.Clipboard.get_default();
 const CLIPBOARD_TYPE = St.ClipboardType.CLIPBOARD;
@@ -42,29 +44,6 @@ function trierDate(x,y) {
 }
 
 //-------------------------------------------------
-
-function injectToFunction(parent, name, func) {
-	let origin = parent[name];
-	parent[name] = function() {
-		let ret;
-		ret = origin.apply(this, arguments);
-			if (ret === undefined)
-				ret = func.apply(this, arguments);
-			return ret;
-		}
-	return origin;
-}
-
-function removeInjection(object, injection, name) {
-	if (injection[name] === undefined)
-		delete object[name];
-	else
-		object[name] = injection[name];
-}
-
-let injections=[];
-
-//--------------------------------------------------------------
 
 const PlaceButton = new Lang.Class({
 	Name: 'PlaceButton',
@@ -717,7 +696,7 @@ const RecentFilesHeader = new Lang.Class({
 //			y_fill: true
 //		});
 //		
-//		this.pasteButton.connect('clicked', Lang.bind(this, this.openSettings));
+//		this.newButton.connect('clicked', Lang.bind(this, this.openSettings));
 		
 		ShellEntry.addContextMenu(this.searchEntry, null);
 		
@@ -739,7 +718,6 @@ const RecentFilesHeader = new Lang.Class({
 	
 	_onSearchTextChanged: function() {
 		let searched = this.searchEntry.get_text().toLowerCase();
-		let SEARCH_IN_PATH = true;
 		if (SETTINGS.get_boolean('search-in-path')) {
 			this._list._files.forEach(function(f){
 				f.actor.visible = f.displayedPath.toLowerCase().includes(searched) || f.label.toLowerCase().includes(searched);
@@ -773,13 +751,20 @@ const RecentFilesLayout = new Lang.Class({
 			y_align: St.Align.MIDDLE,
 			x_expand: true,
 			y_expand: true,
-			style_class: 'vfade',
+//			style_class: 'vfade', //FIXME ??
 			hscrollbar_policy: Gtk.PolicyType.NEVER,
 		});
 		
 		let monitor = Main.layoutManager.primaryMonitor;
 		this.actor.width = Math.floor(monitor.width * 0.5 - Math.abs(PADDING) * 0.5) - 2;// - 200; //FIXME pas sérieux
-		this.actor.height = Math.floor(monitor.height * 0.9);//200; //FIXME pas sérieux
+//		this.actor.height = Math.floor(monitor.height * 0.9);//200; //FIXME pas sérieux
+		
+		if (SETTINGS.get_string('position') == "overview") {
+//			this.actor.height = Math.floor(monitor.height * 0.8);//200; //FIXME pas sérieux
+		} else {
+			this.actor.height = Math.floor(monitor.height * 0.9);
+		}
+		
 		
 		this.setScrollviewposition();
 		
@@ -794,10 +779,20 @@ const RecentFilesLayout = new Lang.Class({
 	
 	setScrollviewposition: function() {
 		let monitor = Main.layoutManager.primaryMonitor;
-		this.actor.set_position(
-			monitor.x + Math.floor(monitor.width/2 + PADDING * 0.5),
-			monitor.y + Math.floor(monitor.height/2) - Math.floor(this.actor.height/2)
-		);
+		
+		
+		if (SETTINGS.get_string('position') == "overview") {
+//			this.actor.set_position(
+//				monitor.x + Math.floor(monitor.width/2 + PADDING * 0.5),
+//				monitor.y + Math.floor(monitor.height*0.55) - Math.floor(this.actor.height/2)
+//			);
+		} else {
+			this.actor.set_position(
+				monitor.x + Math.floor(monitor.width/2 + PADDING * 0.5),
+				monitor.y + Math.floor(monitor.height/2) - Math.floor(this.actor.height/2)
+			);
+		}
+		
 	},
 });
 
@@ -854,8 +849,8 @@ const RecentFilesList = new Lang.Class({
 			if (blacklistList.indexOf((itemtype.split("/"))[0]) == -1) {
 				
 				let gicon = Gio.content_type_get_icon(itemtype);
-	   			/*améliorable ? Gio.File.new_for_uri(****).query_info('standard::(((symbolic-)))icon', 0, null); */
-	   			this._files.push(new RecentFileButton(
+				/*améliorable ? Gio.File.new_for_uri(****).query_info('standard::(((symbolic-)))icon', 0, null); */
+				this._files.push(new RecentFileButton(
 					gicon,
 					Ritems[i].get_display_name(),
 					Ritems[i].get_uri()
@@ -970,18 +965,13 @@ let RECENT_MANAGER;
 let PLACES_MANAGER;
 let PADDING;
 
-//let PLACES_ACTOR;
-//let RECENT_FILES_ACTOR;
-
 //-------------------------------------------------------
 
 function enable() {
 	
 	SETTINGS = Convenience.getSettings('org.gnome.shell.extensions.places-files-desktop');
-//	PLACES_MANAGER = new PlaceDisplay.PlacesManager();
-//	RECENT_MANAGER = new Gtk.RecentManager();
 	
-	Main.layoutManager._backgroundGroup.PLACES_ACTOR = new St.ScrollView({
+	Main.layoutManager.PLACES_ACTOR = new St.ScrollView({
 		x_fill: true,
 		y_fill: true,
 		x_align: St.Align.MIDDLE,
@@ -995,65 +985,40 @@ function enable() {
 	PADDING = SETTINGS.get_int('padding');
 	let monitor = Main.layoutManager.primaryMonitor;
 	
-	Main.layoutManager._backgroundGroup.PLACES_GRID = new PlacesGrid();
-	Main.layoutManager._backgroundGroup.RECENT_FILES_LIST = new RecentFilesLayout();
+	Main.layoutManager.PLACES_GRID = new PlacesGrid();
+	Main.layoutManager.RECENT_FILES_LIST = new RecentFilesLayout();
 	
 	if (SETTINGS.get_string('position') == "overview") {
-		
-		//FIXME
-		
-		
-		Main.layoutManager._backgroundGroup.PLACES_ACTOR.width = Math.floor(monitor.width * 0.5 - Math.abs(PADDING) * 0.5) - 2;
-		Main.layoutManager._backgroundGroup.PLACES_ACTOR.height = Math.floor(monitor.height * 0.9);//8); //FIXME pas sérieux
-		
-		let tempPadding = 0;
-		if(PADDING > 0) tempPadding = PADDING;
-		Main.layoutManager._backgroundGroup.PLACES_ACTOR.set_position(
-			monitor.x + Math.floor(tempPadding),
-			monitor.y + Math.floor(monitor.height/2 - Main.layoutManager._backgroundGroup.PLACES_ACTOR.height/2)
-		);
-		
-		Main.layoutManager._backgroundGroup.PLACES_ACTOR.add_actor(Main.layoutManager._backgroundGroup.PLACES_GRID.actor);
-		
-		Main.layoutManager._backgroundGroup.RECENT_FILES_ACTOR = Main.layoutManager._backgroundGroup.RECENT_FILES_LIST.actor;
-		
-		Main.layoutManager._backgroundGroup.add_actor(Main.layoutManager._backgroundGroup.PLACES_ACTOR);
-		Main.layoutManager._backgroundGroup.add_actor(Main.layoutManager._backgroundGroup.RECENT_FILES_ACTOR);
-		
-		//TODO
-		
+		//TODO		
 	} else {
 	
-		Main.layoutManager._backgroundGroup.PLACES_ACTOR.width = Math.floor(monitor.width * 0.5 - Math.abs(PADDING) * 0.5) - 2;
-		Main.layoutManager._backgroundGroup.PLACES_ACTOR.height = Math.floor(monitor.height * 0.9);//8); //FIXME pas sérieux
+		Main.layoutManager.PLACES_ACTOR.width = Math.floor(monitor.width * 0.5 - Math.abs(PADDING) * 0.5) - 2;
+		Main.layoutManager.PLACES_ACTOR.height = Math.floor(monitor.height * 0.9);//8); //FIXME pas sérieux
 		
 		let tempPadding = 0;
 		if(PADDING > 0) tempPadding = PADDING;
-		Main.layoutManager._backgroundGroup.PLACES_ACTOR.set_position(
+		Main.layoutManager.PLACES_ACTOR.set_position(
 			monitor.x + Math.floor(tempPadding),
-			monitor.y + Math.floor(monitor.height/2 - Main.layoutManager._backgroundGroup.PLACES_ACTOR.height/2)
+			monitor.y + Math.floor(monitor.height/2 - Main.layoutManager.PLACES_ACTOR.height/2)
 		);
 		
-		Main.layoutManager._backgroundGroup.PLACES_ACTOR.add_actor(Main.layoutManager._backgroundGroup.PLACES_GRID.actor);
+		Main.layoutManager.PLACES_ACTOR.add_actor(Main.layoutManager.PLACES_GRID.actor);
+		Main.layoutManager.RECENT_FILES_ACTOR = Main.layoutManager.RECENT_FILES_LIST.actor;
 		
-		Main.layoutManager._backgroundGroup.RECENT_FILES_ACTOR = Main.layoutManager._backgroundGroup.RECENT_FILES_LIST.actor;
-		
-		Main.layoutManager._backgroundGroup.add_actor(Main.layoutManager._backgroundGroup.PLACES_ACTOR);
-		Main.layoutManager._backgroundGroup.add_actor(Main.layoutManager._backgroundGroup.RECENT_FILES_ACTOR);
+		Main.layoutManager._backgroundGroup.add_actor(Main.layoutManager.PLACES_ACTOR);
+		Main.layoutManager._backgroundGroup.add_actor(Main.layoutManager.RECENT_FILES_ACTOR);
 	}
 }
 
 //-------------------------------------------------
 
 function disable() {
-	Main.layoutManager._backgroundGroup.PLACES_ACTOR.destroy();
-	Main.layoutManager._backgroundGroup.RECENT_FILES_ACTOR.destroy();
-	Main.layoutManager._backgroundGroup.PLACES_ACTOR = null;
-	Main.layoutManager._backgroundGroup.RECENT_FILES_ACTOR = null;
-	Main.layoutManager._backgroundGroup.PLACES_GRID = null;
-	Main.layoutManager._backgroundGroup.RECENT_FILES_LIST = null;
-//	Main.layoutManager._backgroundGroup.PLACES_GRID.destroy();
-//	Main.layoutManager._backgroundGroup.RECENT_FILES_LIST.destroy();
+	Main.layoutManager.PLACES_ACTOR.destroy();
+	Main.layoutManager.RECENT_FILES_ACTOR.destroy();
+	Main.layoutManager.PLACES_ACTOR = null;
+	Main.layoutManager.RECENT_FILES_ACTOR = null;
+	Main.layoutManager.PLACES_GRID = null;
+	Main.layoutManager.RECENT_FILES_LIST = null;
 }
 
 //-------------------------------------------------

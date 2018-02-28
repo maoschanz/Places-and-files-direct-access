@@ -131,28 +131,28 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		
 		//-------------------------------------------------------
 		
-		let labelPosition = _("Display on:");
-		
-		let positionCombobox = new Gtk.ComboBoxText({
-			visible: true,
-			can_focus: true,
-			halign: Gtk.Align.END,
-			valign: Gtk.Align.CENTER
-		});
-		
-		positionCombobox.append('desktop', _("Desktop"));
-		positionCombobox.append('overview', _("Empty overview"));
-		
-		positionCombobox.active_id = this.SETTINGS.get_string('position');
-		
-		positionCombobox.connect("changed", (widget) => {
-			this.SETTINGS.set_string('position', widget.get_active_id());
-		});
-		
-		let positionBox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 10});
-		positionBox.pack_start(new Gtk.Label({ label: labelPosition, halign: Gtk.Align.START }), false, false, 0);
-		positionBox.pack_end(positionCombobox, false, false, 0);
-		this.generalPage.add_widget(positionBox);
+//		let labelPosition = _("Display on:");
+//		
+//		let positionCombobox = new Gtk.ComboBoxText({
+//			visible: true,
+//			can_focus: true,
+//			halign: Gtk.Align.END,
+//			valign: Gtk.Align.CENTER
+//		});
+//		
+//		positionCombobox.append('desktop', _("Desktop"));
+//		positionCombobox.append('overview', _("Empty overview"));
+//		
+//		positionCombobox.active_id = this.SETTINGS.get_string('position');
+//		
+//		positionCombobox.connect("changed", (widget) => {
+//			this.SETTINGS.set_string('position', widget.get_active_id());
+//		});
+//		
+//		let positionBox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 10});
+//		positionBox.pack_start(new Gtk.Label({ label: labelPosition, halign: Gtk.Align.START }), false, false, 0);
+//		positionBox.pack_end(positionCombobox, false, false, 0);
+//		this.generalPage.add_widget(positionBox);
 		
 		//----------------------------------------------
 		
