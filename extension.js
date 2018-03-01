@@ -12,7 +12,7 @@ const Gtk = imports.gi.Gtk;
 const Util = imports.misc.util;
 const ShellMountOperation = imports.ui.shellMountOperation;
 const Signals = imports.signals;
-const Tweener = imports.ui.tweener;
+//const Tweener = imports.ui.tweener;
 //const Workspace = imports.ui.workspace;
 //const Overview = imports.ui.overview; //??
 
@@ -70,7 +70,8 @@ const PlaceButton = new Lang.Class({
 	
 	_onClicked: function() {
 		this.placeIcon.animateZoomOut();
-		Util.trySpawnCommandLine('nautilus ' + this._info.file.get_uri()); //FIXME
+		Util.trySpawnCommandLine('nautilus ' + this._info.file.get_uri());
+		//FIXME the "normal" method don't understand the trash, so this has to stay commented.
 //		Gio.app_info_launch_default_for_uri(this._info.file.get_uri(), global.create_app_launch_context(0, -1));
 	},
 	
@@ -84,7 +85,7 @@ const PlaceButton = new Lang.Class({
 
 		if (!this._menu) {
 			this._menu = new PlaceButtonMenu(this);
-			this._menu.connect('open-state-changed', Lang.bind(this, function (menu, isPoppedUp) {
+			this.connexion = this._menu.connect('open-state-changed', Lang.bind(this, function (menu, isPoppedUp) {
 				if (!isPoppedUp) this._onMenuPoppedDown();
 			}));
 			this._menuManager.addMenu(this._menu);
@@ -106,6 +107,11 @@ const PlaceButton = new Lang.Class({
 			return Clutter.EVENT_STOP;
 		}
 		return Clutter.EVENT_PROPAGATE;
+	},
+
+	destroy: function() {
+		this._menu.disconnect(this._connexion);
+		this.parent();
 	},
 });
 Signals.addSignalMethods(PlaceButton.prototype);
@@ -445,19 +451,11 @@ const PlaceIcon = new Lang.Class({
 	},
 	
 	update: function() {
-		log("462 ---------");
+//		log("462 ---------");
 		//this.icon = this.createIcon();
 		//this._createIconTexture(SETTINGS.get_int('places-icon-size'));
 	},
 });
-
-//FIXME 
-/*
-
-Gjs-Message: JS WARNING: [/home/roschan/.local/share/gnome-shell/extensions/places-and-files-on-desktop@maestroschan.fr/extension.js 340]: Too many arguments to method Gio.File.enumerate_children: expected 3, got 4
-Gjs-Message: JS WARNING: [/home/roschan/.local/share/gnome-shell/extensions/places-and-files-on-desktop@maestroschan.fr/extension.js 342]: Too many arguments to method Gio.FileEnumerator.next_file: expected 1, got 2
-
-*/
 
 //--------------------------------------------------------
 
@@ -490,7 +488,7 @@ const RecentFileButton = new Lang.Class({
 		});
 
 		this.actor._delegate = this;
-		this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
+		this._connexion2 = this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
 		
 		this._menu = null;
 		this._menuManager = new PopupMenu.PopupMenuManager(this);
@@ -577,7 +575,7 @@ const RecentFileButton = new Lang.Class({
 
 		if (!this._menu) {
 			this._menu = new RecentFileMenu(this);
-			this._menu.connect('open-state-changed', Lang.bind(this, function (menu, isPoppedUp) {
+			this._connexion = this._menu.connect('open-state-changed', Lang.bind(this, function (menu, isPoppedUp) {
 				if (!isPoppedUp) this._onMenuPoppedDown();
 			}));
 			this._menuManager.addMenu(this._menu);
@@ -589,6 +587,12 @@ const RecentFileButton = new Lang.Class({
 		this._menuManager.ignoreRelease();
 
 		return false;
+	},
+	
+	destroy: function() {
+		this.actor.disconnect(this._connexion2);
+		this._menu.disconnect(this._connexion);
+		this.parent();
 	},
 });
 Signals.addSignalMethods(RecentFileButton.prototype);
@@ -658,51 +662,9 @@ const RecentFilesHeader = new Lang.Class({
 
 		//--------------------------------
 	
-//		this.pasteButton = new St.Button({
-//			child: new St.Label({
-//				text: _("Paste"),
-//				x_expand: true,
-//				y_expand: true,
-//				y_align: Clutter.ActorAlign.CENTER,
-//			}),
-//			accessible_name: _("Paste"),
-//			y_align: Clutter.ActorAlign.CENTER,
-//			style_class: 'button',
-//			reactive: true,
-//			can_focus: true,
-//			track_hover: true,
-//			y_expand: false,
-//			y_fill: true
-//		});
-//		
-//		this.pasteButton.connect('clicked', Lang.bind(this, this.openSettings));
-
-//		//--------------------------------
-//	
-//		this.newButton = new St.Button({
-//			child: new St.Label({
-//				text: _("New"),
-//				x_expand: true,
-//				y_expand: true,
-//				y_align: Clutter.ActorAlign.CENTER,
-//			}),
-//			accessible_name: _("New"),
-//			y_align: Clutter.ActorAlign.CENTER,
-//			style_class: 'button',
-//			reactive: true,
-//			can_focus: true,
-//			track_hover: true,
-//			y_expand: false,
-//			y_fill: true
-//		});
-//		
-//		this.newButton.connect('clicked', Lang.bind(this, this.openSettings));
-		
 		ShellEntry.addContextMenu(this.searchEntry, null);
 		
 		this.add(new St.BoxLayout({x_expand: true,}));
-//		this.add(this.newButton);
-//		this.add(this.pasteButton);
 		this.add(this.searchEntry);
 		this.add(this.settingsButton);
 		this.add(new St.BoxLayout({x_expand: true,}));
@@ -757,14 +719,12 @@ const RecentFilesLayout = new Lang.Class({
 		
 		let monitor = Main.layoutManager.primaryMonitor;
 		this.actor.width = Math.floor(monitor.width * 0.5 - Math.abs(PADDING) * 0.5) - 2;// - 200; //FIXME pas sérieux
-//		this.actor.height = Math.floor(monitor.height * 0.9);//200; //FIXME pas sérieux
 		
-		if (SETTINGS.get_string('position') == "overview") {
+//		if (SETTINGS.get_string('position') == "overview") {
 //			this.actor.height = Math.floor(monitor.height * 0.8);//200; //FIXME pas sérieux
-		} else {
-			this.actor.height = Math.floor(monitor.height * 0.9);
-		}
-		
+//		} else {
+			this.actor.height = Math.floor(monitor.height * 0.9); //FIXME pas sérieux
+//		}
 		
 		this.setScrollviewposition();
 		
@@ -774,24 +734,23 @@ const RecentFilesLayout = new Lang.Class({
 		this.actor.add(header);
 		this.scrollview.add_actor(list.actor);
 		this.actor.add(this.scrollview);
-//		this.actor.add(header); //TODO
 	},
 	
 	setScrollviewposition: function() {
 		let monitor = Main.layoutManager.primaryMonitor;
 		
 		
-		if (SETTINGS.get_string('position') == "overview") {
+//		if (SETTINGS.get_string('position') == "overview") {
 //			this.actor.set_position(
 //				monitor.x + Math.floor(monitor.width/2 + PADDING * 0.5),
 //				monitor.y + Math.floor(monitor.height*0.55) - Math.floor(this.actor.height/2)
 //			);
-		} else {
+//		} else {
 			this.actor.set_position(
 				monitor.x + Math.floor(monitor.width/2 + PADDING * 0.5),
 				monitor.y + Math.floor(monitor.height/2) - Math.floor(this.actor.height/2)
 			);
-		}
+//		}
 		
 	},
 });
@@ -819,11 +778,6 @@ const RecentFilesList = new Lang.Class({
 		this._resultDisplayBin.set_child(this._container);
 		
 		this._buildRecents();
-	},
-	
-	clearList: function(){
-		RECENT_MANAGER.purge_items();
-		this._redisplay();
 	},
 	
 	_redisplay: function() {
@@ -988,9 +942,9 @@ function enable() {
 	Main.layoutManager.PLACES_GRID = new PlacesGrid();
 	Main.layoutManager.RECENT_FILES_LIST = new RecentFilesLayout();
 	
-	if (SETTINGS.get_string('position') == "overview") {
-		//TODO		
-	} else {
+//	if (SETTINGS.get_string('position') == "overview") {
+//		//TODO		
+//	} else {
 	
 		Main.layoutManager.PLACES_ACTOR.width = Math.floor(monitor.width * 0.5 - Math.abs(PADDING) * 0.5) - 2;
 		Main.layoutManager.PLACES_ACTOR.height = Math.floor(monitor.height * 0.9);//8); //FIXME pas sérieux
@@ -1007,18 +961,22 @@ function enable() {
 		
 		Main.layoutManager._backgroundGroup.add_actor(Main.layoutManager.PLACES_ACTOR);
 		Main.layoutManager._backgroundGroup.add_actor(Main.layoutManager.RECENT_FILES_ACTOR);
-	}
+//	}
 }
 
 //-------------------------------------------------
 
 function disable() {
-	Main.layoutManager.PLACES_ACTOR.destroy();
-	Main.layoutManager.RECENT_FILES_ACTOR.destroy();
-	Main.layoutManager.PLACES_ACTOR = null;
-	Main.layoutManager.RECENT_FILES_ACTOR = null;
-	Main.layoutManager.PLACES_GRID = null;
-	Main.layoutManager.RECENT_FILES_LIST = null;
+	Main.layoutManager._backgroundGroup.remove_actor(Main.layoutManager.PLACES_ACTOR);
+	Main.layoutManager._backgroundGroup.remove_actor(Main.layoutManager.RECENT_FILES_ACTOR);
+	
+	// Actually deleting objects triggers a dramatic GS crash, so this has to stay commented.
+//	Main.layoutManager.PLACES_ACTOR.destroy();
+//	Main.layoutManager.RECENT_FILES_ACTOR.destroy();
+//	Main.layoutManager.PLACES_ACTOR = null;
+//	Main.layoutManager.RECENT_FILES_ACTOR = null;
+//	Main.layoutManager.PLACES_GRID = null;
+//	Main.layoutManager.RECENT_FILES_LIST = null;
 }
 
 //-------------------------------------------------
