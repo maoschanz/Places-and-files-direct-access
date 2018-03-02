@@ -21,10 +21,25 @@
       <summary></summary>
       <description></description>
     </key>
-    <key type="i" name="padding">
+    <key type="i" name="top-padding">
+      <default>40</default>
+      <summary>Top padding</summary>
+      <description>The number of pixels left empty at the top (for the top bar for example).</description>
+    </key>
+    <key type="i" name="right-padding">
       <default>0</default>
-      <summary>Lateral padding.</summary>
-      <description>The number of pixels left empty (for a lateral dock for example). If the number is negative, the empty space will be at the right of the screen.</description>
+      <summary>Right padding.</summary>
+      <description>The number of pixels left empty at the right (for a lateral dock for example).</description>
+    </key>
+    <key type="i" name="left-padding">
+      <default>40</default>
+      <summary>Left padding.</summary>
+      <description>The number of pixels left empty at the left (for a lateral dock for example).</description>
+    </key>
+    <key type="i" name="bottom-padding">
+      <default>20</default>
+      <summary>Bottom padding.</summary>
+      <description>The number of pixels left empty at the bottom (for a bottom dock for example).</description>
     </key>
     <key type="s" name="position">
       <default>"desktop"</default>
