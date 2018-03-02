@@ -1,6 +1,6 @@
-# Places and recent files on the GNOME Shell desktop
+# Convenient access to files
 
-Here is a GNOME Shell extension providing an access to devices, bookmarks and recent files on the desktop.
+A nice GNOME Shell extension providing an access to devices, bookmarks and recent files on the desktop.
 
 ![Screenshot](https://i.imgur.com/FGRkMPv.png)
 
