@@ -52,20 +52,62 @@ msgstr "Ouvrir le dossier parent"
 msgid "Type a name..."
 msgstr "Entrez un nom..."
 
+msgid "Copy path"
+msgstr "Copier le chemin"
+
 msgid "Remove from the list"
 msgstr "Retirer de la liste"
 
 msgid "Report bugs or ideas"
 msgstr "Rapporter des bugs ou des idées"
 
-msgid "Appearance"
-msgstr "Apparence"
+msgid "Search"
+msgstr "Recherche"
 
-msgid "Filters"
-msgstr "Filtres"
+msgid "Filtering"
+msgstr "Filtrage"
+
+msgid "Position"
+msgstr "Position"
+
+msgid "Padding"
+msgstr "Marges"
+
+msgid "Top padding:"
+msgstr "Marge supérieure :"
+
+msgid "Bottom padding:"
+msgstr "Marge inférieure :"
+
+msgid "Left padding:"
+msgstr "Marge senestre :"
+
+msgid "Right padding:"
+msgstr "Marge dextre :"
+
+msgid "Display on:"
+msgstr "Afficher sur :"
+
+msgid "Desktop"
+msgstr "Bureau"
+
+msgid "Empty overview"
+msgstr "Vue d'ensemble vide"
+
+msgid "Others"
+msgstr "Autres"
+
+msgid "Icons"
+msgstr "Icônes"
 
 msgid "About"
 msgstr "À propos"
+
+msgid "Convenient access to files"
+msgstr "Accès pratique aux fichiers"
+
+msgid "Easy access to devices, bookmarks and recent files."
+msgstr "Un accès facile aux périphériques, aux signets et aux fichiers récents."
 
 msgid "Places icon size:"
 msgstr "Taille d'icône des emplacements :"
@@ -76,8 +118,8 @@ msgstr "Taille d'icône des fichiers récents :"
 msgid "Number of recent files listed:"
 msgstr "Nombre de fichiers récents listés :"
 
-msgid "Lateral padding:"
-msgstr "Décalage latéral :"
+msgid "Search in paths:"
+msgstr "Rechercher dans les chemins :"
 
 msgid "Type here to search..."
 msgstr "Tapez ici pour chercher..."
