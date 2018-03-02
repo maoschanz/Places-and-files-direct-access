@@ -3,6 +3,7 @@ const GObject = imports.gi.GObject;
 const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
+const GdkPixbuf = imports.gi.GdkPixbuf;
 
 const Gettext = imports.gettext.domain('places-files-desktop');
 const _ = Gettext.gettext;
@@ -29,22 +30,62 @@ const PrefsPage = new Lang.Class({
 			can_focus: true
 		});
 		
-		this.box = new Gtk.Box({
+		this.stackpageMainBox = new Gtk.Box({
 			visible: true,
 			can_focus: false,
-			margin_left: 70,
-			margin_right: 70,
+			margin_left: 50,
+			margin_right: 50,
 			margin_top: 20,
 			margin_bottom: 20,
 			orientation: Gtk.Orientation.VERTICAL,
-			spacing: 15
+			spacing: 18
 		});
-		this.add(this.box);
+		this.add(this.stackpageMainBox);
+	},
+	
+	add_section: function(titre) {
+		let section = new Gtk.Box({
+			orientation: Gtk.Orientation.VERTICAL,
+			spacing: 6,
+		});
+		if (titre != "") {
+			section.add(new Gtk.Label({
+				label: '<b>' + titre + '</b>',
+				halign: Gtk.Align.START,
+				use_markup: true,
+			}));
+		}
+	
+		let a = new Gtk.ListBox({
+			//titre ?
+			can_focus: false,
+			has_focus: false,
+			is_focus: false,
+			has_default: false,
+			selection_mode: Gtk.SelectionMode.NONE,
+		});
+		section.add(a);
+		this.stackpageMainBox.add(section);
+		return a;
 	},
 
+	add_row: function(filledbox, section) {
+		let a = new Gtk.ListBoxRow({
+			can_focus: false,
+			has_focus: false,
+			is_focus: false,
+			has_default: false,
+//			activatable: false,
+			selectable: false,	
+		});
+		a.add(filledbox);
+		section.add(a);
+		return a;
+	},
+	
 	add_widget: function(filledbox) {
-		this.box.add(filledbox);
-	} 
+		this.stackpageMainBox.add(filledbox);
+	},
 });
 
 //-----------------------------------------------
@@ -65,31 +106,68 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		
 		//---------------------------------------------------------------
 		
-		this.generalPage = this.add_page('general', _("Main settings"));
-		this.filtersPage = this.add_page('filters', _("Filters"));
+		this.searchPage = this.add_page('search', _("Search"));
+		this.positionPage = this.add_page('position', _("Position"));
+		this.othersPage = this.add_page('others', _("Others"));
 		this.aboutPage = this.add_page('about', _("About"));
+		
+		//------------------------------------------------------
+		
+		let searchSection = this.searchPage.add_section("");
+		let filterSection = this.searchPage.add_section(_("Filtering"));
+		
+		let displaySection = this.positionPage.add_section("");
+		let paddingSection = this.positionPage.add_section(_("Padding"));
+		
+		let iconsSection = this.othersPage.add_section(_("Icons"));
+		let othersSection = this.othersPage.add_section("");
+		
+		//--------------------------------------------------------
 
 		this.SETTINGS = Convenience.getSettings('org.gnome.shell.extensions.places-files-desktop');
 		
 		this._blacklist = [];
 		this.loadBlacklist();
 		this.switchesList = [];
+		
 		//------------------------------------------------------
 		
-//		let labelFilter = _("<b>Filtrage des fichiers récents :</b>");
-//		
-//		let filterBox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 15 });
-//		filterBox.pack_start(new Gtk.Label({ label: labelFilter, use_markup: true, halign: Gtk.Align.START }), false, false, 0);
-//		this.filtersPage.add_widget(filterBox);
+		let labelSearch = _("Search in paths:");
 		
+		let searchSwitch = new Gtk.Switch();
+		searchSwitch.set_sensitive(true);
+		searchSwitch.set_state(false);
+		searchSwitch.set_state(this.SETTINGS.get_boolean('search-in-path'));
+		
+		searchSwitch.connect('notify::active', Lang.bind(this, function(w){
+			if (w.active) {
+				this.SETTINGS.set_boolean('search-in-path', true);
+			} else {
+				this.SETTINGS.set_boolean('search-in-path', false);
+			}
+		}));
+		
+		let searchBox = new Gtk.Box({
+			orientation: Gtk.Orientation.HORIZONTAL,
+			spacing: 15,
+			margin: 6,
+		});
+		searchBox.pack_start(new Gtk.Label({ label: labelSearch, use_markup: true, halign: Gtk.Align.START }), false, false, 0);
+		searchBox.pack_end(searchSwitch, false, false, 0);
+		this.searchPage.add_row(searchBox, searchSection);
+
 		//-------------------------------------------------------
 		
 		let AllSwitch = new Gtk.Switch();
 		
-		let AllBox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 15 });
+		let AllBox = new Gtk.Box({
+			orientation: Gtk.Orientation.HORIZONTAL,
+			spacing: 15,
+			margin: 6
+		});
 		AllBox.pack_start(new Gtk.Label({ label: _("All files"), halign: Gtk.Align.START }), false, false, 0);
 		AllBox.pack_end(AllSwitch, false, false, 0);
-		this.filtersPage.add_widget(AllBox);
+		this.searchPage.add_row(AllBox, filterSection);
 		
 		//--------------------------------------------------------
 		
@@ -102,15 +180,16 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		this._typeSwitches.push( ['multipart', _("Multipart files")] );
 		this._typeSwitches.push( ['message', _("Message files")] );
 		this._typeSwitches.push( ['model', _("Model files")] );
+		
 		for(var i = 0; i < this._typeSwitches.length; i++) {
-			
-			this.filtersPage.add_widget(
+			this.searchPage.add_row(			
 				this.createTypeSwitch(this._typeSwitches[i])
+				, filterSection
 			);
 		}
 		//'blacklist'
 		//available media-types are: text, image, audio, video, application, multipart, message, model (separated with ",").
-
+		
 		//-------------------------------------------------------
 		
 		AllSwitch.set_state(this.SETTINGS.get_string('blacklist') == '');
@@ -131,28 +210,32 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		
 		//-------------------------------------------------------
 		
-//		let labelPosition = _("Display on:");
-//		
-//		let positionCombobox = new Gtk.ComboBoxText({
-//			visible: true,
-//			can_focus: true,
-//			halign: Gtk.Align.END,
-//			valign: Gtk.Align.CENTER
-//		});
-//		
-//		positionCombobox.append('desktop', _("Desktop"));
-//		positionCombobox.append('overview', _("Empty overview"));
-//		
-//		positionCombobox.active_id = this.SETTINGS.get_string('position');
-//		
-//		positionCombobox.connect("changed", (widget) => {
-//			this.SETTINGS.set_string('position', widget.get_active_id());
-//		});
-//		
-//		let positionBox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 10});
-//		positionBox.pack_start(new Gtk.Label({ label: labelPosition, halign: Gtk.Align.START }), false, false, 0);
-//		positionBox.pack_end(positionCombobox, false, false, 0);
-//		this.generalPage.add_widget(positionBox);
+		let labelPosition = _("Display on:");
+		
+		let positionCombobox = new Gtk.ComboBoxText({
+			visible: true,
+			can_focus: true,
+			halign: Gtk.Align.END,
+			valign: Gtk.Align.CENTER
+		});
+		
+		positionCombobox.append('desktop', _("Desktop"));
+		positionCombobox.append('overview', _("Empty overview"));
+		
+		positionCombobox.active_id = this.SETTINGS.get_string('position');
+		
+		positionCombobox.connect("changed", (widget) => {
+			this.SETTINGS.set_string('position', widget.get_active_id());
+		});
+		
+		let positionBox = new Gtk.Box({
+			orientation: Gtk.Orientation.HORIZONTAL,
+			spacing: 15,
+			margin: 6,
+		});
+		positionBox.pack_start(new Gtk.Label({ label: labelPosition, halign: Gtk.Align.START }), false, false, 0);
+		positionBox.pack_end(positionCombobox, false, false, 0);
+		this.positionPage.add_row(positionBox, displaySection);
 		
 		//----------------------------------------------
 		
@@ -170,10 +253,14 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 			this.SETTINGS.set_int('places-icon-size', value);
 		}));
 		
-		let gridBox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 15 });
+		let gridBox = new Gtk.Box({
+			orientation: Gtk.Orientation.HORIZONTAL,
+			spacing: 15,
+			margin: 6,
+		});
 		gridBox.pack_start(new Gtk.Label({ label: labelGridSize, use_markup: true, halign: Gtk.Align.START }), false, false, 0);
 		gridBox.pack_end(gridSize, false, false, 0);
-		this.generalPage.add_widget(gridBox);
+		this.othersPage.add_row(gridBox, iconsSection);
 		
 		//-------------------------------------------------------
 		
@@ -191,10 +278,14 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 			this.SETTINGS.set_int('recent-files-icon-size', value);
 		}));
 		
-		let listBox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 15 });
+		let listBox = new Gtk.Box({
+			orientation: Gtk.Orientation.HORIZONTAL,
+			spacing: 15,
+			margin: 6,
+		});
 		listBox.pack_start(new Gtk.Label({ label: labelListSize, use_markup: true, halign: Gtk.Align.START }), false, false, 0);
 		listBox.pack_end(listSize, false, false, 0);
-		this.generalPage.add_widget(listBox);
+		this.othersPage.add_row(listBox, iconsSection);
 		
 		//-------------------------------------------------------
 		
@@ -212,53 +303,114 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 			this.SETTINGS.set_int('number-of-recent-files', value);
 		}));
 		
-		let numberBox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 15 });
+		let numberBox = new Gtk.Box({
+			orientation: Gtk.Orientation.HORIZONTAL,
+			spacing: 15,
+			margin: 6,
+		});
 		numberBox.pack_start(new Gtk.Label({ label: labelListNumber, use_markup: true, halign: Gtk.Align.START }), false, false, 0);
 		numberBox.pack_end(listNumber, false, false, 0);
-		this.generalPage.add_widget(numberBox);
+		this.othersPage.add_row(numberBox, othersSection);
 		
 		//-------------------------------------------------------
 		
-		let labelPadding = _("Lateral padding:");
+		let labelTopPadding = _("Top padding:");
 		
-		let padding = new Gtk.SpinButton();
-		padding.set_sensitive(true);
-		padding.set_range(-100, 100);
-		padding.set_value(0);
-		padding.set_value(this.SETTINGS.get_int('padding'));
-		padding.set_increments(1, 2);
+		let TopPadding = new Gtk.SpinButton();
+		TopPadding.set_sensitive(true);
+		TopPadding.set_range(0, 100);
+		TopPadding.set_value(0);
+		TopPadding.set_value(this.SETTINGS.get_int('top-padding'));
+		TopPadding.set_increments(1, 2);
 		
-		padding.connect('value-changed', Lang.bind(this, function(w){
+		TopPadding.connect('value-changed', Lang.bind(this, function(w){
 			var value = w.get_value_as_int();
-			this.SETTINGS.set_int('padding', value);
+			this.SETTINGS.set_int('top-padding', value);
 		}));
 		
-		let paddingBox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 15 });
-		paddingBox.pack_start(new Gtk.Label({ label: labelPadding, use_markup: true, halign: Gtk.Align.START }), false, false, 0);
-		paddingBox.pack_end(padding, false, false, 0);
-		this.generalPage.add_widget(paddingBox);
+		let TopPaddingBox = new Gtk.Box({
+			orientation: Gtk.Orientation.HORIZONTAL,
+			spacing: 15,
+			margin: 6,
+		});
+		TopPaddingBox.pack_start(new Gtk.Label({ label: labelTopPadding, use_markup: true, halign: Gtk.Align.START }), false, false, 0);
+		TopPaddingBox.pack_end(TopPadding, false, false, 0);
+		this.positionPage.add_row(TopPaddingBox, paddingSection);
 		
 		//-------------------------------------------------------
 		
-		let labelSearch = _("Search in paths:");
+		let labelBottomPadding = _("Bottom padding:");
 		
-		let searchSwitch = new Gtk.Switch();
-		searchSwitch.set_sensitive(true);
-		searchSwitch.set_state(false);
-		searchSwitch.set_state(this.SETTINGS.get_boolean('search-in-path'));
+		let BottomPadding = new Gtk.SpinButton();
+		BottomPadding.set_sensitive(true);
+		BottomPadding.set_range(0, 100);
+		BottomPadding.set_value(0);
+		BottomPadding.set_value(this.SETTINGS.get_int('bottom-padding'));
+		BottomPadding.set_increments(1, 2);
 		
-		searchSwitch.connect('notify::active', Lang.bind(this, function(w){
-			if (w.active) {
-				this.SETTINGS.set_boolean('search-in-path', true);
-			} else {
-				this.SETTINGS.set_boolean('search-in-path', false);
-			}
+		BottomPadding.connect('value-changed', Lang.bind(this, function(w){
+			var value = w.get_value_as_int();
+			this.SETTINGS.set_int('bottom-padding', value);
 		}));
 		
-		let searchBox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 15 });
-		searchBox.pack_start(new Gtk.Label({ label: labelSearch, use_markup: true, halign: Gtk.Align.START }), false, false, 0);
-		searchBox.pack_end(searchSwitch, false, false, 0);
-		this.generalPage.add_widget(searchBox);
+		let BottomPaddingBox = new Gtk.Box({
+			orientation: Gtk.Orientation.HORIZONTAL,
+			spacing: 15,
+			margin: 6,
+		});
+		BottomPaddingBox.pack_start(new Gtk.Label({ label: labelBottomPadding, use_markup: true, halign: Gtk.Align.START }), false, false, 0);
+		BottomPaddingBox.pack_end(BottomPadding, false, false, 0);
+		this.positionPage.add_row(BottomPaddingBox, paddingSection);
+				
+		//-------------------------------------------------------
+		
+		let labelLeftPadding = _("Left padding:");
+		
+		let LeftPadding = new Gtk.SpinButton();
+		LeftPadding.set_sensitive(true);
+		LeftPadding.set_range(0, 100);
+		LeftPadding.set_value(0);
+		LeftPadding.set_value(this.SETTINGS.get_int('left-padding'));
+		LeftPadding.set_increments(1, 2);
+		
+		LeftPadding.connect('value-changed', Lang.bind(this, function(w){
+			var value = w.get_value_as_int();
+			this.SETTINGS.set_int('left-padding', value);
+		}));
+		
+		let LeftPaddingBox = new Gtk.Box({
+			orientation: Gtk.Orientation.HORIZONTAL,
+			spacing: 15,
+			margin: 6,
+		});
+		LeftPaddingBox.pack_start(new Gtk.Label({ label: labelLeftPadding, use_markup: true, halign: Gtk.Align.START }), false, false, 0);
+		LeftPaddingBox.pack_end(LeftPadding, false, false, 0);
+		this.positionPage.add_row(LeftPaddingBox, paddingSection);
+		
+		//-------------------------------------------------------
+		
+		let labelRightPadding = _("Right padding:");
+		
+		let RightPadding = new Gtk.SpinButton();
+		RightPadding.set_sensitive(true);
+		RightPadding.set_range(0, 100);
+		RightPadding.set_value(0);
+		RightPadding.set_value(this.SETTINGS.get_int('right-padding'));
+		RightPadding.set_increments(1, 2);
+		
+		RightPadding.connect('value-changed', Lang.bind(this, function(w){
+			var value = w.get_value_as_int();
+			this.SETTINGS.set_int('right-padding', value);
+		}));
+		
+		let RightPaddingBox = new Gtk.Box({
+			orientation: Gtk.Orientation.HORIZONTAL,
+			spacing: 15,
+			margin: 6,
+		});
+		RightPaddingBox.pack_start(new Gtk.Label({ label: labelRightPadding, use_markup: true, halign: Gtk.Align.START }), false, false, 0);
+		RightPaddingBox.pack_end(RightPadding, false, false, 0);
+		this.positionPage.add_row(RightPaddingBox, paddingSection);
 		
 		//--------------------------
 		
@@ -266,9 +418,14 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		
 		let nameBox = new Gtk.Box({ orientation: Gtk.Orientation.VERTICAL, spacing: 15 });
 		nameBox.add(
-			new Gtk.Label({ label: labelName, use_markup: true, halign: Gtk.Align.CENTER })
+			new Gtk.Label({ label: "<b>" + _(labelName) + "</b>", use_markup: true, halign: Gtk.Align.CENTER })
 		);
 		this.aboutPage.add_widget(nameBox);
+		
+		//--------------------------
+		
+		let a_image = new Gtk.Image({ pixbuf: GdkPixbuf.Pixbuf.new_from_file_at_size(Me.path+'/about_icon.png', 128, 128) });
+		this.aboutPage.add_widget(a_image);
 		
 		//--------------------------
 		
@@ -276,7 +433,7 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		
 		let DescriptionBox = new Gtk.Box({ orientation: Gtk.Orientation.VERTICAL, spacing: 15 });
 		DescriptionBox.add(
-			new Gtk.Label({ label: "<b>" + _( labelDescription ) + "</b>", use_markup: true, halign: Gtk.Align.CENTER })
+			new Gtk.Label({ label: _( labelDescription ), use_markup: true, halign: Gtk.Align.CENTER })
 		);
 		this.aboutPage.add_widget(DescriptionBox);
 		
@@ -284,6 +441,7 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		
 		let LinkBox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 10 });
 		let a_version = ' (v' + Me.metadata.version.toString() + ') ';
+		
 		let url_button = new Gtk.LinkButton({
 			label: _("Report bugs or ideas"),
 			uri: Me.metadata.url.toString()
@@ -292,7 +450,7 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		LinkBox.pack_start(url_button, false, false, 0);
 		LinkBox.pack_end(new Gtk.Label({ label: a_version, halign: Gtk.Align.START }), false, false, 0);
 		
-		this.aboutPage.add_widget(LinkBox);
+		this.aboutPage.stackpageMainBox.pack_end(LinkBox, false, false, 0);
 		
 		//-------------------------
 	},
@@ -341,7 +499,11 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		
 		this.switchesList.push(TypeSwitch);
 		
-		let TypeBox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 10, margin_start: 20/*, margin_end: 20*/ });
+		let TypeBox = new Gtk.Box({
+			orientation: Gtk.Orientation.HORIZONTAL,
+			spacing: 10,
+			margin: 6,
+		});
 		TypeBox.pack_start(new Gtk.Label({ label: label_switch, halign: Gtk.Align.START }), false, false, 0);
 		TypeBox.pack_end(TypeSwitch, false, false, 0);
 		return TypeBox;

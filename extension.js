@@ -170,7 +170,7 @@ const PlaceButtonMenu = new Lang.Class({
 		if( this._source._info.name == _("Trash") ){
 			this._appendSeparator();
 			this._appendMenuItem(_("Empty")).connect('activate', Lang.bind(this, this._onEmptyTrash));
-			//FIXME connecter des signaux pour changer l'icône
+			//TODO connecter des signaux pour changer l'icône
 		}
 
 		if( this._source._info.name == _("Recent Files") ){
@@ -451,9 +451,7 @@ const PlaceIcon = new Lang.Class({
 	},
 	
 	update: function() {
-//		log("462 ---------");
-		//this.icon = this.createIcon();
-		//this._createIconTexture(SETTINGS.get_int('places-icon-size'));
+		
 	},
 });
 
@@ -693,7 +691,7 @@ const RecentFilesHeader = new Lang.Class({
 	
 	_redisplay: function() {
 		this._list._redisplay();
-		this._onIconRelease();
+//		this._onIconRelease(); // non, boucle ? pété ? FIXME
 	},
 });
 
@@ -718,13 +716,8 @@ const RecentFilesLayout = new Lang.Class({
 		});
 		
 		let monitor = Main.layoutManager.primaryMonitor;
-		this.actor.width = Math.floor(monitor.width * 0.5 - Math.abs(PADDING) * 0.5) - 2;// - 200; //FIXME pas sérieux
-		
-//		if (SETTINGS.get_string('position') == "overview") {
-//			this.actor.height = Math.floor(monitor.height * 0.8);//200; //FIXME pas sérieux
-//		} else {
-			this.actor.height = Math.floor(monitor.height * 0.9); //FIXME pas sérieux
-//		}
+		this.actor.width = Math.floor(monitor.width * 0.5 - (PADDING[2] + PADDING[3]) * 0.5);
+		this.actor.height = Math.floor(monitor.height - PADDING[0] - PADDING[1]);
 		
 		this.setScrollviewposition();
 		
@@ -738,20 +731,10 @@ const RecentFilesLayout = new Lang.Class({
 	
 	setScrollviewposition: function() {
 		let monitor = Main.layoutManager.primaryMonitor;
-		
-		
-//		if (SETTINGS.get_string('position') == "overview") {
-//			this.actor.set_position(
-//				monitor.x + Math.floor(monitor.width/2 + PADDING * 0.5),
-//				monitor.y + Math.floor(monitor.height*0.55) - Math.floor(this.actor.height/2)
-//			);
-//		} else {
-			this.actor.set_position(
-				monitor.x + Math.floor(monitor.width/2 + PADDING * 0.5),
-				monitor.y + Math.floor(monitor.height/2) - Math.floor(this.actor.height/2)
-			);
-//		}
-		
+		this.actor.set_position(
+			monitor.x + Math.floor(monitor.width/2 + PADDING[0] * 0.5),
+			monitor.y + Math.floor(PADDING[2])
+		);
 	},
 });
 
@@ -917,13 +900,16 @@ let SETTINGS;
 
 let RECENT_MANAGER;
 let PLACES_MANAGER;
-let PADDING;
+let PADDING = [];
+let POSITION;
 
 //-------------------------------------------------------
 
 function enable() {
 	
 	SETTINGS = Convenience.getSettings('org.gnome.shell.extensions.places-files-desktop');
+	
+	POSITION = SETTINGS.get_string('position');
 	
 	Main.layoutManager.PLACES_ACTOR = new St.ScrollView({
 		x_fill: true,
@@ -936,24 +922,27 @@ function enable() {
 		hscrollbar_policy: Gtk.PolicyType.NEVER,
 	});
 	
-	PADDING = SETTINGS.get_int('padding');
+	PADDING = [
+		SETTINGS.get_int('top-padding'),
+		SETTINGS.get_int('bottom-padding'),
+		SETTINGS.get_int('left-padding'),
+		SETTINGS.get_int('right-padding')
+	];
 	let monitor = Main.layoutManager.primaryMonitor;
 	
 	Main.layoutManager.PLACES_GRID = new PlacesGrid();
 	Main.layoutManager.RECENT_FILES_LIST = new RecentFilesLayout();
 	
-//	if (SETTINGS.get_string('position') == "overview") {
+//	if (POSITION == "overview") {
 //		//TODO		
 //	} else {
 	
-		Main.layoutManager.PLACES_ACTOR.width = Math.floor(monitor.width * 0.5 - Math.abs(PADDING) * 0.5) - 2;
-		Main.layoutManager.PLACES_ACTOR.height = Math.floor(monitor.height * 0.9);//8); //FIXME pas sérieux
+		Main.layoutManager.PLACES_ACTOR.width = Math.floor(monitor.width * 0.5 - (PADDING[2] + PADDING[3]) * 0.5);
+		Main.layoutManager.PLACES_ACTOR.height = Math.floor(monitor.height - PADDING[0] - PADDING[1]);
 		
-		let tempPadding = 0;
-		if(PADDING > 0) tempPadding = PADDING;
 		Main.layoutManager.PLACES_ACTOR.set_position(
-			monitor.x + Math.floor(tempPadding),
-			monitor.y + Math.floor(monitor.height/2 - Main.layoutManager.PLACES_ACTOR.height/2)
+			monitor.x + Math.floor(PADDING[0]),
+			monitor.y + Math.floor(PADDING[2])
 		);
 		
 		Main.layoutManager.PLACES_ACTOR.add_actor(Main.layoutManager.PLACES_GRID.actor);
