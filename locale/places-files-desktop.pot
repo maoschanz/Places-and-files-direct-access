@@ -47,13 +47,70 @@ msgstr ""
 msgid "Empty"
 msgstr ""
 
-msgid "Appearance"
+msgid "Clear"
 msgstr ""
 
-msgid "Filters"
+msgid "Open parent folder"
+msgstr ""
+
+msgid "Type a name..."
+msgstr ""
+
+msgid "Copy path"
+msgstr ""
+
+msgid "Remove from the list"
+msgstr ""
+
+msgid "Report bugs or ideas"
+msgstr ""
+
+msgid "Search"
+msgstr ""
+
+msgid "Filtering"
+msgstr ""
+
+msgid "Position"
+msgstr ""
+
+msgid "Padding"
+msgstr ""
+
+msgid "Top padding:"
+msgstr ""
+
+msgid "Bottom padding:"
+msgstr ""
+
+msgid "Left padding:"
+msgstr ""
+
+msgid "Right padding:"
+msgstr ""
+
+msgid "Display on:"
+msgstr ""
+
+msgid "Desktop"
+msgstr ""
+
+msgid "Empty overview"
+msgstr ""
+
+msgid "Others"
+msgstr ""
+
+msgid "Icons"
 msgstr ""
 
 msgid "About"
+msgstr ""
+
+msgid "Convenient access to files"
+msgstr ""
+
+msgid "Easy access to devices, bookmarks and recent files."
 msgstr ""
 
 msgid "Places icon size:"
@@ -65,10 +122,7 @@ msgstr ""
 msgid "Number of recent files listed:"
 msgstr ""
 
-msgid "Lateral padding:"
-msgstr ""
-
-msgid "Report bugs or ideas"
+msgid "Search in paths:"
 msgstr ""
 
 msgid "Type here to search..."
@@ -80,14 +134,3 @@ msgstr ""
 msgid "All files"
 msgstr ""
 
-msgid "Clear"
-msgstr ""
-
-msgid "Open parent folder"
-msgstr ""
-
-msgid "Type a name..."
-msgstr ""
-
-msgid "Remove from the list"
-msgstr ""
