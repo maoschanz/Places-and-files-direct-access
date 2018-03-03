@@ -12,9 +12,6 @@ const Gtk = imports.gi.Gtk;
 const Util = imports.misc.util;
 const ShellMountOperation = imports.ui.shellMountOperation;
 const Signals = imports.signals;
-//const Tweener = imports.ui.tweener;
-//const Workspace = imports.ui.workspace;
-//const Overview = imports.ui.overview; //??
 
 const Clipboard = St.Clipboard.get_default();
 const CLIPBOARD_TYPE = St.ClipboardType.CLIPBOARD;
@@ -42,6 +39,29 @@ function init() {
 function trierDate(x,y) {
 	return y.get_modified() - x.get_modified();
 }
+
+//-------------------------------------------------
+
+function injectToFunction(parent, name, func) {
+	let origin = parent[name];
+	parent[name] = function() {
+		let ret;
+		ret = origin.apply(this, arguments);
+			if (ret === undefined)
+				ret = func.apply(this, arguments);
+			return ret;
+		}
+	return origin;
+}
+
+function removeInjection(object, injection, name) {
+	if (injection[name] === undefined)
+		delete object[name];
+	else
+		object[name] = injection[name];
+}
+
+let injections=[];
 
 //-------------------------------------------------
 
@@ -382,7 +402,11 @@ const PlacesGrid = new Lang.Class({
 		this.actor.y_fill = true;
 		this.actor.x_align = St.Align.MIDDLE;
 		this.actor.y_align = St.Align.MIDDLE;
-		this.actor.height = Math.floor(monitor.height * 0.9 - 10); //FIXME pas sérieux
+//		this.actor.height = Math.floor(monitor.height * 0.9 - 10); //FIXME pas sérieux
+		
+		
+//		this.actor.width = Math.floor(monitor.width * 0.5 - (PADDING[2] + PADDING[3]) * 0.5);
+		this.actor.height = Math.floor(monitor.height - PADDING[0] - PADDING[1]) - 2;
 		
 		this._placesItem = new Array();
 		
@@ -732,8 +756,8 @@ const RecentFilesLayout = new Lang.Class({
 	setScrollviewposition: function() {
 		let monitor = Main.layoutManager.primaryMonitor;
 		this.actor.set_position(
-			monitor.x + Math.floor(monitor.width/2 + PADDING[0] * 0.5),
-			monitor.y + Math.floor(PADDING[2])
+			monitor.x + Math.floor(monitor.width/2 + PADDING[2] * 0.5),
+			monitor.y + Math.floor(PADDING[0])
 		);
 	},
 });
@@ -902,6 +926,7 @@ let RECENT_MANAGER;
 let PLACES_MANAGER;
 let PADDING = [];
 let POSITION;
+let SIGNAUX = [];
 
 //-------------------------------------------------------
 
@@ -933,24 +958,36 @@ function enable() {
 	Main.layoutManager.PLACES_GRID = new PlacesGrid();
 	Main.layoutManager.RECENT_FILES_LIST = new RecentFilesLayout();
 	
-//	if (POSITION == "overview") {
-//		//TODO		
-//	} else {
+	Main.layoutManager.PLACES_ACTOR.width = Math.floor((monitor.width - PADDING[2] - PADDING[3]) * 0.5);
+	Main.layoutManager.PLACES_ACTOR.height = Math.floor(monitor.height - PADDING[0] - PADDING[1]);
 	
-		Main.layoutManager.PLACES_ACTOR.width = Math.floor(monitor.width * 0.5 - (PADDING[2] + PADDING[3]) * 0.5);
-		Main.layoutManager.PLACES_ACTOR.height = Math.floor(monitor.height - PADDING[0] - PADDING[1]);
+	Main.layoutManager.PLACES_ACTOR.set_position(
+		monitor.x + Math.floor(PADDING[2]),
+		monitor.y + Math.floor(PADDING[0])
+	);
+	
+	if (POSITION == "overview") {
 		
-		Main.layoutManager.PLACES_ACTOR.set_position(
-			monitor.x + Math.floor(PADDING[0]),
-			monitor.y + Math.floor(PADDING[2])
-		);
+		Main.layoutManager.PLACES_ACTOR.add_actor(Main.layoutManager.PLACES_GRID.actor);
+		Main.layoutManager.RECENT_FILES_ACTOR = Main.layoutManager.RECENT_FILES_LIST.actor;
 		
+		Main.layoutManager.overviewGroup.add_actor(Main.layoutManager.PLACES_ACTOR);
+		Main.layoutManager.overviewGroup.add_actor(Main.layoutManager.RECENT_FILES_ACTOR);
+		
+		SIGNAUX[0] = Main.overview.connect('showing', Lang.bind(this, updateVisibility));
+		SIGNAUX[1] = global.screen.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
+		SIGNAUX[2] = global.window_manager.connect('switch-workspace', Lang.bind(this, updateVisibility));
+		SIGNAUX[3] = Main.overview.viewSelector._showAppsButton.connect('notify::checked', Lang.bind(this, updateVisibility));
+		SIGNAUX[4] = Main.overview.viewSelector._text.connect('text-changed', Lang.bind(this, updateVisibility));
+		
+	} else {
+	
 		Main.layoutManager.PLACES_ACTOR.add_actor(Main.layoutManager.PLACES_GRID.actor);
 		Main.layoutManager.RECENT_FILES_ACTOR = Main.layoutManager.RECENT_FILES_LIST.actor;
 		
 		Main.layoutManager._backgroundGroup.add_actor(Main.layoutManager.PLACES_ACTOR);
 		Main.layoutManager._backgroundGroup.add_actor(Main.layoutManager.RECENT_FILES_ACTOR);
-//	}
+	}
 }
 
 //-------------------------------------------------
@@ -966,7 +1003,30 @@ function disable() {
 //	Main.layoutManager.RECENT_FILES_ACTOR = null;
 //	Main.layoutManager.PLACES_GRID = null;
 //	Main.layoutManager.RECENT_FILES_LIST = null;
+
+	if (SIGNAUX != []) {
+		Main.overview.disconnect(SIGNAUX[0]);
+		global.screen.disconnect(SIGNAUX[1]);
+		global.window_manager.disconnect(SIGNAUX[2]);
+		Main.overview.viewSelector._showAppsButton.disconnect(SIGNAUX[3]);
+		Main.overview.viewSelector._text.disconnect(SIGNAUX[4]);
+	}
 }
 
 //-------------------------------------------------
+
+function updateVisibility() {
+	if (Main.overview.viewSelector._activePage != Main.overview.viewSelector._workspacesPage) {
+		Main.layoutManager.PLACES_ACTOR.visible = false;
+		Main.layoutManager.RECENT_FILES_ACTOR.visible = false;
+		return;
+	}
+	if (global.screen.get_workspace_by_index(global.screen.get_active_workspace_index()).list_windows() == '') {
+		Main.layoutManager.PLACES_ACTOR.visible = true;
+		Main.layoutManager.RECENT_FILES_ACTOR.visible = true;
+	} else {
+		Main.layoutManager.PLACES_ACTOR.visible = false;
+		Main.layoutManager.RECENT_FILES_ACTOR.visible = false;
+	}
+}
 

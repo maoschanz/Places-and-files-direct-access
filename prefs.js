@@ -318,7 +318,7 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		
 		let TopPadding = new Gtk.SpinButton();
 		TopPadding.set_sensitive(true);
-		TopPadding.set_range(0, 100);
+		TopPadding.set_range(0, 300);
 		TopPadding.set_value(0);
 		TopPadding.set_value(this.SETTINGS.get_int('top-padding'));
 		TopPadding.set_increments(1, 2);
@@ -343,7 +343,7 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		
 		let BottomPadding = new Gtk.SpinButton();
 		BottomPadding.set_sensitive(true);
-		BottomPadding.set_range(0, 100);
+		BottomPadding.set_range(0, 300);
 		BottomPadding.set_value(0);
 		BottomPadding.set_value(this.SETTINGS.get_int('bottom-padding'));
 		BottomPadding.set_increments(1, 2);
@@ -368,7 +368,7 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		
 		let LeftPadding = new Gtk.SpinButton();
 		LeftPadding.set_sensitive(true);
-		LeftPadding.set_range(0, 100);
+		LeftPadding.set_range(0, 300);
 		LeftPadding.set_value(0);
 		LeftPadding.set_value(this.SETTINGS.get_int('left-padding'));
 		LeftPadding.set_increments(1, 2);
@@ -393,7 +393,7 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		
 		let RightPadding = new Gtk.SpinButton();
 		RightPadding.set_sensitive(true);
-		RightPadding.set_range(0, 100);
+		RightPadding.set_range(0, 300);
 		RightPadding.set_value(0);
 		RightPadding.set_value(this.SETTINGS.get_int('right-padding'));
 		RightPadding.set_increments(1, 2);
