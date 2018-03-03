@@ -26,10 +26,18 @@ const _ = Gettext.gettext;
 
 //-------------------------------------------------
 
+let RECENT_MANAGER;
+let PLACES_MANAGER;
+let SETTINGS;
+let PADDING = [];
+let POSITION;
+let SIGNAUX = [];
+
+//------------------------------------------------
+
 function init() {
 	Convenience.initTranslations();
 	
-//	SETTINGS = Convenience.getSettings('org.gnome.shell.extensions.places-files-desktop');
 	PLACES_MANAGER = new PlaceDisplay.PlacesManager();
 	RECENT_MANAGER = new Gtk.RecentManager();
 }
@@ -39,29 +47,6 @@ function init() {
 function trierDate(x,y) {
 	return y.get_modified() - x.get_modified();
 }
-
-//-------------------------------------------------
-
-function injectToFunction(parent, name, func) {
-	let origin = parent[name];
-	parent[name] = function() {
-		let ret;
-		ret = origin.apply(this, arguments);
-			if (ret === undefined)
-				ret = func.apply(this, arguments);
-			return ret;
-		}
-	return origin;
-}
-
-function removeInjection(object, injection, name) {
-	if (injection[name] === undefined)
-		delete object[name];
-	else
-		object[name] = injection[name];
-}
-
-let injections=[];
 
 //-------------------------------------------------
 
@@ -402,14 +387,10 @@ const PlacesGrid = new Lang.Class({
 		this.actor.y_fill = true;
 		this.actor.x_align = St.Align.MIDDLE;
 		this.actor.y_align = St.Align.MIDDLE;
-//		this.actor.height = Math.floor(monitor.height * 0.9 - 10); //FIXME pas sérieux
-		
-		
 //		this.actor.width = Math.floor(monitor.width * 0.5 - (PADDING[2] + PADDING[3]) * 0.5);
 		this.actor.height = Math.floor(monitor.height - PADDING[0] - PADDING[1]) - 2;
 		
 		this._placesItem = new Array();
-		
 		PLACES_MANAGER.connect('special-updated', Lang.bind(this, this.redisplay ));
 		PLACES_MANAGER.connect('devices-updated', Lang.bind(this, this.redisplay ));
 		PLACES_MANAGER.connect('network-updated', Lang.bind(this, this.redisplay ));
@@ -422,24 +403,21 @@ const PlacesGrid = new Lang.Class({
 	This is a fork of extension.js from places-menu@gnome-shell-extensions.gcampax.github.com 
 	*/
 	buildItems: function() {
-		
 		this._places = {
 			special: [],
 			devices: [],
 			bookmarks: [],
 			network: [],
 		};
-		
 		this.buildCategory('special');
 		this.buildCategory('devices');
 		this.buildCategory('bookmarks');
 		this.buildCategory('network');
-		
 		for(var i = 0; i < this._placesItem.length; i++) {
 			this.addItem(this._placesItem[i]);
 		}
 	},
-	   
+	
 	buildCategory: function(id) { 
 		let places = PLACES_MANAGER.get(id);
 
@@ -653,14 +631,13 @@ const RecentFilesHeader = new Lang.Class({
 				y_align: Clutter.ActorAlign.CENTER,
 			}),
 		});
-		
 		this.searchEntry.get_clutter_text().connect(
 			'text-changed', 
 			Lang.bind(this, this._onSearchTextChanged)
 		);
-		
 		this.searchEntry.connect('secondary-icon-clicked', Lang.bind(this, this._onIconRelease));
-
+		ShellEntry.addContextMenu(this.searchEntry, null);
+		
 		//--------------------------------
 	
 		this.settingsButton = new St.Button({
@@ -683,8 +660,6 @@ const RecentFilesHeader = new Lang.Class({
 		this.settingsButton.connect('clicked', Lang.bind(this, this.openSettings));
 
 		//--------------------------------
-	
-		ShellEntry.addContextMenu(this.searchEntry, null);
 		
 		this.add(new St.BoxLayout({x_expand: true,}));
 		this.add(this.searchEntry);
@@ -770,20 +745,15 @@ const RecentFilesList = new Lang.Class({
 	
 	_init: function() {
 		this.actor = new St.BoxLayout({ style_class: 'search-section', vertical: true, x_expand: true });
-
 		this._resultDisplayBin = new St.Bin({ x_fill: true, y_fill: true });
 		this.actor.add(this._resultDisplayBin, { expand: true });
-
 		this._container = new St.BoxLayout({ style_class: 'search-section-content recent-files-list' });
-
 		this._content = new St.BoxLayout({
 			style_class: 'list-search-results',
 			vertical: true,
 		});
 		this._container.add(this._content, { expand: true });
-
 		this._resultDisplayBin.set_child(this._container);
-		
 		this._buildRecents();
 	},
 	
@@ -920,15 +890,22 @@ Signals.addSignalMethods(RecentFileMenu.prototype);
 
 //-------------------------------------------------------
 
-let SETTINGS;
+function updateVisibility() {
+	if (Main.overview.viewSelector._activePage != Main.overview.viewSelector._workspacesPage) {
+		Main.layoutManager.PLACES_ACTOR.visible = false;
+		Main.layoutManager.RECENT_FILES_ACTOR.visible = false;
+		return;
+	}
+	if (global.screen.get_workspace_by_index(global.screen.get_active_workspace_index()).list_windows() == '') {
+		Main.layoutManager.PLACES_ACTOR.visible = true;
+		Main.layoutManager.RECENT_FILES_ACTOR.visible = true;
+	} else {
+		Main.layoutManager.PLACES_ACTOR.visible = false;
+		Main.layoutManager.RECENT_FILES_ACTOR.visible = false;
+	}
+}
 
-let RECENT_MANAGER;
-let PLACES_MANAGER;
-let PADDING = [];
-let POSITION;
-let SIGNAUX = [];
-
-//-------------------------------------------------------
+//-------------------------------------------------
 
 function enable() {
 	
@@ -1015,18 +992,4 @@ function disable() {
 
 //-------------------------------------------------
 
-function updateVisibility() {
-	if (Main.overview.viewSelector._activePage != Main.overview.viewSelector._workspacesPage) {
-		Main.layoutManager.PLACES_ACTOR.visible = false;
-		Main.layoutManager.RECENT_FILES_ACTOR.visible = false;
-		return;
-	}
-	if (global.screen.get_workspace_by_index(global.screen.get_active_workspace_index()).list_windows() == '') {
-		Main.layoutManager.PLACES_ACTOR.visible = true;
-		Main.layoutManager.RECENT_FILES_ACTOR.visible = true;
-	} else {
-		Main.layoutManager.PLACES_ACTOR.visible = false;
-		Main.layoutManager.RECENT_FILES_ACTOR.visible = false;
-	}
-}
 

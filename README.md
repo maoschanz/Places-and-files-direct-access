@@ -8,7 +8,7 @@ A nice GNOME Shell extension providing an access to devices, bookmarks and recen
 
 Download files and put them in the folder "`~/.local/share/gnome-shell/extensions/places-and-files-on-desktop@maestroschan.fr`"
 
-You may need to restart the gnome shell environnment ("logout and login again", or `alt` + `f2` then `r` then `enter`).
+You may need to restart the gnome shell environment ("logout and login again", or `alt` + `f2` then `r` then `enter`).
 
 ## Features
 
@@ -23,7 +23,13 @@ You may need to restart the gnome shell environnment ("logout and login again", 
 - Unmounting devices
 - Ejecting partitions
 
+Customizable...
+- search
+- position (on the desktop or in the overview)
+- icon sizes
+- position (padding)
+
 ## Available in
 
-- french
-- english
+- Français
+- English
