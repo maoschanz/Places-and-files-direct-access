@@ -187,8 +187,6 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 				, filterSection
 			);
 		}
-		//'blacklist'
-		//available media-types are: text, image, audio, video, application, multipart, message, model (separated with ",").
 		
 		//-------------------------------------------------------
 		

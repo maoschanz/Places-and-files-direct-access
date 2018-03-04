@@ -690,7 +690,6 @@ const RecentFilesHeader = new Lang.Class({
 	
 	_redisplay: function() {
 		this._list._redisplay();
-//		this._onIconRelease(); // non, boucle ? pété ? FIXME
 	},
 });
 
@@ -731,7 +730,7 @@ const RecentFilesLayout = new Lang.Class({
 	setScrollviewposition: function() {
 		let monitor = Main.layoutManager.primaryMonitor;
 		this.actor.set_position(
-			monitor.x + Math.floor(monitor.width/2 + PADDING[2] * 0.5),
+			monitor.x + Math.floor((monitor.width + PADDING[2] - PADDING[3]) * 0.5),
 			monitor.y + Math.floor(PADDING[0])
 		);
 	},
@@ -956,6 +955,7 @@ function enable() {
 		SIGNAUX[2] = global.window_manager.connect('switch-workspace', Lang.bind(this, updateVisibility));
 		SIGNAUX[3] = Main.overview.viewSelector._showAppsButton.connect('notify::checked', Lang.bind(this, updateVisibility));
 		SIGNAUX[4] = Main.overview.viewSelector._text.connect('text-changed', Lang.bind(this, updateVisibility));
+		SIGNAUX[5] = global.screen.connect('restacked', Lang.bind(this, updateVisibility));
 		
 	} else {
 	
@@ -972,14 +972,6 @@ function enable() {
 function disable() {
 	Main.layoutManager._backgroundGroup.remove_actor(Main.layoutManager.PLACES_ACTOR);
 	Main.layoutManager._backgroundGroup.remove_actor(Main.layoutManager.RECENT_FILES_ACTOR);
-	
-	// Actually deleting objects triggers a dramatic GS crash, so this has to stay commented.
-//	Main.layoutManager.PLACES_ACTOR.destroy();
-//	Main.layoutManager.RECENT_FILES_ACTOR.destroy();
-//	Main.layoutManager.PLACES_ACTOR = null;
-//	Main.layoutManager.RECENT_FILES_ACTOR = null;
-//	Main.layoutManager.PLACES_GRID = null;
-//	Main.layoutManager.RECENT_FILES_LIST = null;
 
 	if (SIGNAUX != []) {
 		Main.overview.disconnect(SIGNAUX[0]);
@@ -987,6 +979,7 @@ function disable() {
 		global.window_manager.disconnect(SIGNAUX[2]);
 		Main.overview.viewSelector._showAppsButton.disconnect(SIGNAUX[3]);
 		Main.overview.viewSelector._text.disconnect(SIGNAUX[4]);
+		global.screen.disconnect(SIGNAUX[5]);
 	}
 }
 
