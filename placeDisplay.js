@@ -227,9 +227,10 @@ var PlacesManager = new Lang.Class({
 		};
 
 		this._settings = new Gio.Settings({ schema_id: BACKGROUND_SCHEMA });
-		this._showDesktopIconsChangedId =
-			this._settings.connect('changed::show-desktop-icons',
-								   Lang.bind(this, this._updateSpecials));
+		this._showDesktopIconsChangedId = this._settings.connect(
+			'changed::show-desktop-icons',
+			Lang.bind(this, this._updateSpecials)
+		);
 		this._updateSpecials();
 
 		/*

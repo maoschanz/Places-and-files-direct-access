@@ -340,7 +340,6 @@ const PlaceButtonMenu = new Lang.Class({
 			let child = trash_file.get_child(child_info.get_name());
 			child.delete(null);
 		}
-		
 		this._source.placeIcon.update();
 	},
 	
@@ -438,22 +437,21 @@ const PlaceIcon = new Lang.Class({
 	Extends: IconGrid.BaseIcon,
 	
 	_init: function(info) {
-		this.parent(
-			info.name,
-			{ createIcon:
-				Lang.bind(this, function() {
-					return (new St.Icon({
-						gicon: info.icon,
-						icon_size: SETTINGS.get_int('places-icon-size')
-					}));
-				})
-			}
-		);
+		this._info = info;
+		this.parent( this._info.name );
 		this.label.style_class = 'place-label';
 	},
 	
+	createIcon: function() {
+		return (new St.Icon({
+			gicon: this._info.icon,
+			icon_size: SETTINGS.get_int('places-icon-size')
+		}));
+	},
+	
 	update: function() {
-		
+		PLACES_MANAGER._updateSpecials();
+		this.createIcon();
 	},
 });
 
@@ -942,6 +940,8 @@ function enable() {
 		monitor.y + Math.floor(PADDING[0])
 	);
 	
+	SIGNAUX = [];
+	
 	if (POSITION == "overview") {
 		
 		Main.layoutManager.PLACES_ACTOR.add_actor(Main.layoutManager.PLACES_GRID.actor);
@@ -958,7 +958,6 @@ function enable() {
 		SIGNAUX[5] = global.screen.connect('restacked', Lang.bind(this, updateVisibility));
 		
 	} else {
-	
 		Main.layoutManager.PLACES_ACTOR.add_actor(Main.layoutManager.PLACES_GRID.actor);
 		Main.layoutManager.RECENT_FILES_ACTOR = Main.layoutManager.RECENT_FILES_LIST.actor;
 		
@@ -973,7 +972,7 @@ function disable() {
 	Main.layoutManager._backgroundGroup.remove_actor(Main.layoutManager.PLACES_ACTOR);
 	Main.layoutManager._backgroundGroup.remove_actor(Main.layoutManager.RECENT_FILES_ACTOR);
 
-	if (SIGNAUX != []) {
+	if (SIGNAUX.length != 0) {
 		Main.overview.disconnect(SIGNAUX[0]);
 		global.screen.disconnect(SIGNAUX[1]);
 		global.window_manager.disconnect(SIGNAUX[2]);
@@ -984,5 +983,4 @@ function disable() {
 }
 
 //-------------------------------------------------
-
 
