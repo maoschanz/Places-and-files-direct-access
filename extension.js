@@ -380,15 +380,6 @@ const PlacesGrid = new Lang.Class({
 		
 		let monitor = Main.layoutManager.primaryMonitor;
 
-		this.actor.x_expand = true;
-		this.actor.y_expand = true;
-		this.actor.x_fill = true;
-		this.actor.y_fill = true;
-		this.actor.x_align = St.Align.MIDDLE;
-		this.actor.y_align = St.Align.MIDDLE;
-//		this.actor.width = Math.floor(monitor.width * 0.5 - (PADDING[2] + PADDING[3]) * 0.5);
-		this.actor.height = Math.floor(monitor.height - PADDING[0] - PADDING[1]) - 2;
-		
 		this._placesItem = new Array();
 		PLACES_MANAGER.connect('special-updated', Lang.bind(this, this.redisplay ));
 		PLACES_MANAGER.connect('devices-updated', Lang.bind(this, this.redisplay ));
@@ -691,49 +682,6 @@ const RecentFilesHeader = new Lang.Class({
 	},
 });
 
-const RecentFilesLayout = new Lang.Class({
-	Name: 'RecentFilesLayout',
-	
-	_init: function() {
-	
-		this.actor = new St.BoxLayout({
-			vertical: true,
-		});
-		
-		this.scrollview = new St.ScrollView({
-			x_fill: true,
-			y_fill: true,
-			x_align: St.Align.MIDDLE,
-			y_align: St.Align.MIDDLE,
-			x_expand: true,
-			y_expand: true,
-//			style_class: 'vfade', //FIXME ??
-			hscrollbar_policy: Gtk.PolicyType.NEVER,
-		});
-		
-		let monitor = Main.layoutManager.primaryMonitor;
-		this.actor.width = Math.floor(monitor.width * 0.5 - (PADDING[2] + PADDING[3]) * 0.5);
-		this.actor.height = Math.floor(monitor.height - PADDING[0] - PADDING[1]);
-		
-		this.setScrollviewposition();
-		
-		let list = new RecentFilesList();
-		let header = new RecentFilesHeader(list);
-		
-		this.actor.add(header);
-		this.scrollview.add_actor(list.actor);
-		this.actor.add(this.scrollview);
-	},
-	
-	setScrollviewposition: function() {
-		let monitor = Main.layoutManager.primaryMonitor;
-		this.actor.set_position(
-			monitor.x + Math.floor((monitor.width + PADDING[2] - PADDING[3]) * 0.5),
-			monitor.y + Math.floor(PADDING[0])
-		);
-	},
-});
-
 /*
 This class is a fork of ListSearchResult or SearchResult (in search.js version 3.26)
 */
@@ -886,23 +834,131 @@ const RecentFileMenu = new Lang.Class({
 Signals.addSignalMethods(RecentFileMenu.prototype);
 
 //-------------------------------------------------------
+//-------------------------------------------------------
+//-------------------------------------------------------
+
+const ConvenientLayout = new Lang.Class({
+	Name: 'ConvenientLayout',
+	
+	_init: function () {
+		this.actor = new St.BoxLayout({
+			//main actor of the extension
+			vertical: false,
+		});
+		
+		this.placesGrid = new PlacesGrid();
+		this.recentFilesList = new RecentFilesList();
+		this.headerBox = new RecentFilesHeader(this.recentFilesList); //FIXME donner this en paramètre
+//		this.starredFilesList = ;
+//		this.desktopFilesList = ;
+		
+		this.placesGridScrollview = new St.ScrollView({
+			x_fill: true,
+			y_fill: true,
+			x_align: St.Align.MIDDLE,
+			y_align: St.Align.MIDDLE,
+			x_expand: true,
+			y_expand: true,
+			style_class: 'vfade', //lui bug moins
+			hscrollbar_policy: Gtk.PolicyType.NEVER,
+		});
+	
+		this.fileListsWithHeader = new St.BoxLayout({
+			vertical: true,
+		});
+		
+		this.fileListsOnly = new St.BoxLayout({
+			vertical: true,
+		});
+		
+		this.recentFilesScrollview = new St.ScrollView({
+			x_fill: true,
+			y_fill: true,
+			x_align: St.Align.MIDDLE,
+			y_align: St.Align.MIDDLE,
+			x_expand: true,
+			y_expand: true,
+//			style_class: 'vfade', //FIXME ??
+			hscrollbar_policy: Gtk.PolicyType.NEVER,
+		});
+		
+		//------------------------
+		
+		this.placesGridScrollview.add_actor(this.placesGrid.actor);
+		this.recentFilesScrollview.add_actor(this.recentFilesList.actor);
+		this.fileListsOnly.add(this.recentFilesScrollview);
+		
+		this.fileListsWithHeader.add(this.headerBox);
+		this.fileListsWithHeader.add(this.fileListsOnly);
+		
+		this.actor.add(this.placesGridScrollview); 
+		this.actor.add(this.fileListsWithHeader);
+		
+		//------------------------
+		
+		this.applyPadding();
+	},
+	
+	adaptToMonitor: function () {
+		//change verticalness of boxes
+		if (this.actor.width < this.actor.height) {
+			this.actor.vertical = true;
+			this.fileListsOnly.vertical = true;
+		} else {
+			this.actor.vertical = false;
+			this.fileListsOnly.vertical = false;
+		}
+		
+		//change size of internal actors
+		this.placesGridScrollview.width = Math.floor(this.actor.width / 2);
+		this.fileListsWithHeader.width = Math.floor(this.actor.width / 2);
+		
+	},
+	
+	applyPadding: function () {
+		//change global position and size of the main actor
+		
+		let monitor = Main.layoutManager.primaryMonitor;
+		this.actor.width = Math.floor(monitor.width - (PADDING[2] + PADDING[3]));
+		this.actor.height = Math.floor(monitor.height - (PADDING[0] + PADDING[1]));
+		this.actor.set_position(
+			monitor.x + Math.floor(PADDING[2]),
+			monitor.y + Math.floor(PADDING[0])
+		);
+		
+		this.adaptToMonitor();
+	},
+	
+	hide: function () {
+		this.actor.visible = false;
+	},
+	
+	show: function () {
+		this.actor.visible = true;
+	},
+	
+	destroy: function () {
+		
+	},
+});
+
+//-------------------------------------------------------
 
 function updateVisibility() {
 	if (Main.overview.viewSelector._activePage != Main.overview.viewSelector._workspacesPage) {
-		Main.layoutManager.PLACES_ACTOR.visible = false;
-		Main.layoutManager.RECENT_FILES_ACTOR.visible = false;
+		MyConvenientLayout.hide();
 		return;
 	}
 	if (global.screen.get_workspace_by_index(global.screen.get_active_workspace_index()).list_windows() == '') {
-		Main.layoutManager.PLACES_ACTOR.visible = true;
-		Main.layoutManager.RECENT_FILES_ACTOR.visible = true;
+		MyConvenientLayout.show();
 	} else {
-		Main.layoutManager.PLACES_ACTOR.visible = false;
-		Main.layoutManager.RECENT_FILES_ACTOR.visible = false;
+		MyConvenientLayout.hide();
 	}
 }
 
 //-------------------------------------------------
+
+let MyConvenientLayout;
 
 function enable() {
 	
@@ -910,45 +966,19 @@ function enable() {
 	
 	POSITION = SETTINGS.get_string('position');
 	
-	Main.layoutManager.PLACES_ACTOR = new St.ScrollView({
-		x_fill: true,
-		y_fill: true,
-		x_align: St.Align.MIDDLE,
-		y_align: St.Align.MIDDLE,
-		x_expand: true,
-		y_expand: true,
-		style_class: 'vfade',
-		hscrollbar_policy: Gtk.PolicyType.NEVER,
-	});
-	
 	PADDING = [
 		SETTINGS.get_int('top-padding'),
 		SETTINGS.get_int('bottom-padding'),
 		SETTINGS.get_int('left-padding'),
 		SETTINGS.get_int('right-padding')
 	];
-	let monitor = Main.layoutManager.primaryMonitor;
-	
-	Main.layoutManager.PLACES_GRID = new PlacesGrid();
-	Main.layoutManager.RECENT_FILES_LIST = new RecentFilesLayout();
-	
-	Main.layoutManager.PLACES_ACTOR.width = Math.floor((monitor.width - PADDING[2] - PADDING[3]) * 0.5);
-	Main.layoutManager.PLACES_ACTOR.height = Math.floor(monitor.height - PADDING[0] - PADDING[1]);
-	
-	Main.layoutManager.PLACES_ACTOR.set_position(
-		monitor.x + Math.floor(PADDING[2]),
-		monitor.y + Math.floor(PADDING[0])
-	);
+
+	MyConvenientLayout = new ConvenientLayout();
 	
 	SIGNAUX = [];
 	
-	if (POSITION == "overview") {
-		
-		Main.layoutManager.PLACES_ACTOR.add_actor(Main.layoutManager.PLACES_GRID.actor);
-		Main.layoutManager.RECENT_FILES_ACTOR = Main.layoutManager.RECENT_FILES_LIST.actor;
-		
-		Main.layoutManager.overviewGroup.add_actor(Main.layoutManager.PLACES_ACTOR);
-		Main.layoutManager.overviewGroup.add_actor(Main.layoutManager.RECENT_FILES_ACTOR);
+	if (POSITION == 'overview') {
+		Main.layoutManager.overviewGroup.add_actor(MyConvenientLayout.actor);
 		
 		SIGNAUX[0] = Main.overview.connect('showing', Lang.bind(this, updateVisibility));
 		SIGNAUX[1] = global.screen.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
@@ -958,20 +988,21 @@ function enable() {
 		SIGNAUX[5] = global.screen.connect('restacked', Lang.bind(this, updateVisibility));
 		
 	} else {
-		Main.layoutManager.PLACES_ACTOR.add_actor(Main.layoutManager.PLACES_GRID.actor);
-		Main.layoutManager.RECENT_FILES_ACTOR = Main.layoutManager.RECENT_FILES_LIST.actor;
-		
-		Main.layoutManager._backgroundGroup.add_actor(Main.layoutManager.PLACES_ACTOR);
-		Main.layoutManager._backgroundGroup.add_actor(Main.layoutManager.RECENT_FILES_ACTOR);
+		Main.layoutManager._backgroundGroup.add_actor(MyConvenientLayout.actor);
+		MyConvenientLayout.show();
 	}
 }
 
 //-------------------------------------------------
 
 function disable() {
-	Main.layoutManager._backgroundGroup.remove_actor(Main.layoutManager.PLACES_ACTOR);
-	Main.layoutManager._backgroundGroup.remove_actor(Main.layoutManager.RECENT_FILES_ACTOR);
 
+	if (POSITION == 'overview') {
+		Main.layoutManager.overviewGroup.remove_actor(MyConvenientLayout.actor);
+	} else {
+		Main.layoutManager._backgroundGroup.remove_actor(MyConvenientLayout.actor);
+	}	
+		
 	if (SIGNAUX.length != 0) {
 		Main.overview.disconnect(SIGNAUX[0]);
 		global.screen.disconnect(SIGNAUX[1]);
