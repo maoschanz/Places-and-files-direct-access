@@ -456,12 +456,12 @@ const ConvenientLayout = new Lang.Class({
 		
 		this.placesGrid = new PlacesGrid();
 		this.recentFilesList = new RecentFiles.RecentFilesList();
-		this.headerBox = new RecentFiles.RecentFilesHeader(this.recentFilesList); //FIXME donner this en paramètre
 //		if (/* nautilus 3.28 ? What is the exact requirement ? */) {
 //			this.starredFilesList = '??????'; //TODO
 //		} else {
-			//this.starredFilesList = new RecentFiles.DesktopFilesList();
+			this.starredFilesList = new RecentFiles.DesktopFilesList();
 //		}
+		this.headerBox = new RecentFiles.HeaderBox(this);
 		
 		this.placesGridScrollview = new St.ScrollView({
 			x_fill: true,
@@ -480,6 +480,7 @@ const ConvenientLayout = new Lang.Class({
 		
 		this.fileListsOnly = new St.BoxLayout({
 			vertical: true,
+			style: 'spacing: 5px;',
 		});
 		
 		this.recentFilesScrollview = new St.ScrollView({
@@ -493,25 +494,26 @@ const ConvenientLayout = new Lang.Class({
 			hscrollbar_policy: Gtk.PolicyType.NEVER,
 		});
 		
-//		this.starredFilesScrollview = new St.ScrollView({
-//			x_fill: true,
-//			y_fill: true,
-//			x_align: St.Align.MIDDLE,
-//			y_align: St.Align.MIDDLE,
-//			x_expand: true,
-//			y_expand: true,
-//			style: 'background-color: red;',
-////			style_class: 'vfade', //FIXME ??
-//			hscrollbar_policy: Gtk.PolicyType.NEVER,
-//		});
+		this.starredFilesScrollview = new St.ScrollView({
+			x_fill: true,
+			y_fill: true,
+			x_align: St.Align.MIDDLE,
+			y_align: St.Align.MIDDLE,
+			x_expand: true,
+			y_expand: true,
+//			style_class: 'vfade', //FIXME ??
+			hscrollbar_policy: Gtk.PolicyType.NEVER,
+		});
 		
 		//------------------------
 		
 		this.placesGridScrollview.add_actor(this.placesGrid.actor);
 		this.recentFilesScrollview.add_actor(this.recentFilesList.actor);
-//		this.starredFilesScrollview.add_actor(this.starredFilesList.actor);
+		this.starredFilesScrollview.add_actor(this.starredFilesList.actor);
 		this.fileListsOnly.add(this.recentFilesScrollview);
-//		this.fileListsOnly.add(this.starredFilesScrollview);
+		if (SETTINGS.get_boolean('starred')) {
+			this.fileListsOnly.add(this.starredFilesScrollview);
+		}
 		
 		this.fileListsWithHeader.add(this.headerBox);
 		this.fileListsWithHeader.add(this.fileListsOnly);
@@ -531,7 +533,7 @@ const ConvenientLayout = new Lang.Class({
 			this.fileListsOnly.vertical = true;
 		} else {
 			this.actor.vertical = false;
-			this.fileListsOnly.vertical = false;
+			this.fileListsOnly.vertical = true; //FIXME
 		}
 		
 		//change size of internal actors
@@ -573,7 +575,7 @@ const ConvenientLayout = new Lang.Class({
 	},
 });
 
-//-------------------------------------------------------
+//------------------------------------------------
 
 function updateVisibility() {
 	if (Main.overview.viewSelector._activePage != Main.overview.viewSelector._workspacesPage) {
@@ -587,7 +589,7 @@ function updateVisibility() {
 	}
 }
 
-//-------------------------------------------------
+//------------------------------------------------
 
 let MyConvenientLayout;
 
@@ -630,7 +632,7 @@ function enable() {
 	}
 }
 
-//-------------------------------------------------
+//------------------------------------------------
 
 function disable() {
 
@@ -654,5 +656,5 @@ function disable() {
 	}
 }
 
-//-------------------------------------------------
+//------------------------------------------------
 

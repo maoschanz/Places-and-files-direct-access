@@ -120,6 +120,7 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		let paddingSection = this.positionPage.add_section(_("Padding"));
 		
 		let iconsSection = this.othersPage.add_section(_("Icons"));
+		let starredSection = this.othersPage.add_section("");
 		let othersSection = this.othersPage.add_section("");
 		
 		//--------------------------------------------------------
@@ -310,6 +311,33 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		numberBox.pack_end(listNumber, false, false, 0);
 		this.othersPage.add_row(numberBox, othersSection);
 		
+		//------------------------------------------------------
+		
+		let labelStarred = _("Starred files:");
+		
+		let starredSwitch = new Gtk.Switch();
+		starredSwitch.set_sensitive(true);
+		starredSwitch.set_state(false);
+		starredSwitch.set_state(this.SETTINGS.get_boolean('starred'));
+		
+		starredSwitch.connect('notify::active', Lang.bind(this, function(w){
+			if (w.active) {
+				this.SETTINGS.set_boolean('starred', true);
+			} else {
+				this.SETTINGS.set_boolean('starred', false);
+			}
+		}));
+		
+		let starredBox = new Gtk.Box({
+			orientation: Gtk.Orientation.HORIZONTAL,
+			spacing: 15,
+			margin: 6,
+			tooltip_text: _("If your system doesn't support file starring, the content of your ~/Desktop folder will be listed instead."),
+		});
+		starredBox.pack_start(new Gtk.Label({ label: labelStarred, use_markup: true, halign: Gtk.Align.START }), false, false, 0);
+		starredBox.pack_end(starredSwitch, false, false, 0);
+		this.searchPage.add_row(starredBox, starredSection);
+
 		//-------------------------------------------------------
 		
 		let labelTopPadding = _("Top padding:");

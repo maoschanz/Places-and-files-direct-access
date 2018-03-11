@@ -17,10 +17,23 @@ const Me = ExtensionUtils.getCurrentExtension();
 const Convenience = Me.imports.convenience;
 const Extension = Me.imports.extension;
 
+const Gettext = imports.gettext.domain('places-files-desktop');
+const _ = Gettext.gettext;
+
 //-------------------------------------------------
+
+const DESKTOP_DIRECTORY = Gio.file_new_for_path(
+	GLib.get_user_special_dir(
+		GLib.UserDirectory.DIRECTORY_DESKTOP
+	)
+);
 
 function trierDate(x,y) {
 	return y.get_modified() - x.get_modified();
+}
+
+function trierNom(l,r) {
+	return l.get_display_name().localeCompare(r.get_display_name());
 }
 
 //--------------------------------------------------------
@@ -163,12 +176,14 @@ var RecentFileButton = new Lang.Class({
 });
 Signals.addSignalMethods(RecentFileButton.prototype);
 
-var RecentFilesHeader = new Lang.Class({
-	Name: 'RecentFilesHeader',
+var HeaderBox = new Lang.Class({
+	Name: 'HeaderBox',
 	Extends: St.BoxLayout,
 	
-	_init: function(list) {
-		this._list = list;
+	_init: function(layout) {
+		
+		this._listRecent = layout.recentFilesList;
+		this._listStarred = layout.starredFilesList;
 		
 		this.parent({
 			vertical: false,
@@ -190,7 +205,7 @@ var RecentFilesHeader = new Lang.Class({
 				style_class: 'system-status-icon',
 				y_align: Clutter.ActorAlign.CENTER,
 			}),
-			secondary_icon: new St.Icon({
+			secondary_icon: new St.Icon({ //FIXME 3.18
 				icon_name: 'edit-clear-symbolic',
 				icon_size: 16,
 				style_class: 'system-status-icon',
@@ -201,7 +216,7 @@ var RecentFilesHeader = new Lang.Class({
 			'text-changed', 
 			Lang.bind(this, this._onSearchTextChanged)
 		);
-		this.searchEntry.connect('secondary-icon-clicked', Lang.bind(this, this._onIconRelease));
+		this.searchEntry.connect('secondary-icon-clicked', Lang.bind(this, this._onIconRelease)); //FIXME 3.18
 		ShellEntry.addContextMenu(this.searchEntry, null);
 		
 		//--------------------------------
@@ -244,18 +259,22 @@ var RecentFilesHeader = new Lang.Class({
 	_onSearchTextChanged: function() {
 		let searched = this.searchEntry.get_text().toLowerCase();
 		if (Extension.SETTINGS.get_boolean('search-in-path')) {
-			this._list._files.forEach(function(f){
+			this._listRecent._files.forEach(function(f){
 				f.actor.visible = f.displayedPath.toLowerCase().includes(searched) || f.label.toLowerCase().includes(searched);
 			});
 		} else {
-			this._list._files.forEach(function(f){
+			this._listRecent._files.forEach(function(f){
 				f.actor.visible = f.label.toLowerCase().includes(searched);
 			});
 		}
+		this._listStarred._files.forEach(function(f){
+			f.actor.visible = f.label.toLowerCase().includes(searched);
+		});
 	},
 	
 	_redisplay: function() {
-		this._list._redisplay();
+		this._listRecent._redisplay();
+//		this._listStarred._redisplay(); //TODO
 	},
 });
 
@@ -430,48 +449,160 @@ var DesktopFilesList = new Lang.Class({
 		});
 		this._container.add(this._content, { expand: true });
 		this._resultDisplayBin.set_child(this._container);
-		this._buildRecents();
+		this._buildFiles();
 	},
 	
 	_redisplay: function() {
-//		this._content.destroy_all_children();
-//		this._buildRecents();
+//		TODO
 	},
 	
-	_buildRecents: function() {
-		/* inspired by the code from RecentItems@bananenfisch.net */
-//		let Ritems = Extension.RECENT_MANAGER.get_items();
-//		Ritems.sort(trierDate);
-//		
-//		let blacklistString = Extension.SETTINGS.get_string('blacklist').replace(/\s/g, ""); 
-//		let blacklistList = blacklistString.split(",");
-//		this._files = [];
-//		
-//		for(let i = 0 ; i < Extension.SETTINGS.get_int('number-of-recent-files') ; i++){
-//			if(Ritems[i] == null || Ritems[i] == undefined) {
-//				break;
-//			}
-//			let itemtype = Ritems[i].get_mime_type();
-//			
-//			if (blacklistList.indexOf((itemtype.split("/"))[0]) == -1) {
-//				
-//				let gicon = Gio.content_type_get_icon(itemtype);
-//				/*améliorable ? Gio.File.new_for_uri(****).query_info('standard::(((symbolic-)))icon', 0, null); */
-//				this._files.push(new RecentFileButton(
-//					gicon,
-//					Ritems[i].get_display_name(),
-//					Ritems[i].get_uri()
-//				));
-//				this._content.add( this._files[this._files.length -1].actor );
-//			}
-//		}
+	_buildFiles: function() {
+		let children = DESKTOP_DIRECTORY.enumerate_children('*', 0, null);//, null);
+		
+		this._files = [];
+		
+		let files = [];
+		let dirs = [];
+		let file_info = null;
+		while ((file_info = children.next_file(null)) !== null) {
+			if (file_info.get_is_hidden()) {
+				continue;
+			}
+			if (Gio.FileType.DIRECTORY == file_info.get_file_type()){
+				dirs.push(file_info);
+			} else {
+				files.push(file_info);
+			}
+		}
+		children.close(null);
+
+		dirs.sort(trierNom);
+		dirs.forEach(Lang.bind(this, function(fi) {
+			let f = new DesktopFileButton(fi);
+			this._files.push(f);
+			this._content.add( f.actor );
+		}));
+		files.sort(trierNom);
+		files.forEach(Lang.bind(this, function(fi) {
+			let f = new DesktopFileButton(fi);
+			this._files.push(f);
+			this._content.add( f.actor );
+		}));
 	},
 	
 	destroy() {
-//		Extension.RECENT_MANAGER.disconnect(this.conhandler);
 		this.parent();
 	},
 });
 
+//--------------------------------------------------------
 
+/*
+This class is a fork of ListSearchResult or SearchResult (in search.js version 3.26)
+*/
+var DesktopFileButton = new Lang.Class({
+	Name: 'DesktopFileButton',
+	
+	_init: function(info) {
+		this._info = info;
+		this.label = this._info.get_display_name();
+		this.icon = new St.Icon({
+			gicon: this._info.get_icon(),
+			style_class: 'popup-menu-icon', 
+			icon_size: Extension.SETTINGS.get_int('recent-files-icon-size')
+		});
+		
+		this.actor = new St.Button({
+			reactive: true,
+			can_focus: true,
+			track_hover: true,
+			x_align: St.Align.START,
+			x_fill: true,
+			y_fill: true,
+			style_class: 'list-search-result',
+		});
+
+		this.actor._delegate = this;
+		this._connexion2 = this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
+		
+//		this._menu = null;
+//		this._menuManager = new PopupMenu.PopupMenuManager(this);
+		
+		let content = new St.BoxLayout({
+			style_class: 'list-search-result-content',
+			vertical: false
+		});
+		this.actor.set_child(content);
+
+		let titleBox = new St.BoxLayout({ style_class: 'list-search-result-title' });
+
+		content.add(titleBox, {
+			x_fill: true,
+			y_fill: false,
+			x_align: St.Align.START,
+			y_align: St.Align.MIDDLE
+		});
+
+		if (this.icon) titleBox.add(this.icon);
+
+		let title = new St.Label({ text: this.label });
+		titleBox.add(title, {
+			x_fill: false,
+			y_fill: false,
+			x_align: St.Align.START,
+			y_align: St.Align.MIDDLE
+		});
+
+		this.actor.label_actor = title;
+	},
+	
+	_onButtonPress: function(actor, event) {
+//		let button = event.get_button();
+//		if (button == 1) {
+			this.activate();
+//		} else if (button == 3) {
+//			this.popupMenu();
+//			return Clutter.EVENT_STOP;
+//		}
+		return Clutter.EVENT_PROPAGATE;
+	},
+	
+	activate: function() {
+		Gio.app_info_launch_default_for_uri(
+			'file://' + GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP) + '/' + this._info.get_name(),
+			global.create_app_launch_context(0, -1)
+		);
+	},
+	
+//	_onMenuPoppedDown: function() {
+//		this.actor.sync_hover();
+//		this.emit('menu-state-changed', false);
+//	},
+//	
+//	popupMenu: function() {
+//		this.actor.fake_release();
+
+//		if (!this._menu) {
+//			this._menu = new RecentFileMenu(this);
+//			this._connexion = this._menu.connect('open-state-changed', Lang.bind(this, function (menu, isPoppedUp) {
+//				if (!isPoppedUp) this._onMenuPoppedDown();
+//			}));
+//			this._menuManager.addMenu(this._menu);
+//		}
+
+//		this.emit('menu-state-changed', true);
+//		this.actor.set_hover(true);
+//		this._menu.popup();
+//		this._menuManager.ignoreRelease();
+
+//		return false;
+//	},
+	
+	destroy: function() {
+		this.actor.disconnect(this._connexion2);
+//		this._menu.disconnect(this._connexion);
+		this.parent();
+	},
+});
+Signals.addSignalMethods(DesktopFileButton.prototype);
 
