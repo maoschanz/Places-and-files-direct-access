@@ -51,5 +51,10 @@
       <summary>If the search among recent files should be done based on the file path.</summary>
       <description>If "true", the search among recent files will be done based on the file path; if "false", it will be based on the file name only.</description>
     </key>
+    <key type="b" name="starred">
+      <default>false</default>
+      <summary>If a list of starred files should be displayed.</summary>
+      <description>If the system doesn't support file starring, the ~/Desktop folder content will be listed.</description>
+    </key>
 	</schema>
 </schemalist>
