@@ -31,8 +31,11 @@ let PLACES_MANAGER;
 var SETTINGS;
 let PADDING = [];
 let POSITION;
-let SIGNAUX = [];
+let SIGNAUX_OVERVIEW = [];
 let SIGNAUX_PARAM = [];
+let SIGNAL_MONITOR;
+
+let MyConvenientLayout;
 
 //------------------------------------------------
 
@@ -442,9 +445,23 @@ const PlaceIcon = new Lang.Class({
 });
 
 //-------------------------------------------------------
-//-------------------------------------------------------
-//-------------------------------------------------------
 
+/*
+	This class should only produce 1 single object during the execution.
+	However i'll not verify that, because singleton-related issues are boring.
+	
+	It acts as container, managing how "sub-actors" will be sized and displayed.
+	
+	Built "sub-actors" are:
+	- 1 PlacesGrid (inherits from IconGrid)
+	- 1 HeaderBox (a box with a search entry and a button)
+	- 1 RecentFiles.RecentFilesList (a ton of buttons with menus on them)
+	- Either 1 RecentFiles.DesktopFilesList or 1 RecentFiles.StarredFilesList
+	
+	Actors are put in scrollviews, then scrollviews' width, height, visibility
+	and position are computed depending on user's settings and main monitor size
+	and proportions.
+*/
 const ConvenientLayout = new Lang.Class({
 	Name: 'ConvenientLayout',
 	
@@ -457,7 +474,7 @@ const ConvenientLayout = new Lang.Class({
 		this.placesGrid = new PlacesGrid();
 		this.recentFilesList = new RecentFiles.RecentFilesList();
 //		if (/* nautilus 3.28 ? What is the exact requirement ? */) {
-//			this.starredFilesList = '??????'; //TODO
+//			this.starredFilesList = new RecentFiles.StarredFilesList(); //TODO
 //		} else {
 			this.starredFilesList = new RecentFiles.DesktopFilesList();
 //		}
@@ -511,9 +528,9 @@ const ConvenientLayout = new Lang.Class({
 		this.recentFilesScrollview.add_actor(this.recentFilesList.actor);
 		this.starredFilesScrollview.add_actor(this.starredFilesList.actor);
 		this.fileListsOnly.add(this.recentFilesScrollview);
-		if (SETTINGS.get_boolean('starred')) {
-			this.fileListsOnly.add(this.starredFilesScrollview);
-		}
+		this.fileListsOnly.add(this.starredFilesScrollview);
+		
+		this.updateStarredVisibility();
 		
 		this.fileListsWithHeader.add(this.headerBox);
 		this.fileListsWithHeader.add(this.fileListsOnly);
@@ -523,25 +540,28 @@ const ConvenientLayout = new Lang.Class({
 		
 		//------------------------
 		
-		this.applyPadding();
+		this.adaptToMonitor();
 	},
 	
-	adaptToMonitor: function () {
-		//change verticalness of boxes
+	adaptInternalWidgets: function () {
 		if (this.actor.width < this.actor.height) {
 			this.actor.vertical = true;
 			this.fileListsOnly.vertical = true;
+			this.placesGridScrollview.height = Math.floor(this.actor.height *  0.4);
+			this.fileListsWithHeader.width = Math.floor(this.actor.height * 0.6);
+			this.placesGridScrollview.width = this.actor.width;
+			this.fileListsWithHeader.width = this.actor.width;
 		} else {
 			this.actor.vertical = false;
 			this.fileListsOnly.vertical = true; //FIXME
+			this.placesGridScrollview.height = this.actor.height;
+			this.fileListsWithHeader.height = this.actor.height;
+			this.placesGridScrollview.width = Math.floor(this.actor.width / 2);
+			this.fileListsWithHeader.width = Math.floor(this.actor.width / 2);
 		}
-		
-		//change size of internal actors
-		this.placesGridScrollview.width = Math.floor(this.actor.width / 2);
-		this.fileListsWithHeader.width = Math.floor(this.actor.width / 2);
 	},
 	
-	applyPadding: function () {
+	adaptToMonitor: function () {
 		//change global position and size of the main actor
 		
 		PADDING = [
@@ -559,7 +579,15 @@ const ConvenientLayout = new Lang.Class({
 			monitor.y + Math.floor(PADDING[0])
 		);
 		
-		this.adaptToMonitor();
+		this.adaptInternalWidgets();
+	},
+	
+	updateStarredVisibility: function () {
+		if (SETTINGS.get_boolean('starred')) {
+			this.starredFilesScrollview.visible = true;
+		} else {
+			this.starredFilesScrollview.visible = false;
+		}
 	},
 	
 	hide: function () {
@@ -571,12 +599,18 @@ const ConvenientLayout = new Lang.Class({
 	},
 	
 	destroy: function () {
-		
+		//TODO ?
 	},
 });
 
 //------------------------------------------------
 
+/*
+	This function is called when the user performs an action which affects the visibility
+	of MyConvenientLayout in the case its actor has been added to the overviewGroup.
+	It can be opening or closing a window, changing the current workspace, beginning a
+	research, or opening the applications grid.
+*/
 function updateVisibility() {
 	if (Main.overview.viewSelector._activePage != Main.overview.viewSelector._workspacesPage) {
 		MyConvenientLayout.hide();
@@ -591,7 +625,47 @@ function updateVisibility() {
 
 //------------------------------------------------
 
-let MyConvenientLayout;
+/*
+	This function is called when the user set a new layout position. It almost corresponds to
+	a "disable and then enable again", except that MyConvenientLayout isn't rebuild from its
+	constructor, but is just moved to the new position.
+*/
+function updateLayoutLayout() {
+	if (POSITION == 'overview') {
+		Main.layoutManager.overviewGroup.remove_actor(MyConvenientLayout.actor);
+	} else {
+		Main.layoutManager._backgroundGroup.remove_actor(MyConvenientLayout.actor);
+	}
+	
+	if (SIGNAUX_OVERVIEW.length != 0) {
+		Main.overview.disconnect(SIGNAUX_OVERVIEW[0]);
+		global.screen.disconnect(SIGNAUX_OVERVIEW[1]);
+		global.window_manager.disconnect(SIGNAUX_OVERVIEW[2]);
+		Main.overview.viewSelector._showAppsButton.disconnect(SIGNAUX_OVERVIEW[3]);
+		Main.overview.viewSelector._text.disconnect(SIGNAUX_OVERVIEW[4]);
+		global.screen.disconnect(SIGNAUX_OVERVIEW[5]);
+	}
+	
+	POSITION = SETTINGS.get_string('position');
+	SIGNAUX_OVERVIEW = [];
+	
+	if (POSITION == 'overview') {
+		Main.layoutManager.overviewGroup.add_actor(MyConvenientLayout.actor);
+		//FIXME dans ce contexte, qu'est this ?
+		SIGNAUX_OVERVIEW[0] = Main.overview.connect('showing', Lang.bind(this, updateVisibility));
+		SIGNAUX_OVERVIEW[1] = global.screen.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
+		SIGNAUX_OVERVIEW[2] = global.window_manager.connect('switch-workspace', Lang.bind(this, updateVisibility));
+		SIGNAUX_OVERVIEW[3] = Main.overview.viewSelector._showAppsButton.connect('notify::checked', Lang.bind(this, updateVisibility));
+		SIGNAUX_OVERVIEW[4] = Main.overview.viewSelector._text.connect('text-changed', Lang.bind(this, updateVisibility));
+		SIGNAUX_OVERVIEW[5] = global.screen.connect('restacked', Lang.bind(this, updateVisibility));
+		
+	} else {
+		Main.layoutManager._backgroundGroup.add_actor(MyConvenientLayout.actor);
+		MyConvenientLayout.show();
+	}
+}
+
+//------------------------------------------------
 
 function enable() {
 	
@@ -609,22 +683,26 @@ function enable() {
 	MyConvenientLayout = new ConvenientLayout();
 	
 	SIGNAUX_PARAM = [];
-	SIGNAUX_PARAM[0] = SETTINGS.connect('changed::top-padding', Lang.bind(MyConvenientLayout, MyConvenientLayout.applyPadding));
-	SIGNAUX_PARAM[1] = SETTINGS.connect('changed::bottom-padding', Lang.bind(MyConvenientLayout, MyConvenientLayout.applyPadding));
-	SIGNAUX_PARAM[2] = SETTINGS.connect('changed::left-padding', Lang.bind(MyConvenientLayout, MyConvenientLayout.applyPadding));
-	SIGNAUX_PARAM[3] = SETTINGS.connect('changed::right-padding', Lang.bind(MyConvenientLayout, MyConvenientLayout.applyPadding));
+	SIGNAUX_PARAM[0] = SETTINGS.connect('changed::top-padding', Lang.bind(MyConvenientLayout, MyConvenientLayout.adaptToMonitor));
+	SIGNAUX_PARAM[1] = SETTINGS.connect('changed::bottom-padding', Lang.bind(MyConvenientLayout, MyConvenientLayout.adaptToMonitor));
+	SIGNAUX_PARAM[2] = SETTINGS.connect('changed::left-padding', Lang.bind(MyConvenientLayout, MyConvenientLayout.adaptToMonitor));
+	SIGNAUX_PARAM[3] = SETTINGS.connect('changed::right-padding', Lang.bind(MyConvenientLayout, MyConvenientLayout.adaptToMonitor));
+	SIGNAUX_PARAM[4] = SETTINGS.connect('changed::starred', Lang.bind(MyConvenientLayout, MyConvenientLayout.updateStarredVisibility));
+	SIGNAUX_PARAM[5] = SETTINGS.connect('changed::position', Lang.bind(MyConvenientLayout, updateLayoutLayout));
 	
-	SIGNAUX = [];
+	SIGNAL_MONITOR = Main.layoutManager.connect('monitors-changed', Lang.bind(MyConvenientLayout, MyConvenientLayout.adaptToMonitor));
+	
+	SIGNAUX_OVERVIEW = [];
 	
 	if (POSITION == 'overview') {
 		Main.layoutManager.overviewGroup.add_actor(MyConvenientLayout.actor);
 		
-		SIGNAUX[0] = Main.overview.connect('showing', Lang.bind(this, updateVisibility));
-		SIGNAUX[1] = global.screen.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
-		SIGNAUX[2] = global.window_manager.connect('switch-workspace', Lang.bind(this, updateVisibility));
-		SIGNAUX[3] = Main.overview.viewSelector._showAppsButton.connect('notify::checked', Lang.bind(this, updateVisibility));
-		SIGNAUX[4] = Main.overview.viewSelector._text.connect('text-changed', Lang.bind(this, updateVisibility));
-		SIGNAUX[5] = global.screen.connect('restacked', Lang.bind(this, updateVisibility));
+		SIGNAUX_OVERVIEW[0] = Main.overview.connect('showing', Lang.bind(this, updateVisibility));
+		SIGNAUX_OVERVIEW[1] = global.screen.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
+		SIGNAUX_OVERVIEW[2] = global.window_manager.connect('switch-workspace', Lang.bind(this, updateVisibility));
+		SIGNAUX_OVERVIEW[3] = Main.overview.viewSelector._showAppsButton.connect('notify::checked', Lang.bind(this, updateVisibility));
+		SIGNAUX_OVERVIEW[4] = Main.overview.viewSelector._text.connect('text-changed', Lang.bind(this, updateVisibility));
+		SIGNAUX_OVERVIEW[5] = global.screen.connect('restacked', Lang.bind(this, updateVisibility));
 		
 	} else {
 		Main.layoutManager._backgroundGroup.add_actor(MyConvenientLayout.actor);
@@ -635,7 +713,6 @@ function enable() {
 //------------------------------------------------
 
 function disable() {
-
 	if (POSITION == 'overview') {
 		Main.layoutManager.overviewGroup.remove_actor(MyConvenientLayout.actor);
 	} else {
@@ -646,13 +723,15 @@ function disable() {
 		SETTINGS.disconnect(SIGNAUX_PARAM[i]);
 	}
 	
-	if (SIGNAUX.length != 0) {
-		Main.overview.disconnect(SIGNAUX[0]);
-		global.screen.disconnect(SIGNAUX[1]);
-		global.window_manager.disconnect(SIGNAUX[2]);
-		Main.overview.viewSelector._showAppsButton.disconnect(SIGNAUX[3]);
-		Main.overview.viewSelector._text.disconnect(SIGNAUX[4]);
-		global.screen.disconnect(SIGNAUX[5]);
+	global.screen.disconnect(SIGNAL_MONITOR);
+	
+	if (SIGNAUX_OVERVIEW.length != 0) {
+		Main.overview.disconnect(SIGNAUX_OVERVIEW[0]);
+		global.screen.disconnect(SIGNAUX_OVERVIEW[1]);
+		global.window_manager.disconnect(SIGNAUX_OVERVIEW[2]);
+		Main.overview.viewSelector._showAppsButton.disconnect(SIGNAUX_OVERVIEW[3]);
+		Main.overview.viewSelector._text.disconnect(SIGNAUX_OVERVIEW[4]);
+		global.screen.disconnect(SIGNAUX_OVERVIEW[5]);
 	}
 }
 
