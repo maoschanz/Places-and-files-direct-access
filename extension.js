@@ -475,11 +475,11 @@ const ConvenientLayout = new Lang.Class({
 		
 		this.placesGrid = new PlacesGrid();
 		this.recentFilesList = new RecentFiles.RecentFilesList();
-//		if (/* nautilus 3.28 ? What is the exact requirement ? */) {
-//			this.starredFilesList = new RecentFiles.StarredFilesList(); //TODO
-//		} else {
+		if (SETTINGS.get_string('favorites-files') == 'starred') { //FIXME update ?
+//			this.starredFilesList = new RecentFiles.StarredFilesList(); //TODO à implémenter
+		} else {
 			this.starredFilesList = new RecentFiles.DesktopFilesList();
-//		}
+		}
 		this.headerBox = new RecentFiles.HeaderBox(this);
 		
 		this.placesGridScrollview = new St.ScrollView({
@@ -589,7 +589,7 @@ const ConvenientLayout = new Lang.Class({
 	},
 	
 	updateStarredVisibility: function () {
-		if (SETTINGS.get_boolean('starred')) {
+		if (SETTINGS.get_string('favorites-files') == 'desktop') { //FIXME starred
 			this.starredFilesScrollview.visible = true;
 		} else {
 			this.starredFilesScrollview.visible = false;
@@ -693,7 +693,7 @@ function enable() {
 	SIGNAUX_PARAM[1] = SETTINGS.connect('changed::bottom-padding', Lang.bind(MyConvenientLayout, MyConvenientLayout.adaptToMonitor));
 	SIGNAUX_PARAM[2] = SETTINGS.connect('changed::left-padding', Lang.bind(MyConvenientLayout, MyConvenientLayout.adaptToMonitor));
 	SIGNAUX_PARAM[3] = SETTINGS.connect('changed::right-padding', Lang.bind(MyConvenientLayout, MyConvenientLayout.adaptToMonitor));
-	SIGNAUX_PARAM[4] = SETTINGS.connect('changed::starred', Lang.bind(MyConvenientLayout, MyConvenientLayout.updateStarredVisibility));
+	SIGNAUX_PARAM[4] = SETTINGS.connect('changed::favorites-files', Lang.bind(MyConvenientLayout, MyConvenientLayout.updateStarredVisibility));
 	SIGNAUX_PARAM[5] = SETTINGS.connect('changed::position', Lang.bind(MyConvenientLayout, updateLayoutLayout));
 	
 	SIGNAL_MONITOR = Main.layoutManager.connect('monitors-changed', Lang.bind(MyConvenientLayout, MyConvenientLayout.adaptToMonitor));

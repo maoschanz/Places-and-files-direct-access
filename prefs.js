@@ -120,8 +120,8 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		let paddingSection = this.positionPage.add_section(_("Padding"));
 		
 		let iconsSection = this.othersPage.add_section(_("Icons"));
-		let starredSection = this.othersPage.add_section("");
-		let othersSection = this.othersPage.add_section("");
+		let favSection = this.othersPage.add_section(_("Favorite files"));
+		let recentSection = this.othersPage.add_section(_("Recent files"));
 		
 		//--------------------------------------------------------
 
@@ -309,35 +309,38 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		});
 		numberBox.pack_start(new Gtk.Label({ label: labelListNumber, use_markup: true, halign: Gtk.Align.START }), false, false, 0);
 		numberBox.pack_end(listNumber, false, false, 0);
-		this.othersPage.add_row(numberBox, othersSection);
+		this.othersPage.add_row(numberBox, recentSection);
 		
 		//------------------------------------------------------
 		
-		let labelStarred = _("Starred files:");
+		let labelFav = _("Display files from:");
 		
-		let starredSwitch = new Gtk.Switch();
-		starredSwitch.set_sensitive(true);
-		starredSwitch.set_state(false);
-		starredSwitch.set_state(this.SETTINGS.get_boolean('starred'));
+		let favCombobox = new Gtk.ComboBoxText({
+			visible: true,
+			can_focus: true,
+			halign: Gtk.Align.END,
+			valign: Gtk.Align.CENTER
+		});
 		
-		starredSwitch.connect('notify::active', Lang.bind(this, function(w){
-			if (w.active) {
-				this.SETTINGS.set_boolean('starred', true);
-			} else {
-				this.SETTINGS.set_boolean('starred', false);
-			}
-		}));
+		favCombobox.append('desktop', _("~/Desktop"));
+//		favCombobox.append('starred', _("Starred files"));
+		favCombobox.append('none', _("Do not display"));
 		
-		let starredBox = new Gtk.Box({
+		favCombobox.active_id = this.SETTINGS.get_string('favorites-files');
+		
+		favCombobox.connect("changed", (widget) => {
+			this.SETTINGS.set_string('favorites-files', widget.get_active_id());
+		});
+		
+		let favBox = new Gtk.Box({
 			orientation: Gtk.Orientation.HORIZONTAL,
 			spacing: 15,
 			margin: 6,
-			tooltip_text: _("If your system doesn't support file starring, the content of your ~/Desktop folder will be listed instead."),
 		});
-		starredBox.pack_start(new Gtk.Label({ label: labelStarred, use_markup: true, halign: Gtk.Align.START }), false, false, 0);
-		starredBox.pack_end(starredSwitch, false, false, 0);
-		this.searchPage.add_row(starredBox, starredSection);
-
+		favBox.pack_start(new Gtk.Label({ label: labelFav, halign: Gtk.Align.START }), false, false, 0);
+		favBox.pack_end(favCombobox, false, false, 0);
+		this.othersPage.add_row(favBox, favSection);
+		
 		//-------------------------------------------------------
 		
 		let labelTopPadding = _("Top padding:");

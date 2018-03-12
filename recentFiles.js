@@ -659,11 +659,12 @@ const DesktopFileButtonMenu = new Lang.Class({
 	},
 	
 	_onDelete: function(){
-		let path = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP) + '/' + this._source._info.get_name();
-		Clipboard.set_text(CLIPBOARD_TYPE, path);
+		//TODO
 	},
 	
 	_onCopy: function(){
+//		let path = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP) + '/' + this._source._info.get_name();
+//		Clipboard.set_text(CLIPBOARD_TYPE, path);
 		//TODO
 	},
 	

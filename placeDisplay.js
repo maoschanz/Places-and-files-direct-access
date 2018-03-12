@@ -124,88 +124,127 @@ const PlaceInfo = new Lang.Class({
 });
 Signals.addSignalMethods(PlaceInfo.prototype);
 
-const RootInfo = new Lang.Class({
-	Name: 'RootInfo',
-	Extends: PlaceInfo,
+class RootInfo extends PlaceInfo {
+	_init() {
+		super._init('devices', Gio.File.new_for_path('/'), _("Computer"));
 
-	_init: function() {
-		this.parent('devices', Gio.File.new_for_path('/'), _("Computer"));
+		let busName = 'org.freedesktop.hostname1';
+		let objPath = '/org/freedesktop/hostname1';
+		new Hostname1(Gio.DBus.system, busName, objPath, (obj, error) => {
+			if (error)
+				return;
 
-		this._proxy = new Hostname1(
-			Gio.DBus.system,
-			'org.freedesktop.hostname1',
-			'/org/freedesktop/hostname1',
-			Lang.bind(this, function(obj, error) {
-				if (error)
-					return;
+			this._proxy = obj;
+			this._proxy.connect('g-properties-changed',
+								this._propertiesChanged.bind(this));
+			this._propertiesChanged(obj);
+		});
+	}
 
-				this._proxy.connect('g-properties-changed', Lang.bind(this, this._propertiesChanged));
-				this._propertiesChanged(obj);
-			}));
-	},
 
-	getIcon: function() {
+	getIcon() {
 		return new Gio.ThemedIcon({ name: 'drive-harddisk'/*-symbolic'*/ });
-	},
+	}
 
-	_propertiesChanged: function(proxy) {
+	_propertiesChanged(proxy) {
 		// GDBusProxy will emit a g-properties-changed when hostname1 goes down
 		// ignore it
 		if (proxy.g_name_owner) {
 			this.name = proxy.PrettyHostname || _("Computer");
 			this.emit('changed');
 		}
-	},
-
-	destroy: function() {
-		this._proxy.run_dispose();
-		this.parent();
 	}
-});
 
+	destroy() {
+		if (this._proxy) {
+			this._proxy.run_dispose();
+			this._proxy = null;
+		}
+		super.destroy();
+	}
+};
 
-const PlaceDeviceInfo = new Lang.Class({
-	Name: 'PlaceDeviceInfo',
-	Extends: PlaceInfo,
-
-	_init: function(kind, mount) {
+class PlaceDeviceInfo extends PlaceInfo {
+	_init(kind, mount) {
 		this._mount = mount;
-		this.parent(kind, mount.get_root(), mount.get_name());
-	},
-
-	getIcon: function() {
-		return this._mount.get_icon();//get_symbolic_icon();
+		super._init(kind, mount.get_root(), mount.get_name());
 	}
-});
 
-const PlaceVolumeInfo = new Lang.Class({
-	Name: 'PlaceVolumeInfo',
-	Extends: PlaceInfo,
+	getIcon() {
+		return this._mount.get_icon();
+	}
 
-	_init: function(kind, volume) {
+	isRemovable() {
+		return this._mount.can_eject();
+	}
+
+	eject() {
+		let mountOp = new ShellMountOperation.ShellMountOperation(this._mount);
+
+		if (this._mount.can_eject()) {
+			this._mount.eject_with_operation(
+				Gio.MountUnmountFlags.NONE,
+				mountOp.mountOp,
+				null, // Gio.Cancellable
+				this._ejectFinish.bind(this)
+			);
+		} else {
+			this._mount.unmount_with_operation(
+				Gio.MountUnmountFlags.NONE,
+				mountOp.mountOp,
+				null, // Gio.Cancellable
+				this._unmountFinish.bind(this)
+			);
+		}
+	}
+
+	_ejectFinish(mount, result) {
+		try {
+			mount.eject_with_operation_finish(result);
+		} catch(e) {
+			this._reportFailure(e);
+		}
+	}
+
+	_unmountFinish(mount, result) {
+		try {
+			mount.unmount_with_operation_finish(result);
+		} catch(e) {
+			this._reportFailure(e);
+		}
+	}
+
+	_reportFailure(exception) {
+		let msg = _("Ejecting drive “%s” failed:").format(this._mount.get_name());
+		Main.notifyError(msg, exception.message);
+	}
+};
+
+class PlaceVolumeInfo extends PlaceInfo {
+	_init(kind, volume) {
 		this._volume = volume;
-		this.parent(kind, volume.get_activation_root(), volume.get_name());
-	},
+		super._init(kind, volume.get_activation_root(), volume.get_name());
+	}
 
-	launch: function(timestamp) {
+	launch(timestamp) {
 		if (this.file) {
-			this.parent(timestamp);
+			super.launch(timestamp);
 			return;
 		}
 
-		this._volume.mount(0, null, null, Lang.bind(this, function(volume, result) {
+		this._volume.mount(0, null, null, (volume, result) => {
 			volume.mount_finish(result);
 
 			let mount = volume.get_mount();
 			this.file = mount.get_root();
-			this.parent(timestamp);
-		}));
-	},
-
-	getIcon: function() {
-		return this._volume.get_icon();//get_symbolic_icon();
+			super.launch(timestamp);
+		});
 	}
-});
+
+	getIcon() {
+		return this._volume.get_icon();
+	}
+};
 
 const DEFAULT_DIRECTORIES = [
 	GLib.UserDirectory.DIRECTORY_DOCUMENTS,
@@ -305,6 +344,10 @@ var PlacesManager = new Lang.Class({
 		this._places.special.push(new PlaceInfo('special',
 												Gio.File.new_for_uri('other-locations:///'),
 												_S("Other Locations")));
+
+//		this._places.special.push(new PlaceInfo('special', //////FIXME TODO ?
+//												Gio.File.new_for_uri('starred:///'),
+//												_S("Starred files")));
 
 		this._places.special.push(new PlaceInfo('special',
 												Gio.File.new_for_uri('trash:///'),
