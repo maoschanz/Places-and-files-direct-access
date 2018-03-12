@@ -26,6 +26,8 @@ const _ = Gettext.gettext;
 
 //-------------------------------------------------
 
+const LIST_MAX_WIDTH = 700;
+
 var RECENT_MANAGER;
 let PLACES_MANAGER;
 var SETTINGS;
@@ -546,18 +548,22 @@ const ConvenientLayout = new Lang.Class({
 	adaptInternalWidgets: function () {
 		if (this.actor.width < this.actor.height) {
 			this.actor.vertical = true;
-			this.fileListsOnly.vertical = true;
 			this.placesGridScrollview.height = Math.floor(this.actor.height *  0.4);
-			this.fileListsWithHeader.width = Math.floor(this.actor.height * 0.6);
+			this.fileListsWithHeader.height = Math.floor(this.actor.height * 0.6);
 			this.placesGridScrollview.width = this.actor.width;
 			this.fileListsWithHeader.width = this.actor.width;
 		} else {
 			this.actor.vertical = false;
-			this.fileListsOnly.vertical = true; //FIXME
 			this.placesGridScrollview.height = this.actor.height;
 			this.fileListsWithHeader.height = this.actor.height;
-			this.placesGridScrollview.width = Math.floor(this.actor.width / 2);
-			this.fileListsWithHeader.width = Math.floor(this.actor.width / 2);
+			this.placesGridScrollview.width = Math.floor(this.actor.width * 0.5);
+			this.fileListsWithHeader.width = Math.floor(this.actor.width * 0.5);
+		}
+		
+		if (this.fileListsWithHeader.width > LIST_MAX_WIDTH) {
+			this.fileListsOnly.vertical = false;
+		} else {
+			this.fileListsOnly.vertical = true;
 		}
 	},
 	
