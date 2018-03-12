@@ -525,8 +525,8 @@ var DesktopFileButton = new Lang.Class({
 		this.actor._delegate = this;
 		this._connexion2 = this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
 		
-//		this._menu = null;
-//		this._menuManager = new PopupMenu.PopupMenuManager(this);
+		this._menu = null;
+		this._menuManager = new PopupMenu.PopupMenuManager(this);
 		
 		let content = new St.BoxLayout({
 			style_class: 'list-search-result-content',
@@ -557,13 +557,13 @@ var DesktopFileButton = new Lang.Class({
 	},
 	
 	_onButtonPress: function(actor, event) {
-//		let button = event.get_button();
-//		if (button == 1) {
+		let button = event.get_button();
+		if (button == 1) {
 			this.activate();
-//		} else if (button == 3) {
-//			this.popupMenu();
-//			return Clutter.EVENT_STOP;
-//		}
+		} else if (button == 3) {
+			this.popupMenu();
+			return Clutter.EVENT_STOP;
+		}
 		return Clutter.EVENT_PROPAGATE;
 	},
 	
@@ -574,35 +574,135 @@ var DesktopFileButton = new Lang.Class({
 		);
 	},
 	
-//	_onMenuPoppedDown: function() {
-//		this.actor.sync_hover();
-//		this.emit('menu-state-changed', false);
-//	},
-//	
-//	popupMenu: function() {
-//		this.actor.fake_release();
+	_onExecute: function() {
+		Util.trySpawnCommandLine(
+			'"' + GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP)
+			+ '/' + this._info.get_name() + '"'
+		);
+	},
+	
+	_onMenuPoppedDown: function() {
+		this.actor.sync_hover();
+		this.emit('menu-state-changed', false);
+	},
+	
+	popupMenu: function() {
+		this.actor.fake_release();
 
-//		if (!this._menu) {
-//			this._menu = new RecentFileMenu(this);
-//			this._connexion = this._menu.connect('open-state-changed', Lang.bind(this, function (menu, isPoppedUp) {
-//				if (!isPoppedUp) this._onMenuPoppedDown();
-//			}));
-//			this._menuManager.addMenu(this._menu);
-//		}
+		if (!this._menu) {
+			this._menu = new DesktopFileButtonMenu(this);
+			this._connexion = this._menu.connect('open-state-changed', Lang.bind(this, function (menu, isPoppedUp) {
+				if (!isPoppedUp) this._onMenuPoppedDown();
+			}));
+			this._menuManager.addMenu(this._menu);
+		}
 
-//		this.emit('menu-state-changed', true);
-//		this.actor.set_hover(true);
-//		this._menu.popup();
-//		this._menuManager.ignoreRelease();
+		this.emit('menu-state-changed', true);
+		this.actor.set_hover(true);
+		this._menu.popup();
+		this._menuManager.ignoreRelease();
 
-//		return false;
-//	},
+		return false;
+	},
 	
 	destroy: function() {
 		this.actor.disconnect(this._connexion2);
-//		this._menu.disconnect(this._connexion);
+		this._menu.disconnect(this._connexion);
 		this.parent();
 	},
 });
 Signals.addSignalMethods(DesktopFileButton.prototype);
 
+const DesktopFileButtonMenu = new Lang.Class({
+	Name: 'DesktopFileButtonMenu',
+	Extends: PopupMenu.PopupMenu,
+
+	_init: function(source) {
+		let side = St.Side.BOTTOM;
+		if (Clutter.get_default_text_direction() == Clutter.TextDirection.RTL)
+			side = St.Side.TOP;
+
+		this.parent(source.actor, 0.5, side);
+
+		// We want to keep the item hovered while the menu is up
+		this.blockSourceEvents = true;
+
+		this._source = source;
+
+		this.actor.add_style_class_name('app-well-menu');
+
+		// Chain our visibility and lifecycle to that of the source
+		source.actor.connect('notify::mapped', Lang.bind(this, function () {
+			if (!source.actor.mapped)
+				this.close();
+		}));
+		source.actor.connect('destroy', Lang.bind(this, this.destroy));
+
+		Main.uiGroup.add_actor(this.actor);
+	},
+
+	_redisplay: function() {
+		this.removeAll();
+
+		this._appendMenuItem(_("Open")).connect('activate', Lang.bind(this, this._onOpen));
+		this._appendMenuItem(_("Execute")).connect('activate', Lang.bind(this, this._onExecute));
+		
+		this._appendSeparator(); //----------------------------
+		
+//		this._appendMenuItem(_("Copy")).connect('activate', Lang.bind(this, this._onCopy)); // FIXME can't work
+		this._appendMenuItem(_("Rename")).connect('activate', Lang.bind(this, this._onRename)); // TODO
+		this._appendMenuItem(_("Delete")).connect('activate', Lang.bind(this, this._onDelete)); // TODO
+	},
+	
+	_onRename: function(){
+		//TODO
+	},
+	
+	_onDelete: function(){
+		let path = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP) + '/' + this._source._info.get_name();
+		Clipboard.set_text(CLIPBOARD_TYPE, path);
+	},
+	
+	_onCopy: function(){
+		//TODO
+	},
+	
+	_addToGroup: function(x,y,z) {	
+		// x et y sont des cancers donnés par le callback, z correspond au i que j'ai passé.
+		this._removeFromGroups();
+		let osef = SETTINGS.get_strv('groups-content');
+		osef[z] += '/' + this._source._info.get_name();
+		
+		SETTINGS.set_strv('groups-content', osef);
+	},
+	
+	_onExecute: function() {
+//		if(this._source._info.get_content_type() == 'application/x-desktop') {
+//			this._source._onLauncher();
+//		} else {
+			this._source._onExecute();
+//		}
+	},
+	
+	_onOpen: function() {
+		this._source.activate();
+	},
+	
+	_appendSeparator: function () {
+		let separator = new PopupMenu.PopupSeparatorMenuItem();
+		this.addMenuItem(separator);
+	},
+
+	_appendMenuItem: function(labelText) {
+		// FIXME: app-well-menu-item style
+		let item = new PopupMenu.PopupMenuItem(labelText);
+		this.addMenuItem(item);
+		return item;
+	},
+
+	popup: function(activatingButton) {
+		this._redisplay();
+		this.open();
+	},
+});
+Signals.addSignalMethods(DesktopFileButtonMenu.prototype);
