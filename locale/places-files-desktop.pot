@@ -35,6 +35,12 @@ msgstr ""
 msgid "Rename"
 msgstr ""
 
+msgid "Execute"
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
 msgid "Remove"
 msgstr ""
 
@@ -104,6 +110,12 @@ msgstr ""
 msgid "Icons"
 msgstr ""
 
+msgid "Favorite files"
+msgstr ""
+
+msgid "Recent files"
+msgstr ""
+
 msgid "About"
 msgstr ""
 
@@ -117,6 +129,18 @@ msgid "Places icon size:"
 msgstr ""
 
 msgid "Recent files icon size:"
+msgstr ""
+
+msgid "Display files from:"
+msgstr ""
+
+msgid "~/Desktop"
+msgstr ""
+
+msgid "Do not display"
+msgstr ""
+
+msgid "Starred files"
 msgstr ""
 
 msgid "Number of recent files listed:"
