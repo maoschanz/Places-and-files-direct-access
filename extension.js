@@ -68,9 +68,20 @@ const PlaceButton = new Lang.Class({
 		this.placeIcon = new PlaceIcon(this._info);
 		this.actor.set_child( this.placeIcon.actor );
 		
+		if (this._info.name == _("Trash")) {
+			this._directory = Gio.file_new_for_uri("trash:///");
+			
+			this._monitor = this._directory.monitor(Gio.FileMonitorFlags.SEND_MOVED, null);
+			this._updateSignal = this._monitor.connect('changed', Lang.bind(this, this.update));
+		}
+		
 		this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
 		this._menu = null;
 		this._menuManager = new PopupMenu.PopupMenuManager(this);
+	},
+	
+	update: function() {
+		this.placeIcon.update();
 	},
 	
 	_onClicked: function() {
@@ -116,6 +127,9 @@ const PlaceButton = new Lang.Class({
 
 	destroy: function() {
 		this._menu.disconnect(this._connexion);
+		if (this._info.name == _("Trash")) {	
+			this._monitor.connect(this._updateSignal);
+		}
 		this.parent();
 	},
 });
@@ -340,7 +354,7 @@ const PlaceButtonMenu = new Lang.Class({
 			let child = trash_file.get_child(child_info.get_name());
 			child.delete(null);
 		}
-		this._source.placeIcon.update();
+//		this._source.placeIcon.update();
 	},
 	
 	_onEmptyRecent: function() {
@@ -489,7 +503,7 @@ const ConvenientLayout = new Lang.Class({
 			y_align: St.Align.MIDDLE,
 			x_expand: true,
 			y_expand: true,
-			style_class: 'vfade', //lui bug moins
+			style_class: 'vfade', //lui bug moins ?
 			hscrollbar_policy: Gtk.PolicyType.NEVER,
 		});
 	
@@ -509,7 +523,7 @@ const ConvenientLayout = new Lang.Class({
 			y_align: St.Align.MIDDLE,
 			x_expand: true,
 			y_expand: true,
-			style_class: 'vfade', //FIXME ??
+//			style_class: 'vfade', //FIXME ??
 			hscrollbar_policy: Gtk.PolicyType.NEVER,
 		});
 		

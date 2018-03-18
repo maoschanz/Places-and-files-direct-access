@@ -1,5 +1,3 @@
-'use strict';
-
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
