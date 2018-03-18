@@ -509,7 +509,7 @@ const ConvenientLayout = new Lang.Class({
 			y_align: St.Align.MIDDLE,
 			x_expand: true,
 			y_expand: true,
-//			style_class: 'vfade', //FIXME ??
+			style_class: 'vfade', //FIXME ??
 			hscrollbar_policy: Gtk.PolicyType.NEVER,
 		});
 		
