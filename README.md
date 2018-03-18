@@ -1,23 +1,26 @@
 # Convenient access to files
 
-A nice GNOME Shell extension providing an access to devices, bookmarks and recent files on the desktop.
+A GNOME Shell extension providing an access to devices, bookmarks and recent files on the desktop.
+
+![Example with files on the desktop](https://i.imgur.com/FGRkMPv.png)
 
 ## Features
 
-- Access to :
-  - GTK+ 3 bookmarks
-  - Trash
-  - Removable devices
-  - Mounted partitions
-  - Recent files list
-  - etc.
+- Access to places:
+    - GTK+ 3 bookmarks
+    - Trash
+    - Removable devices
+    - Mounted partitions
+- Access to files:
+    - Recent files
+    - ~/Desktop files (optional)
+    - etc.
 - Searching among recent files
-- Unmounting devices
-- Ejecting partitions
+- Unmounting devices & ejecting partitions
+- Renaming/deleting/executing files from ~/Desktop
+- Renaming/removing bookmarks
 
 ![Example with files in the overview](https://i.imgur.com/mbiSxF4.jpg)
-
-![Example with files on the desktop](https://i.imgur.com/FGRkMPv.png)
 
 ## Settings
 

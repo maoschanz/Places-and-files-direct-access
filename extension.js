@@ -189,7 +189,6 @@ const PlaceButtonMenu = new Lang.Class({
 		if( this._source._info.name == _("Trash") ){
 			this._appendSeparator();
 			this._appendMenuItem(_("Empty")).connect('activate', Lang.bind(this, this._onEmptyTrash));
-			//TODO connecter des signaux pour changer l'icône
 		}
 
 		if( this._source._info.name == _("Recent Files") ){
@@ -354,7 +353,6 @@ const PlaceButtonMenu = new Lang.Class({
 			let child = trash_file.get_child(child_info.get_name());
 			child.delete(null);
 		}
-//		this._source.placeIcon.update();
 	},
 	
 	_onEmptyRecent: function() {
@@ -488,12 +486,12 @@ const ConvenientLayout = new Lang.Class({
 		});
 		
 		this.placesGrid = new PlacesGrid();
+		
 		this.recentFilesList = new RecentFiles.RecentFilesList();
-		if (SETTINGS.get_string('favorites-files') == 'starred') { //FIXME update ?
-//			this.starredFilesList = new RecentFiles.StarredFilesList(); //TODO à implémenter
-		} else {
-			this.starredFilesList = new RecentFiles.DesktopFilesList();
-		}
+//		this.starredFilesList = new RecentFiles.StarredFilesList(); //TODO à implémenter
+		this.starredFilesList = new RecentFiles.DesktopFilesList(); //TODO à virer lol
+		this.desktopFilesList = new RecentFiles.DesktopFilesList();
+		
 		this.headerBox = new RecentFiles.HeaderBox(this);
 		
 		this.placesGridScrollview = new St.ScrollView({
@@ -503,7 +501,7 @@ const ConvenientLayout = new Lang.Class({
 			y_align: St.Align.MIDDLE,
 			x_expand: true,
 			y_expand: true,
-			style_class: 'vfade', //lui bug moins ?
+			style_class: 'vfade', //lui bug moins ? FIXME
 			hscrollbar_policy: Gtk.PolicyType.NEVER,
 		});
 	
@@ -538,13 +536,26 @@ const ConvenientLayout = new Lang.Class({
 			hscrollbar_policy: Gtk.PolicyType.NEVER,
 		});
 		
+		this.desktopFilesScrollview = new St.ScrollView({
+			x_fill: true,
+			y_fill: true,
+			x_align: St.Align.MIDDLE,
+			y_align: St.Align.MIDDLE,
+			x_expand: true,
+			y_expand: true,
+//			style_class: 'vfade', //FIXME ??
+			hscrollbar_policy: Gtk.PolicyType.NEVER,
+		});
+		
 		//------------------------
 		
 		this.placesGridScrollview.add_actor(this.placesGrid.actor);
 		this.recentFilesScrollview.add_actor(this.recentFilesList.actor);
 		this.starredFilesScrollview.add_actor(this.starredFilesList.actor);
+		this.desktopFilesScrollview.add_actor(this.desktopFilesList.actor);
 		this.fileListsOnly.add(this.recentFilesScrollview);
 		this.fileListsOnly.add(this.starredFilesScrollview);
+		this.fileListsOnly.add(this.desktopFilesScrollview);
 		
 		this.updateStarredVisibility();
 		
@@ -603,10 +614,14 @@ const ConvenientLayout = new Lang.Class({
 	},
 	
 	updateStarredVisibility: function () {
-		if (SETTINGS.get_string('favorites-files') == 'desktop') { //FIXME starred
+		this.desktopFilesScrollview.visible = false;
+		if (SETTINGS.get_string('favorites-files') == 'desktop' || SETTINGS.get_string('favorites-files') == 'both') {
+			this.desktopFilesScrollview.visible = true;
+		}
+		
+		this.starredFilesScrollview.visible = false;
+		if (SETTINGS.get_string('favorites-files') == 'starred' || SETTINGS.get_string('favorites-files') == 'both') {
 			this.starredFilesScrollview.visible = true;
-		} else {
-			this.starredFilesScrollview.visible = false;
 		}
 	},
 	

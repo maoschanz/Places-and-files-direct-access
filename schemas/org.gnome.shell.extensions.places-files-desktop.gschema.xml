@@ -1,60 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="places-files-desktop">
 	<schema id="org.gnome.shell.extensions.places-files-desktop" path="/org/gnome/shell/extensions/places-files-desktop/">
-    <key type="i" name="places-icon-size">
-      <default>72</default>
-      <summary>Places icon size</summary>
-      <description>Icon size (in pixels) for the "places" grid.</description>
-    </key>
-    <key type="i" name="recent-files-icon-size">
-      <default>22</default>
-      <summary>Recent files icon size</summary>
-      <description>Recent files icon size (in pixels).</description>
-    </key>
-    <key type="i" name="number-of-recent-files">
-      <default>50</default>
-      <summary>Number of recent files.</summary>
-      <description></description>
-    </key>
-    <key type="s" name="blacklist">
-      <default>""</default>
-      <summary>Blacklisted type categories</summary>
-      <description>Comma separated string. Possible types are: text, image, audio, video, application, multipart, message, model (these correspond to the MIME standard.)</description>
-    </key>
-    <key type="i" name="top-padding">
-      <default>40</default>
-      <summary>Top padding</summary>
-      <description>The number of pixels left empty at the top (for the top bar for example).</description>
-    </key>
-    <key type="i" name="right-padding">
-      <default>20</default>
-      <summary>Right padding.</summary>
-      <description>The number of pixels left empty at the right (for a lateral dock for example).</description>
-    </key>
-    <key type="i" name="left-padding">
-      <default>40</default>
-      <summary>Left padding.</summary>
-      <description>The number of pixels left empty at the left (for a lateral dock for example).</description>
-    </key>
-    <key type="i" name="bottom-padding">
-      <default>20</default>
-      <summary>Bottom padding.</summary>
-      <description>The number of pixels left empty at the bottom (for a bottom dock for example).</description>
-    </key>
-    <key type="s" name="position">
-      <default>"desktop"</default>
-      <summary>Where the extension should display its shit</summary>
-      <description>Accepted values are "desktop" and "overview".</description>
-    </key>
-    <key type="b" name="search-in-path">
-      <default>false</default>
-      <summary>If the search among recent files should be done based on the file path.</summary>
-      <description>If "true", the search among recent files will be done based on the file path; if "false", it will be based on the file name only.</description>
-    </key>
-    <key type="s" name="favorites-files">
-      <default>"none"</default>
-      <summary>Where user's favorites files are.</summary>
-      <description>Accepted values are "desktop" (~/Desktop), "starred" (starred://) and "none" (no favorites files list displayed).</description>
-    </key>
+		<key type="i" name="places-icon-size">
+			<default>72</default>
+			<summary>Places icon size</summary>
+			<description>Icon size (in pixels) for the "places" grid.</description>
+		</key>
+		<key type="i" name="recent-files-icon-size">
+			<default>22</default>
+			<summary>Recent files icon size</summary>
+			<description>Recent files icon size (in pixels).</description>
+		</key>
+		<key type="i" name="number-of-recent-files">
+			<default>50</default>
+			<summary>Number of recent files.</summary>
+			<description></description>
+		</key>
+		<key type="s" name="blacklist">
+			<default>""</default>
+			<summary>Blacklisted type categories</summary>
+			<description>Comma separated string. Possible types are: text, image, audio, video, application, multipart, message, model (these correspond to the MIME standard.)</description>
+		</key>
+		<key type="i" name="top-padding">
+			<default>40</default>
+			<summary>Top padding</summary>
+			<description>The number of pixels left empty at the top (for the top bar for example).</description>
+		</key>
+		<key type="i" name="right-padding">
+			<default>20</default>
+			<summary>Right padding.</summary>
+			<description>The number of pixels left empty at the right (for a lateral dock for example).</description>
+		</key>
+		<key type="i" name="left-padding">
+			<default>40</default>
+			<summary>Left padding.</summary>
+			<description>The number of pixels left empty at the left (for a lateral dock for example).</description>
+		</key>
+		<key type="i" name="bottom-padding">
+			<default>20</default>
+			<summary>Bottom padding.</summary>
+			<description>The number of pixels left empty at the bottom (for a bottom dock for example).</description>
+		</key>
+		<key type="s" name="position">
+			<default>"desktop"</default>
+			<summary>Where the extension should display its shit</summary>
+			<description>Accepted values are "desktop" and "overview".</description>
+		</key>
+		<key type="b" name="search-in-path">
+			<default>false</default>
+			<summary>If the search among recent files should be done based on the file path.</summary>
+			<description>If "true", the search among recent files will be done based on the file path; if "false", it will be based on the file name only.</description>
+		</key>
+		<key type="s" name="favorites-files">
+			<default>"none"</default>
+			<summary>Where user's favorites files are.</summary>
+			<description>Accepted values are "desktop" (~/Desktop), "starred" (starred://), "both", and "none" (no favorites files list displayed).</description>
+		</key>
 	</schema>
 </schemalist>

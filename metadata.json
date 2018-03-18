@@ -4,8 +4,6 @@
   "gettext-domain": "places-files-desktop", 
   "name": "Convenient access to files", 
   "shell-version": [
-    "3.18",
-    "3.20",
     "3.22",
     "3.24",
     "3.26",
@@ -13,5 +11,5 @@
   ],
   "url": "https://github.com/Maestroschan/Places-and-files-direct-access", 
   "uuid": "places-and-files-on-desktop@maestroschan.fr",
-  "version": 999
+  "version": 0
 }

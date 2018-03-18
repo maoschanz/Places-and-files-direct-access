@@ -325,6 +325,7 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		favCombobox.append('desktop', _("~/Desktop"));
 //		favCombobox.append('starred', _("Starred files"));
 		favCombobox.append('none', _("Do not display"));
+//		favCombobox.append('both', _("Display both"));
 		
 		favCombobox.active_id = this.SETTINGS.get_string('favorites-files');
 		

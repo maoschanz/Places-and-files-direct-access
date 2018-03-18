@@ -177,6 +177,7 @@ var HeaderBox = new Lang.Class({
 	_init: function(layout) {
 		
 		this._listRecent = layout.recentFilesList;
+		this._listDesktop = layout.starredFilesList;
 		this._listStarred = layout.starredFilesList;
 		
 		this.parent({
@@ -264,11 +265,15 @@ var HeaderBox = new Lang.Class({
 		this._listStarred._files.forEach(function(f){
 			f.actor.visible = f.label.toLowerCase().includes(searched);
 		});
+		this._listDesktop._files.forEach(function(f){
+			f.actor.visible = f.label.toLowerCase().includes(searched);
+		});
 	},
 	
 	_redisplay: function() {
 		this._listRecent._redisplay();
-//		this._listStarred._redisplay(); //TODO
+		this._listStarred._redisplay(); //TODO
+		this._listDesktop._redisplay();
 	},
 });
 
