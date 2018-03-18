@@ -177,15 +177,13 @@ var HeaderBox = new Lang.Class({
 	_init: function(layout) {
 		
 		this._listRecent = layout.recentFilesList;
-		this._listDesktop = layout.starredFilesList;
+		this._listDesktop = layout.desktopFilesList;
 		this._listStarred = layout.starredFilesList;
 		
 		this.parent({
 			vertical: false,
-			style_class: 'recent-files-header',
+			style_class: 'convenient-list-header',
 		});
-		
-		this.conhandler = Extension.RECENT_MANAGER.connect('changed', Lang.bind(this, this._redisplay));
 		
 		this.searchEntry = new St.Entry({
 			name: 'searchEntry',
@@ -269,12 +267,6 @@ var HeaderBox = new Lang.Class({
 			f.actor.visible = f.label.toLowerCase().includes(searched);
 		});
 	},
-	
-	_redisplay: function() {
-		this._listRecent._redisplay();
-		this._listStarred._redisplay(); //TODO
-		this._listDesktop._redisplay();
-	},
 });
 
 /*
@@ -287,7 +279,7 @@ var RecentFilesList = new Lang.Class({
 		this.actor = new St.BoxLayout({ style_class: 'search-section', vertical: true, x_expand: true });
 		this._resultDisplayBin = new St.Bin({ x_fill: true, y_fill: true });
 		this.actor.add(this._resultDisplayBin, { expand: true });
-		this._container = new St.BoxLayout({ style_class: 'search-section-content recent-files-list' });
+		this._container = new St.BoxLayout({ style_class: 'search-section-content convenient-files-list' });
 		this._content = new St.BoxLayout({
 			style_class: 'list-search-results',
 			vertical: true,
@@ -295,6 +287,7 @@ var RecentFilesList = new Lang.Class({
 		this._container.add(this._content, { expand: true });
 		this._resultDisplayBin.set_child(this._container);
 		this._buildRecents();
+		this.conhandler = Extension.RECENT_MANAGER.connect('changed', Lang.bind(this, this._redisplay));
 	},
 	
 	_redisplay: function() {
@@ -441,7 +434,7 @@ var DesktopFilesList = new Lang.Class({
 		this.actor = new St.BoxLayout({ style_class: 'search-section', vertical: true, x_expand: true });
 		this._resultDisplayBin = new St.Bin({ x_fill: true, y_fill: true });
 		this.actor.add(this._resultDisplayBin, { expand: true });
-		this._container = new St.BoxLayout({ style_class: 'search-section-content recent-files-list' });
+		this._container = new St.BoxLayout({ style_class: 'search-section-content convenient-files-list' });
 		this._content = new St.BoxLayout({
 			style_class: 'list-search-results',
 			vertical: true,
@@ -470,7 +463,7 @@ var DesktopFilesList = new Lang.Class({
 	},
 	
 	_buildFiles: function() {
-		let children = this._directory.enumerate_children('*', 0, null);//, null);
+		let children = this._directory.enumerate_children('*', 0, null);
 		
 		this._files = [];
 		
@@ -504,7 +497,7 @@ var DesktopFilesList = new Lang.Class({
 	},
 	
 	destroy() {
-//		this._directory.disconnect(this._updateSignal); //TODO
+		this._monitor.disconnect(this._updateSignal);
 		this.parent();
 	},
 });
@@ -535,7 +528,7 @@ var DesktopFileButton = new Lang.Class({
 			y_fill: true,
 			style_class: 'list-search-result',
 		});
-
+		
 		this.actor._delegate = this;
 		this._connexion2 = this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
 		
@@ -625,6 +618,14 @@ var DesktopFileButton = new Lang.Class({
 		return false;
 	},
 	
+	hide: function () {
+		this.actor.visible = false;
+	},
+	
+	show: function () {
+		this.actor.visible = true;
+	},
+	
 	destroy: function() {
 		this.actor.disconnect(this._connexion2);
 		this._menu.disconnect(this._connexion);
@@ -648,7 +649,9 @@ const DesktopFileButtonMenu = new Lang.Class({
 		this.blockSourceEvents = true;
 
 		this._source = source;
-
+		this._path = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP) + '/' + this._source._info.get_name();
+		this._file = Gio.file_new_for_path(this._path);
+		
 		this.actor.add_style_class_name('app-well-menu');
 
 		// Chain our visibility and lifecycle to that of the source
@@ -735,20 +738,15 @@ const DesktopFileButtonMenu = new Lang.Class({
 	},	
 		
 	_actuallyRename: function() {
-		let path = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP) + '/' + this._source._info.get_name();
-		let a = Gio.file_new_for_path(path); //TODO factoriser ça en un this._file
-		a.set_display_name(this.entry.get_text(), null);
+		this._file.set_display_name(this.entry.get_text(), null);
 	},	
 	
 	_onDelete: function(){
-		let path = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP) + '/' + this._source._info.get_name();
-		let a = Gio.file_new_for_path(path);
-		a.trash(null); //FIXME confirmation
+		this._file.trash(null); //FIXME confirmation
 	},
 	
 	_onCopy: function(){
-//		let path = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP) + '/' + this._source._info.get_name();
-//		Clipboard.set_text(CLIPBOARD_TYPE, path);
+//		Clipboard.set_text(CLIPBOARD_TYPE, this._path);
 		//TODO
 	},
 	
@@ -770,7 +768,6 @@ const DesktopFileButtonMenu = new Lang.Class({
 	},
 
 	_appendMenuItem: function(labelText) {
-		// FIXME: app-well-menu-item style
 		let item = new PopupMenu.PopupMenuItem(labelText);
 		this.addMenuItem(item);
 		return item;

@@ -2,12 +2,12 @@
 	spacing: 24px;
 }
 
-.recent-files-header {
+.convenient-list-header {
 	spacing: 12px;
 	margin: 12px;
 }
 
-.recent-files-list {
+.convenient-files-list {
 	background-color: rgba(0,0,0,0.4);
 	border-radius: 6px;
 	padding: 6px;
