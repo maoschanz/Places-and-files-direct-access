@@ -51,33 +51,35 @@ const PlaceInfo = new Lang.Class({
 		return (_ignored, result) => {
 			try {
 				Gio.AppInfo.launch_default_for_uri_finish(result);
-			} catch(e if e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_MOUNTED)) {
-				let source = {
-					get_icon: () => { return this.icon; }
-				};
-				let op = new ShellMountOperation.ShellMountOperation(source);
-				this.file.mount_enclosing_volume(0, op.mountOp, null, (file, result) => {
-					try {
-						op.close();
-						file.mount_enclosing_volume_finish(result);
-					} catch(e if e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.FAILED_HANDLED)) {
-						// e.g. user canceled the password dialog
-						return;
-					} catch(e) {
-						Main.notifyError(_("Failed to mount volume for “%s”").format(this.name), e.message);
-						return;
-					}
-
-					if (tryMount) {
-						let callback = this._createLaunchCallback(launchContext, false);
-						Gio.AppInfo.launch_default_for_uri_async(file.get_uri(),
-																 launchContext,
-																 null,
-																 callback);
-					}
-				});
 			} catch(e) {
-				Main.notifyError(_("Failed to launch “%s”").format(this.name), e.message);
+				if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_MOUNTED)) {
+					let source = {
+						get_icon: () => { return this.icon; }
+					};
+					let op = new ShellMountOperation.ShellMountOperation(source);
+					this.file.mount_enclosing_volume(0, op.mountOp, null, (file, result) => {
+						try {
+							op.close();
+							file.mount_enclosing_volume_finish(result);
+						} catch(e if e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.FAILED_HANDLED)) {
+							// e.g. user canceled the password dialog
+							return;
+						} catch(e) {
+							Main.notifyError(_("Failed to mount volume for “%s”").format(this.name), e.message);
+							return;
+						}
+
+						if (tryMount) {
+							let callback = this._createLaunchCallback(launchContext, false);
+							Gio.AppInfo.launch_default_for_uri_async(file.get_uri(),
+																	 launchContext,
+																	 null,
+																	 callback);
+						}
+					});
+				} else {
+					Main.notifyError(_("Failed to launch “%s”").format(this.name), e.message);
+				}
 			}
 		}
 	},
@@ -94,21 +96,23 @@ const PlaceInfo = new Lang.Class({
 	getIcon: function() {
 		try {
 			let info = this.file.query_info('standard::icon'/*symbolic-icon'*/, 0, null);
-		return info.get_icon();//get_symbolic_icon();
-		} catch(e if e instanceof Gio.IOErrorEnum) {
-			// return a generic icon for this kind
-			switch (this.kind) {
-			case 'network':
-				return new Gio.ThemedIcon({ name: 'folder-remote'/*-symbolic'*/ });
-			case 'devices':
-				return new Gio.ThemedIcon({ name: 'drive-harddisk'/*-symbolic'*/ });
-			case 'special':
-			case 'bookmarks':
-			default:
-				if (!this.file.is_native())
+			return info.get_icon();//get_symbolic_icon();
+		} catch(e) {
+			if (e instanceof Gio.IOErrorEnum) {
+				// return a generic icon for this kind
+				switch (this.kind) {
+				case 'network':
 					return new Gio.ThemedIcon({ name: 'folder-remote'/*-symbolic'*/ });
-				else
-					return new Gio.ThemedIcon({ name: 'folder'/*-symbolic'*/ });
+				case 'devices':
+					return new Gio.ThemedIcon({ name: 'drive-harddisk'/*-symbolic'*/ });
+				case 'special':
+				case 'bookmarks':
+				default:
+					if (!this.file.is_native())
+						return new Gio.ThemedIcon({ name: 'folder-remote'/*-symbolic'*/ });
+					else
+						return new Gio.ThemedIcon({ name: 'folder'/*-symbolic'*/ });
+				}
 			}
 		}
 	},
@@ -117,8 +121,10 @@ const PlaceInfo = new Lang.Class({
 		try {
 			let info = this.file.query_info('standard::display-name', 0, null);
 			return info.get_display_name();
-		} catch(e if e instanceof Gio.IOErrorEnum) {
-			return this.file.get_basename();
+		} catch(e) {
+			if (e instanceof Gio.IOErrorEnum) {
+				return this.file.get_basename();
+			}
 		}
 	},
 });
@@ -345,9 +351,9 @@ var PlacesManager = new Lang.Class({
 												Gio.File.new_for_uri('other-locations:///'),
 												_S("Other Locations")));
 
-//		this._places.special.push(new PlaceInfo('special', //////FIXME TODO ?
-//												Gio.File.new_for_uri('starred:///'),
-//												_S("Starred files")));
+		this._places.special.push(new PlaceInfo('special', //////FIXME 
+												Gio.File.new_for_uri('starred:///'),
+												_S("Starred files")));
 
 		this._places.special.push(new PlaceInfo('special',
 												Gio.File.new_for_uri('trash:///'),
@@ -367,8 +373,10 @@ var PlacesManager = new Lang.Class({
 			let file = Gio.File.new_for_path(specialPath), info;
 			try {
 				info = new PlaceInfo('special', file);
-			} catch(e if e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND)) {
-				continue;
+			} catch(e) {
+				if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND)) {
+					continue;
+				}
 			}
 
 			specials.push(info);
@@ -534,8 +542,10 @@ var PlacesManager = new Lang.Class({
 
 		try {
 			devItem = new PlaceDeviceInfo(kind, mount);
-		} catch(e if e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND)) {
-			return;
+		} catch(e) {
+			if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND)) {
+				return;
+			}
 		}
 
 		this._places[kind].push(devItem);
@@ -546,8 +556,10 @@ var PlacesManager = new Lang.Class({
 
 		try {
 			volItem = new PlaceVolumeInfo(kind, volume);
-		} catch(e if e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND)) {
-			return;
+		} catch(e) {
+			if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND)) {
+				return;
+			}
 		}
 
 		this._places[kind].push(volItem);

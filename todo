@@ -1,0 +1,29 @@
+(((Support de placeDisplay pour le file-favoriting de 3.28 ?)))
+
+Avec des boutons Coller et Nouveau dans le header qui serait plutøt ajouté en bas
+
+Prévenir quand c'est admin et dire qu'on ne sait pas faire
+
+Options avancées :
+- éditer comme admin ?? --> impossible pour le moment
+- ouvrir avec (via un portal ?)
+- 
+
+---------------------
+
+blacklist avec un vrai array ptn
+
+---------------------
+
+Convenient access to files :
+- meilleurs défauts de position
+- une "boîte" générique, qui puisse contenir les 4 types différents de contenus, avec 2 types d'affichage différents
+- paramètres de construction de grille/liste :
+  * menu (objet)
+  * searchable (booléen)
+  * source de contenu
+- paramètres de construction des boutons :
+  * liste : ???
+  * grille : ???
+- Affichage de force avec un bouton à côté de la recherche
+- Renommer les classes de préférences et y mettre des frames

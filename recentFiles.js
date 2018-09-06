@@ -297,30 +297,32 @@ var RecentFilesList = new Lang.Class({
 	
 	_buildRecents: function() {
 		/* inspired by the code from RecentItems@bananenfisch.net */
-		let Ritems = Extension.RECENT_MANAGER.get_items();
-		Ritems.sort(trierDate);
+		let allRecentFiles = Extension.RECENT_MANAGER.get_items();
+		allRecentFiles.sort(trierDate);
 		
 		let blacklistString = Extension.SETTINGS.get_string('blacklist').replace(/\s/g, ""); 
 		let blacklistList = blacklistString.split(",");
 		this._files = [];
 		
-		for(let i = 0 ; i < Extension.SETTINGS.get_int('number-of-recent-files') ; i++){
-			if(Ritems[i] == null || Ritems[i] == undefined) {
-				break;
+		var i = 0;
+		let shouldContinue = true;
+		while(this._files.length < Extension.SETTINGS.get_int('number-of-recent-files') && shouldContinue) {
+			if(allRecentFiles[i] == null || allRecentFiles[i] == undefined) {
+				shouldContinue = false;
+			} else {
+				let itemtype = allRecentFiles[i].get_mime_type();
+				if ((blacklistList.indexOf((itemtype.split("/"))[0]) == -1) && (allRecentFiles[i].exists())){
+					let gicon = Gio.content_type_get_icon(itemtype);
+					/*améliorable ? Gio.File.new_for_uri(****).query_info('standard::(((symbolic-)))icon', 0, null); */
+					this._files.push(new RecentFileButton(
+						gicon,
+						allRecentFiles[i].get_display_name(),
+						allRecentFiles[i].get_uri()
+					));
+					this._content.add( this._files[this._files.length -1].actor );
+				}
 			}
-			let itemtype = Ritems[i].get_mime_type();
-			
-			if (blacklistList.indexOf((itemtype.split("/"))[0]) == -1) {
-				
-				let gicon = Gio.content_type_get_icon(itemtype);
-				/*améliorable ? Gio.File.new_for_uri(****).query_info('standard::(((symbolic-)))icon', 0, null); */
-				this._files.push(new RecentFileButton(
-					gicon,
-					Ritems[i].get_display_name(),
-					Ritems[i].get_uri()
-				));
-				this._content.add( this._files[this._files.length -1].actor );
-			}
+			i++;
 		}
 	},
 	

@@ -71,8 +71,8 @@ const PlaceButton = new Lang.Class({
 		if (this._info.name == _("Trash")) {
 			this._directory = Gio.file_new_for_uri("trash:///");
 			
-			this._monitor = this._directory.monitor(Gio.FileMonitorFlags.SEND_MOVED, null);
-			this._updateSignal = this._monitor.connect('changed', Lang.bind(this, this.update));
+//			this._monitor = this._directory.monitor(Gio.FileMonitorFlags.SEND_MOVED, null);
+//			this._updateSignal = this._monitor.connect('changed', Lang.bind(this, this.update));
 		}
 		
 		this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
@@ -127,9 +127,9 @@ const PlaceButton = new Lang.Class({
 
 	destroy: function() {
 		this._menu.disconnect(this._connexion);
-		if (this._info.name == _("Trash")) {	
-			this._monitor.connect(this._updateSignal);
-		}
+//		if (this._info.name == _("Trash")) {	
+//			this._monitor.disconnect(this._updateSignal);
+//		}
 		this.parent();
 	},
 });
@@ -651,10 +651,18 @@ function updateVisibility() {
 		MyConvenientLayout.hide();
 		return;
 	}
-	if (global.screen.get_workspace_by_index(global.screen.get_active_workspace_index()).list_windows() == '') {
-		MyConvenientLayout.show();
-	} else {
-		MyConvenientLayout.hide();
+	if (global.hasOwnProperty('screen')) { // < 3.29
+		if (global.screen.get_workspace_by_index(global.screen.get_active_workspace_index()).list_windows() == '') {
+			MyConvenientLayout.show();
+		} else {
+			MyConvenientLayout.hide();
+		}
+	} else { // > 3.29
+		if (global.workspaceManager.get_workspace_by_index(global.workspaceManager.get_active_workspace_index()).list_windows() == '') {
+			MyConvenientLayout.show();
+		} else {
+			MyConvenientLayout.hide();
+		}
 	}
 }
 
@@ -674,11 +682,19 @@ function updateLayoutLayout() {
 	
 	if (SIGNAUX_OVERVIEW.length != 0) {
 		Main.overview.disconnect(SIGNAUX_OVERVIEW[0]);
-		global.screen.disconnect(SIGNAUX_OVERVIEW[1]);
+		if (global.hasOwnProperty('screen')) { // < 3.29
+			global.screen.disconnect(SIGNAUX_OVERVIEW[1]);
+		} else { // > 3.29
+			global.workspaceManager.disconnect(SIGNAUX_OVERVIEW[1]);
+		}
 		global.window_manager.disconnect(SIGNAUX_OVERVIEW[2]);
 		Main.overview.viewSelector._showAppsButton.disconnect(SIGNAUX_OVERVIEW[3]);
 		Main.overview.viewSelector._text.disconnect(SIGNAUX_OVERVIEW[4]);
-		global.screen.disconnect(SIGNAUX_OVERVIEW[5]);
+		if (global.hasOwnProperty('screen')) { // < 3.29
+			global.screen.disconnect(SIGNAUX_OVERVIEW[5]);
+		} else { // > 3.29
+			global.display.disconnect(SIGNAUX_OVERVIEW[5]);
+		}
 	}
 	
 	POSITION = SETTINGS.get_string('position');
@@ -688,11 +704,19 @@ function updateLayoutLayout() {
 		Main.layoutManager.overviewGroup.add_actor(MyConvenientLayout.actor);
 		//FIXME dans ce contexte, qu'est this ?
 		SIGNAUX_OVERVIEW[0] = Main.overview.connect('showing', Lang.bind(this, updateVisibility));
-		SIGNAUX_OVERVIEW[1] = global.screen.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
+		if (global.hasOwnProperty('screen')) { // < 3.29
+			SIGNAUX_OVERVIEW[1] = global.screen.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
+		} else { // > 3.29
+			SIGNAUX_OVERVIEW[1] = global.workspaceManager.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
+		}
 		SIGNAUX_OVERVIEW[2] = global.window_manager.connect('switch-workspace', Lang.bind(this, updateVisibility));
 		SIGNAUX_OVERVIEW[3] = Main.overview.viewSelector._showAppsButton.connect('notify::checked', Lang.bind(this, updateVisibility));
 		SIGNAUX_OVERVIEW[4] = Main.overview.viewSelector._text.connect('text-changed', Lang.bind(this, updateVisibility));
-		SIGNAUX_OVERVIEW[5] = global.screen.connect('restacked', Lang.bind(this, updateVisibility));
+		if (global.hasOwnProperty('screen')) { // < 3.29
+			SIGNAUX_OVERVIEW[5] = global.screen.connect('restacked', Lang.bind(this, updateVisibility));
+		} else { // > 3.29
+			SIGNAUX_OVERVIEW[5] = global.display.connect('restacked', Lang.bind(this, updateVisibility));
+		}
 		
 	} else {
 		Main.layoutManager._backgroundGroup.add_actor(MyConvenientLayout.actor);
@@ -733,12 +757,20 @@ function enable() {
 		Main.layoutManager.overviewGroup.add_actor(MyConvenientLayout.actor);
 		
 		SIGNAUX_OVERVIEW[0] = Main.overview.connect('showing', Lang.bind(this, updateVisibility));
-		SIGNAUX_OVERVIEW[1] = global.screen.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
+		if (global.hasOwnProperty('screen')) { // < 3.29
+			SIGNAUX_OVERVIEW[1] = global.screen.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
+		} else { // > 3.29
+			SIGNAUX_OVERVIEW[1] = global.workspaceManager.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
+		}
 		SIGNAUX_OVERVIEW[2] = global.window_manager.connect('switch-workspace', Lang.bind(this, updateVisibility));
 		SIGNAUX_OVERVIEW[3] = Main.overview.viewSelector._showAppsButton.connect('notify::checked', Lang.bind(this, updateVisibility));
 		SIGNAUX_OVERVIEW[4] = Main.overview.viewSelector._text.connect('text-changed', Lang.bind(this, updateVisibility));
-		SIGNAUX_OVERVIEW[5] = global.screen.connect('restacked', Lang.bind(this, updateVisibility));
-		
+		if (global.hasOwnProperty('screen')) { // < 3.29
+			SIGNAUX_OVERVIEW[5] = global.screen.connect('restacked', Lang.bind(this, updateVisibility));
+		} else { // > 3.29
+			SIGNAUX_OVERVIEW[5] = global.display.connect('restacked', Lang.bind(this, updateVisibility));
+		}
+
 	} else {
 		Main.layoutManager._backgroundGroup.add_actor(MyConvenientLayout.actor);
 		MyConvenientLayout.show();
@@ -758,15 +790,29 @@ function disable() {
 		SETTINGS.disconnect(SIGNAUX_PARAM[i]);
 	}
 	
-	global.screen.disconnect(SIGNAL_MONITOR);
+//	if (global.hasOwnProperty('screen')) { // < 3.29
+//		global.screen.disconnect(SIGNAL_MONITOR);
+//	} else { // > 3.29
+//		global.display.disconnect(SIGNAL_MONITOR);
+//	}
+	Main.layoutManager.disconnect(SIGNAL_MONITOR);
 	
 	if (SIGNAUX_OVERVIEW.length != 0) {
 		Main.overview.disconnect(SIGNAUX_OVERVIEW[0]);
-		global.screen.disconnect(SIGNAUX_OVERVIEW[1]);
+		global.workspaceManager.disconnect(SIGNAUX_OVERVIEW[1]);
+		if (global.hasOwnProperty('screen')) { // < 3.29
+			global.screen.disconnect(SIGNAUX_OVERVIEW[1]);
+		} else { // > 3.29
+			global.workspaceManager.disconnect(SIGNAUX_OVERVIEW[1]);
+		}
 		global.window_manager.disconnect(SIGNAUX_OVERVIEW[2]);
 		Main.overview.viewSelector._showAppsButton.disconnect(SIGNAUX_OVERVIEW[3]);
 		Main.overview.viewSelector._text.disconnect(SIGNAUX_OVERVIEW[4]);
-		global.screen.disconnect(SIGNAUX_OVERVIEW[5]);
+		if (global.hasOwnProperty('screen')) { // < 3.29
+			global.screen.disconnect(SIGNAUX_OVERVIEW[5]);
+		} else { // > 3.29
+			global.display.disconnect(SIGNAUX_OVERVIEW[5]);
+		}
 	}
 }
 

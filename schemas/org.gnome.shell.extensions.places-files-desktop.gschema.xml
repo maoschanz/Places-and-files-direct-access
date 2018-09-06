@@ -54,7 +54,7 @@
 		<key type="s" name="favorites-files">
 			<default>"none"</default>
 			<summary>Where user's favorites files are.</summary>
-			<description>Accepted values are "desktop" (~/Desktop), "starred" (starred://), "both", and "none" (no favorites files list displayed).</description>
+			<description>Accepted values are "desktop" (~/Desktop), "starred" (starred:///), "both", and "none" (no favorites files list displayed).</description>
 		</key>
 	</schema>
 </schemalist>
