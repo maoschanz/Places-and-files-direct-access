@@ -16,10 +16,10 @@
 			<summary>Number of recent files.</summary>
 			<description></description>
 		</key>
-		<key type="s" name="blacklist">
-			<default>""</default>
+		<key type="as" name="blacklist-recent">
+			<default>[]</default>
 			<summary>Blacklisted type categories</summary>
-			<description>Comma separated string. Possible types are: text, image, audio, video, application, multipart, message, model (these correspond to the MIME standard.)</description>
+			<description>List of strings. Possible types are: text, image, audio, video, application, multipart, message, model (these correspond to the MIME standard.)</description>
 		</key>
 		<key type="i" name="top-padding">
 			<default>40</default>
@@ -51,10 +51,26 @@
 			<summary>If the search among recent files should be done based on the file path.</summary>
 			<description>If "true", the search among recent files will be done based on the file path; if "false", it will be based on the file name only.</description>
 		</key>
+		<key type="as" name="active-widgets">
+			<default>['places', 'searchbar', 'recent']</default>
+			<summary>Active widgets</summary>
+			<description>List of strings. Possible widgets are: places, searchbar, recent, starred, desktop</description>
+		</key>
+		<key type="as" name="active-positions">
+			<default>['0', '3', '3']</default>
+			<summary>Active widgets positions</summary>
+			<description>List of integers between 0 and 3. '0' describes the left column, '1' the top-center row, '2' the bottom-center row, '3' the right column. Inactive boxes are hidden.</description>
+		</key>
+		
+		<key type="s" name="blacklist">
+			<default>""</default>
+			<summary>Legacy key</summary>
+			<description>Do not use</description>
+		</key>
 		<key type="s" name="favorites-files">
 			<default>"none"</default>
-			<summary>Where user's favorites files are.</summary>
-			<description>Accepted values are "desktop" (~/Desktop), "starred" (starred:///), "both", and "none" (no favorites files list displayed).</description>
+			<summary>Legacy key</summary>
+			<description>Do not use</description>
 		</key>
 	</schema>
 </schemalist>

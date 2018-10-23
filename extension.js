@@ -18,8 +18,12 @@ const CLIPBOARD_TYPE = St.ClipboardType.CLIPBOARD;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Convenience = Me.imports.convenience;
+
+const HeaderBox = Me.imports.headerBox;
 const PlaceDisplay = Me.imports.placeDisplay;
 const RecentFiles = Me.imports.recentFiles;
+//const StarredFiles = Me.imports.starredFiles;
+const DesktopFiles = Me.imports.desktopFiles;
 
 const Gettext = imports.gettext.domain('places-files-desktop');
 const _ = Gettext.gettext;
@@ -37,7 +41,8 @@ let SIGNAUX_OVERVIEW = [];
 let SIGNAUX_PARAM = [];
 let SIGNAL_MONITOR;
 
-let MyConvenientLayout;
+//let MyConvenientLayout;
+let MyLayout;
 
 //------------------------------------------------
 
@@ -87,7 +92,7 @@ const PlaceButton = new Lang.Class({
 	_onClicked: function() {
 		this.placeIcon.animateZoomOut();
 		Util.trySpawnCommandLine('nautilus ' + this._info.file.get_uri());
-		//FIXME the "normal" method don't understand the trash, so this has to stay commented.
+		//FIXME the "normal" method doesn't understand the trash, so this has to stay commented.
 //		Gio.app_info_launch_default_for_uri(this._info.file.get_uri(), global.create_app_launch_context(0, -1));
 	},
 	
@@ -381,6 +386,35 @@ const PlaceButtonMenu = new Lang.Class({
 });
 Signals.addSignalMethods(PlaceButtonMenu.prototype);
 
+//--------------------------
+
+const PlacesList = new Lang.Class({
+	Name: 'PlacesList',
+	
+	_init: function() {
+		this.actor = new St.ScrollView({
+			x_fill: true,
+			y_fill: true,
+			x_align: St.Align.MIDDLE,
+			y_align: St.Align.MIDDLE,
+			x_expand: true,
+			y_expand: true,
+			style_class: 'vfade', //lui bug moins ? FIXME
+			hscrollbar_policy: Gtk.PolicyType.NEVER,
+		});
+		
+		this.grid = new PlacesGrid();
+		this.actor.add_actor(this.grid.actor);
+	},
+	
+	filter_widget: function(text) {
+		/* TODO ? */
+	},
+	
+	// destroy: function() {},
+	
+});
+
 const PlacesGrid = new Lang.Class({
 	Name: 'PlacesGrid',
 	Extends: IconGrid.IconGrid,
@@ -470,14 +504,14 @@ const PlaceIcon = new Lang.Class({
 	- 1 PlacesGrid (inherits from IconGrid)
 	- 1 HeaderBox (a box with a search entry and a button)
 	- 1 RecentFiles.RecentFilesList (a ton of buttons with menus on them)
-	- Either 1 RecentFiles.DesktopFilesList or 1 RecentFiles.StarredFilesList
+	- Either 1 DesktopFiles.DesktopFilesList or 1 StarredFiles.StarredFilesList
 	
 	Actors are put in scrollviews, then scrollviews' width, height, visibility
 	and position are computed depending on user's settings and main monitor size
 	and proportions.
 */
-const ConvenientLayout = new Lang.Class({
-	Name: 'ConvenientLayout',
+const ConvenientLayout2 = new Lang.Class({
+	Name: 'ConvenientLayout2',
 	
 	_init: function () {
 		this.actor = new St.BoxLayout({
@@ -488,11 +522,11 @@ const ConvenientLayout = new Lang.Class({
 		this.placesGrid = new PlacesGrid();
 		
 		this.recentFilesList = new RecentFiles.RecentFilesList();
-//		this.starredFilesList = new RecentFiles.StarredFilesList(); //TODO à implémenter
-		this.starredFilesList = new RecentFiles.DesktopFilesList(); //TODO à virer lol
-		this.desktopFilesList = new RecentFiles.DesktopFilesList();
+//		this.starredFilesList = new StarredFiles.StarredFilesList(); //TODO à implémenter
+		this.starredFilesList = new DesktopFiles.DesktopFilesList(); //TODO à virer lol
+		this.desktopFilesList = new DesktopFiles.DesktopFilesList();
 		
-		this.headerBox = new RecentFiles.HeaderBox(this);
+		this.headerBox = new HeaderBox.HeaderBox(this);
 		
 		this.placesGridScrollview = new St.ScrollView({
 			x_fill: true,
@@ -642,26 +676,26 @@ const ConvenientLayout = new Lang.Class({
 
 /*
 	This function is called when the user performs an action which affects the visibility
-	of MyConvenientLayout in the case its actor has been added to the overviewGroup.
+	of MyLayout in the case its actor has been added to the overviewGroup.
 	It can be opening or closing a window, changing the current workspace, beginning a
 	research, or opening the applications grid.
 */
 function updateVisibility() {
 	if (Main.overview.viewSelector._activePage != Main.overview.viewSelector._workspacesPage) {
-		MyConvenientLayout.hide();
+		MyLayout.hide();
 		return;
 	}
 	if (global.hasOwnProperty('screen')) { // < 3.29
 		if (global.screen.get_workspace_by_index(global.screen.get_active_workspace_index()).list_windows() == '') {
-			MyConvenientLayout.show();
+			MyLayout.show();
 		} else {
-			MyConvenientLayout.hide();
+			MyLayout.hide();
 		}
 	} else { // > 3.29
 		if (global.workspaceManager.get_workspace_by_index(global.workspaceManager.get_active_workspace_index()).list_windows() == '') {
-			MyConvenientLayout.show();
+			MyLayout.show();
 		} else {
-			MyConvenientLayout.hide();
+			MyLayout.hide();
 		}
 	}
 }
@@ -670,59 +704,171 @@ function updateVisibility() {
 
 /*
 	This function is called when the user set a new layout position. It almost corresponds to
-	a "disable and then enable again", except that MyConvenientLayout isn't rebuild from its
+	a "disable and then enable again", except that MyLayout isn't rebuild from its
 	constructor, but is just moved to the new position.
 */
 function updateLayoutLayout() {
 	if (POSITION == 'overview') {
-		Main.layoutManager.overviewGroup.remove_actor(MyConvenientLayout.actor);
+		Main.layoutManager.overviewGroup.remove_actor(MyLayout.actor);
 	} else {
-		Main.layoutManager._backgroundGroup.remove_actor(MyConvenientLayout.actor);
+		Main.layoutManager._backgroundGroup.remove_actor(MyLayout.actor);
 	}
 	
 	if (SIGNAUX_OVERVIEW.length != 0) {
-		Main.overview.disconnect(SIGNAUX_OVERVIEW[0]);
 		if (global.hasOwnProperty('screen')) { // < 3.29
+			global.screen.disconnect(SIGNAUX_OVERVIEW[0]);
 			global.screen.disconnect(SIGNAUX_OVERVIEW[1]);
 		} else { // > 3.29
-			global.workspaceManager.disconnect(SIGNAUX_OVERVIEW[1]);
+			global.workspaceManager.disconnect(SIGNAUX_OVERVIEW[0]);
+			global.display.disconnect(SIGNAUX_OVERVIEW[1]);
 		}
 		global.window_manager.disconnect(SIGNAUX_OVERVIEW[2]);
 		Main.overview.viewSelector._showAppsButton.disconnect(SIGNAUX_OVERVIEW[3]);
 		Main.overview.viewSelector._text.disconnect(SIGNAUX_OVERVIEW[4]);
-		if (global.hasOwnProperty('screen')) { // < 3.29
-			global.screen.disconnect(SIGNAUX_OVERVIEW[5]);
-		} else { // > 3.29
-			global.display.disconnect(SIGNAUX_OVERVIEW[5]);
-		}
+		Main.overview.disconnect(SIGNAUX_OVERVIEW[5]);
 	}
 	
 	POSITION = SETTINGS.get_string('position');
 	SIGNAUX_OVERVIEW = [];
 	
 	if (POSITION == 'overview') {
-		Main.layoutManager.overviewGroup.add_actor(MyConvenientLayout.actor);
+		Main.layoutManager.overviewGroup.add_actor(MyLayout.actor);
 		//FIXME dans ce contexte, qu'est this ?
-		SIGNAUX_OVERVIEW[0] = Main.overview.connect('showing', Lang.bind(this, updateVisibility));
 		if (global.hasOwnProperty('screen')) { // < 3.29
-			SIGNAUX_OVERVIEW[1] = global.screen.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
+			SIGNAUX_OVERVIEW[0] = global.screen.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
+			SIGNAUX_OVERVIEW[1] = global.screen.connect('restacked', Lang.bind(this, updateVisibility));
 		} else { // > 3.29
-			SIGNAUX_OVERVIEW[1] = global.workspaceManager.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
+			SIGNAUX_OVERVIEW[0] = global.workspaceManager.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
+			SIGNAUX_OVERVIEW[1] = global.display.connect('restacked', Lang.bind(this, updateVisibility));
 		}
 		SIGNAUX_OVERVIEW[2] = global.window_manager.connect('switch-workspace', Lang.bind(this, updateVisibility));
 		SIGNAUX_OVERVIEW[3] = Main.overview.viewSelector._showAppsButton.connect('notify::checked', Lang.bind(this, updateVisibility));
 		SIGNAUX_OVERVIEW[4] = Main.overview.viewSelector._text.connect('text-changed', Lang.bind(this, updateVisibility));
-		if (global.hasOwnProperty('screen')) { // < 3.29
-			SIGNAUX_OVERVIEW[5] = global.screen.connect('restacked', Lang.bind(this, updateVisibility));
-		} else { // > 3.29
-			SIGNAUX_OVERVIEW[5] = global.display.connect('restacked', Lang.bind(this, updateVisibility));
-		}
+		SIGNAUX_OVERVIEW[5] = Main.overview.connect('showing', Lang.bind(this, updateVisibility));
 		
 	} else {
-		Main.layoutManager._backgroundGroup.add_actor(MyConvenientLayout.actor);
-		MyConvenientLayout.show();
+		Main.layoutManager._backgroundGroup.add_actor(MyLayout.actor);
+		MyLayout.show();
 	}
 }
+
+//----------------------
+
+const ConvenientLayout = new Lang.Class({
+	Name: 'ConvenientLayout',
+	
+	_init: function () {
+		this.actor = new St.BoxLayout({
+			//main actor of the extension
+			vertical: false,
+		});
+		
+		//---------
+		this.box_0 = new St.BoxLayout({
+			vertical: true,
+//			style: 'background-color: rgba(0, 255, 0, 0.3);',
+		});
+		this.box_m = new St.BoxLayout({
+			vertical: true,
+		});
+		this.box_1 = new St.BoxLayout({
+			vertical: false,
+//			style: 'background-color: rgba(0, 255, 255, 0.3);',
+		});
+		this.box_2 = new St.BoxLayout({
+			vertical: false,
+//			style: 'background-color: rgba(0, 0, 255, 0.3);',
+		});
+		this.box_3 = new St.BoxLayout({
+			vertical: true,
+//			style: 'background-color: rgba(255, 0, 255, 0.3);',
+		});
+		//---------
+		
+		this.actor.add(this.box_0);
+		this.box_m.add(this.box_1);
+		this.box_m.add(this.box_2);
+		this.actor.add(this.box_m);
+		this.actor.add(this.box_3);
+		
+		this.adaptToMonitor();
+		
+		//---------------
+		
+		this.widget_places = new PlacesList();
+		this.widget_recent = new RecentFiles.RecentFilesList();
+//		this.widget_starred = new StarredFiles.StarredFilesList()
+		this.widget_searchbar = new HeaderBox.HeaderBox(this);
+		this.widget_desktop = new DesktopFiles.DesktopFilesList();
+	},
+	
+	filter_widgets: function(text) {
+		for (let i = 0; i < this.active_widgets.length; i++) {
+			log(this.active_widgets[i] + ' no start')
+			this['widget_' + this.active_widgets[i]].filter_widget(text);
+			log(this.active_widgets[i] + ' no end')
+		}
+	},
+	
+	hide: function () {
+		this.actor.visible = false;
+	},
+	
+	show: function () {
+		this.actor.visible = true;
+	},
+	
+	fill_with_widgets: function () {
+		let active_positions = SETTINGS.get_strv('active-positions');
+		this.active_widgets = SETTINGS.get_strv('active-widgets');
+		
+		for (let i = 0; i < this.active_widgets.length; i++) {
+			this['box_' + active_positions[i]].add(this['widget_' + this.active_widgets[i]].actor)
+		}
+		
+		this.adaptInternalWidgets();
+	},
+	
+	adaptToMonitor: function () {
+		//change global position and size of the main actor
+		
+		PADDING = [
+			SETTINGS.get_int('top-padding'),
+			SETTINGS.get_int('bottom-padding'),
+			SETTINGS.get_int('left-padding'),
+			SETTINGS.get_int('right-padding')
+		];
+	
+		let monitor = Main.layoutManager.primaryMonitor;
+		this.actor.width = Math.floor(monitor.width - (PADDING[2] + PADDING[3]));
+		this.actor.height = Math.floor(monitor.height - (PADDING[0] + PADDING[1]));
+		this.actor.set_position(
+			monitor.x + Math.floor(PADDING[2]),
+			monitor.y + Math.floor(PADDING[0])
+		);
+		
+		this.adaptInternalWidgets();
+	},
+	
+	adaptInternalWidgets: function () {
+//		if (this.actor.width < this.actor.height) {
+//			this.actor.vertical = true;
+//			// TODO
+//		} else {
+			// FIXME tout cela doit dépendre des paramètres, au moins en partie
+			// mais pas touche à la hauteur de box_1 et box_2
+			this.actor.vertical = false;
+			this.box_0.height = this.actor.height;
+//			this.box_1.height = Math.floor(this.actor.height * 0.8);
+//			this.box_2.height = Math.floor(this.actor.height * 0.2);
+			this.box_m.height = this.actor.height;
+			this.box_3.height = this.actor.height;
+			this.box_0.width = Math.floor(this.actor.width * 0.55);
+//			this.box_m.width = Math.floor(this.actor.width * 0.1);
+			this.box_3.width = Math.floor(this.actor.width * 0.45);
+//		}
+	},
+});
 
 //------------------------------------------------
 
@@ -739,41 +885,39 @@ function enable() {
 		SETTINGS.get_int('right-padding')
 	];
 
-	MyConvenientLayout = new ConvenientLayout();
+	MyLayout = new ConvenientLayout();
+	MyLayout.fill_with_widgets();
 	
 	SIGNAUX_PARAM = [];
-	SIGNAUX_PARAM[0] = SETTINGS.connect('changed::top-padding', Lang.bind(MyConvenientLayout, MyConvenientLayout.adaptToMonitor));
-	SIGNAUX_PARAM[1] = SETTINGS.connect('changed::bottom-padding', Lang.bind(MyConvenientLayout, MyConvenientLayout.adaptToMonitor));
-	SIGNAUX_PARAM[2] = SETTINGS.connect('changed::left-padding', Lang.bind(MyConvenientLayout, MyConvenientLayout.adaptToMonitor));
-	SIGNAUX_PARAM[3] = SETTINGS.connect('changed::right-padding', Lang.bind(MyConvenientLayout, MyConvenientLayout.adaptToMonitor));
-	SIGNAUX_PARAM[4] = SETTINGS.connect('changed::favorites-files', Lang.bind(MyConvenientLayout, MyConvenientLayout.updateStarredVisibility));
-	SIGNAUX_PARAM[5] = SETTINGS.connect('changed::position', Lang.bind(MyConvenientLayout, updateLayoutLayout));
+	SIGNAUX_PARAM[0] = SETTINGS.connect('changed::top-padding', Lang.bind(MyLayout, MyLayout.adaptToMonitor));
+	SIGNAUX_PARAM[1] = SETTINGS.connect('changed::bottom-padding', Lang.bind(MyLayout, MyLayout.adaptToMonitor));
+	SIGNAUX_PARAM[2] = SETTINGS.connect('changed::left-padding', Lang.bind(MyLayout, MyLayout.adaptToMonitor));
+	SIGNAUX_PARAM[3] = SETTINGS.connect('changed::right-padding', Lang.bind(MyLayout, MyLayout.adaptToMonitor));
+	SIGNAUX_PARAM[4] = SETTINGS.connect('changed::position', Lang.bind(MyLayout, updateLayoutLayout));
+//	SIGNAUX_PARAM[5] = SETTINGS.connect('changed::favorites-files', Lang.bind(MyConvenientLayout, MyConvenientLayout.updateStarredVisibility));
 	
-	SIGNAL_MONITOR = Main.layoutManager.connect('monitors-changed', Lang.bind(MyConvenientLayout, MyConvenientLayout.adaptToMonitor));
-	
+	SIGNAL_MONITOR = Main.layoutManager.connect('monitors-changed', Lang.bind(MyLayout, MyLayout.adaptToMonitor));
+
 	SIGNAUX_OVERVIEW = [];
 	
 	if (POSITION == 'overview') {
-		Main.layoutManager.overviewGroup.add_actor(MyConvenientLayout.actor);
+		Main.layoutManager.overviewGroup.add_actor(MyLayout.actor);
 		
-		SIGNAUX_OVERVIEW[0] = Main.overview.connect('showing', Lang.bind(this, updateVisibility));
 		if (global.hasOwnProperty('screen')) { // < 3.29
-			SIGNAUX_OVERVIEW[1] = global.screen.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
+			SIGNAUX_OVERVIEW[0] = global.screen.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
+			SIGNAUX_OVERVIEW[1] = global.screen.connect('restacked', Lang.bind(this, updateVisibility));
 		} else { // > 3.29
-			SIGNAUX_OVERVIEW[1] = global.workspaceManager.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
+			SIGNAUX_OVERVIEW[0] = global.workspaceManager.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
+			SIGNAUX_OVERVIEW[1] = global.display.connect('restacked', Lang.bind(this, updateVisibility));
 		}
 		SIGNAUX_OVERVIEW[2] = global.window_manager.connect('switch-workspace', Lang.bind(this, updateVisibility));
 		SIGNAUX_OVERVIEW[3] = Main.overview.viewSelector._showAppsButton.connect('notify::checked', Lang.bind(this, updateVisibility));
 		SIGNAUX_OVERVIEW[4] = Main.overview.viewSelector._text.connect('text-changed', Lang.bind(this, updateVisibility));
-		if (global.hasOwnProperty('screen')) { // < 3.29
-			SIGNAUX_OVERVIEW[5] = global.screen.connect('restacked', Lang.bind(this, updateVisibility));
-		} else { // > 3.29
-			SIGNAUX_OVERVIEW[5] = global.display.connect('restacked', Lang.bind(this, updateVisibility));
-		}
+		SIGNAUX_OVERVIEW[5] = Main.overview.connect('showing', Lang.bind(this, updateVisibility));
 
 	} else {
-		Main.layoutManager._backgroundGroup.add_actor(MyConvenientLayout.actor);
-		MyConvenientLayout.show();
+		Main.layoutManager._backgroundGroup.add_actor(MyLayout.actor);
+		MyLayout.show();
 	}
 }
 
@@ -781,38 +925,29 @@ function enable() {
 
 function disable() {
 	if (POSITION == 'overview') {
-		Main.layoutManager.overviewGroup.remove_actor(MyConvenientLayout.actor);
+		Main.layoutManager.overviewGroup.remove_actor(MyLayout.actor);
 	} else {
-		Main.layoutManager._backgroundGroup.remove_actor(MyConvenientLayout.actor);
-	}	
+		Main.layoutManager._backgroundGroup.remove_actor(MyLayout.actor);
+	}
 	
 	for (var i = 0; i < SIGNAUX_PARAM.length; i++) {
 		SETTINGS.disconnect(SIGNAUX_PARAM[i]);
 	}
 	
-//	if (global.hasOwnProperty('screen')) { // < 3.29
-//		global.screen.disconnect(SIGNAL_MONITOR);
-//	} else { // > 3.29
-//		global.display.disconnect(SIGNAL_MONITOR);
-//	}
 	Main.layoutManager.disconnect(SIGNAL_MONITOR);
 	
 	if (SIGNAUX_OVERVIEW.length != 0) {
-		Main.overview.disconnect(SIGNAUX_OVERVIEW[0]);
-		global.workspaceManager.disconnect(SIGNAUX_OVERVIEW[1]);
 		if (global.hasOwnProperty('screen')) { // < 3.29
+			global.screen.disconnect(SIGNAUX_OVERVIEW[0]);
 			global.screen.disconnect(SIGNAUX_OVERVIEW[1]);
 		} else { // > 3.29
-			global.workspaceManager.disconnect(SIGNAUX_OVERVIEW[1]);
+			global.workspaceManager.disconnect(SIGNAUX_OVERVIEW[0]);
+			global.display.disconnect(SIGNAUX_OVERVIEW[1]);
 		}
 		global.window_manager.disconnect(SIGNAUX_OVERVIEW[2]);
 		Main.overview.viewSelector._showAppsButton.disconnect(SIGNAUX_OVERVIEW[3]);
 		Main.overview.viewSelector._text.disconnect(SIGNAUX_OVERVIEW[4]);
-		if (global.hasOwnProperty('screen')) { // < 3.29
-			global.screen.disconnect(SIGNAUX_OVERVIEW[5]);
-		} else { // > 3.29
-			global.display.disconnect(SIGNAUX_OVERVIEW[5]);
-		}
+		Main.overview.disconnect(SIGNAUX_OVERVIEW[5]);
 	}
 }
 

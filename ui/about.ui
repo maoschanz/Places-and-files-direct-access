@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface domain="places-files-desktop">
+	<object class="GtkScrolledWindow" id="about_page">
+		<property name="visible">True</property>
+
+<!--		<child>-->
+<!--			<object class="GtkBox">-->
+<!--				<property name="visible">True</property>-->
+<!--				<property name="expand">True</property>-->
+<!--				<property name="spacing">10</property>-->
+<!--				<property name="margin">25</property>-->
+<!--				<property name="orientation">vertical</property>-->
+<!--				-->
+<!--			</object>-->
+<!--		</child>-->
+	</object>
+</interface>
+

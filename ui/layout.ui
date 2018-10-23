@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface domain="places-files-desktop">
+	<object class="GtkScrolledWindow" id="layout_page">
+		<property name="visible">True</property>
+
+		<child>
+			<object class="GtkBox">
+				<property name="visible">True</property>
+				<property name="expand">True</property>
+				<property name="spacing">10</property>
+				<property name="margin">25</property>
+				<property name="orientation">vertical</property>
+
+<!--				<child>-->
+<!--					<object class="GtkButton" id="layout_btn">-->
+<!--						<property name="visible">True</property> -->
+<!--						<property name="expand">False</property>-->
+<!--						<child>-->
+<!--							<object class="GtkBox">-->
+<!--								<property name="visible">True</property>-->
+<!--								<child>-->
+<!--									<object class="GtkLabel">-->
+<!--										<property name="visible">True</property>-->
+<!--										<property name="label" translatable="yes">default</property>-->
+<!--									</object>-->
+<!--									<packing>-->
+<!--										<property name="pack-type">start</property>-->
+<!--									</packing>-->
+<!--								</child>-->
+<!--								<child>-->
+<!--									<object class="GtkImage">-->
+<!--										<property name="visible">True</property>-->
+<!--										<property name="icon-name" translatable="yes">pan-down-symbolic</property>-->
+<!--									</object>-->
+<!--									<packing>-->
+<!--										<property name="pack-type">end</property>-->
+<!--									</packing>-->
+<!--								</child>-->
+<!--							</object>-->
+<!--						</child>-->
+<!--					</object>-->
+<!--				</child>-->
+
+				<child>
+					<object class="GtkBox">
+						<property name="visible">True</property>
+						<property name="expand">True</property>
+						<property name="orientation">horizontal</property>
+<!--						<property name="homogeneous">True</property>-->
+						
+						<child>
+							<object class="GtkBox" id="box_0">
+								<property name="visible">True</property>
+								<property name="expand">True</property>
+								<property name="orientation">vertical</property>
+								<child>
+									<object class="GtkBox" id="box_0_widgets">
+										<property name="visible">True</property>
+										<property name="homogeneous">True</property>
+										<property name="expand">True</property>
+										<property name="orientation">vertical</property>
+									</object>
+								</child>
+								<child>
+									<object class="GtkButton" id="box_0_add_btn">
+										<property name="visible">True</property> 
+										<property name="relief">none</property> 
+										<child>
+											<object class="GtkImage">
+												<property name="visible">True</property>
+												<property name="icon-name" translatable="yes">list-add-symbolic</property>
+											</object>
+										</child>
+									</object>
+								</child>
+							</object>
+						</child>
+						
+						<child>
+							<object class="GtkBox" id="box_m">
+								<property name="visible">True</property>
+								<property name="expand">True</property>
+								<property name="orientation">vertical</property>
+								<property name="homogeneous">True</property>
+						
+								<child>
+									<object class="GtkBox" id="box_1">
+										<property name="visible">True</property>
+										<property name="expand">False</property>
+										<property name="orientation">horizontal</property>
+										<child>
+											<object class="GtkBox" id="box_1_widgets">
+												<property name="visible">True</property> 
+												<property name="homogeneous">True</property>
+												<property name="expand">True</property>
+											</object>
+										</child>
+										<child>
+											<object class="GtkButton" id="box_1_add_btn">
+												<property name="visible">True</property> 
+												<property name="relief">none</property> 
+												<child>
+													<object class="GtkImage">
+														<property name="visible">True</property>
+														<property name="icon-name" translatable="yes">list-add-symbolic</property>
+													</object>
+												</child>
+											</object>
+										</child>
+									</object>
+								</child>
+								
+								<child>
+									<object class="GtkBox" id="box_2">
+										<property name="visible">True</property>
+										<property name="expand">False</property>
+										<property name="orientation">horizontal</property>
+										<child>
+											<object class="GtkBox" id="box_2_widgets">
+												<property name="visible">True</property> 
+												<property name="homogeneous">True</property>
+												<property name="expand">True</property>
+											</object>
+										</child>
+										<child>
+											<object class="GtkButton" id="box_2_add_btn">
+												<property name="visible">True</property> 
+												<property name="relief">none</property> 
+												<child>
+													<object class="GtkImage">
+														<property name="visible">True</property>
+														<property name="icon-name" translatable="yes">list-add-symbolic</property>
+													</object>
+												</child>
+											</object>
+										</child>
+									</object>
+								</child>
+							</object>
+						</child>
+						
+						<child>
+							<object class="GtkBox" id="box_3">
+								<property name="visible">True</property>
+								<property name="expand">True</property>
+								<property name="orientation">vertical</property>
+								<child>
+									<object class="GtkBox" id="box_3_widgets">
+										<property name="visible">True</property>
+										<property name="orientation">vertical</property>
+										<property name="homogeneous">True</property>
+										<property name="expand">True</property> 
+									</object>
+								</child>
+								<child>
+									<object class="GtkButton" id="box_3_add_btn">
+										<property name="visible">True</property> 
+										<property name="relief">none</property> 
+										<child>
+											<object class="GtkImage">
+												<property name="visible">True</property>
+												<property name="icon-name" translatable="yes">list-add-symbolic</property>
+											</object>
+										</child>
+									</object>
+								</child>
+							</object>
+						</child>
+						
+								
+					</object>
+				</child>
+				
+			</object>
+		</child>
+	</object>
+</interface>
+
