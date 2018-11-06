@@ -61,12 +61,14 @@ const PlaceInfo = new Lang.Class({
 						try {
 							op.close();
 							file.mount_enclosing_volume_finish(result);
-						} catch(e if e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.FAILED_HANDLED)) {
-							// e.g. user canceled the password dialog
-							return;
 						} catch(e) {
-							Main.notifyError(_("Failed to mount volume for “%s”").format(this.name), e.message);
-							return;
+							if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.FAILED_HANDLED)){
+								// e.g. user canceled the password dialog
+								return;
+							} else {
+								Main.notifyError(_("Failed to mount volume for “%s”").format(this.name), e.message);
+								return;
+							}
 						}
 
 						if (tryMount) {

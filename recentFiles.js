@@ -197,6 +197,8 @@ var RecentFilesList = new Lang.Class({
 		this.actor.add_actor(this._content);
 		this._buildRecents();
 		this.conhandler = Extension.RECENT_MANAGER.connect('changed', Lang.bind(this, this._redisplay));
+		
+		Extension.SETTINGS.connect('changed::blacklist-recent', Lang.bind(this, this._redisplay));
 	},
 	
 	_redisplay: function() {
@@ -209,7 +211,7 @@ var RecentFilesList = new Lang.Class({
 		let allRecentFiles = Extension.RECENT_MANAGER.get_items();
 		allRecentFiles.sort(trierDate);
 		
-		let blacklistString = Extension.SETTINGS.get_string('blacklist').replace(/\s/g, ""); 
+		let blacklistString = Extension.SETTINGS.get_strv('blacklist-recent').toString();
 		let blacklistList = blacklistString.split(",");
 		this._files = [];
 		
