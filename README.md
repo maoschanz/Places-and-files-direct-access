@@ -1,8 +1,8 @@
-# Convenient access to files
+# Convenient access to files 
 
 A GNOME Shell extension providing an access to devices, bookmarks and recent files on the desktop.
 
-![Example with files on the desktop](https://i.imgur.com/FGRkMPv.png)
+[<img src="https://raw.githubusercontent.com/andyholmes/gnome-shell-extensions-badge/master/get-it-on-ego.png" alt="drawing" width="200"/>](https://extensions.gnome.org/extension/1393/convenient-access-to-files/)
 
 ## Features
 
@@ -19,6 +19,10 @@ A GNOME Shell extension providing an access to devices, bookmarks and recent fil
 - Unmounting devices & ejecting partitions
 - Renaming/deleting/executing files from ~/Desktop
 - Renaming/removing bookmarks
+
+## Screenshots
+
+![Example with files on the desktop](https://i.imgur.com/FGRkMPv.png)
 
 ![Example with files in the overview](https://i.imgur.com/mbiSxF4.jpg)
 
