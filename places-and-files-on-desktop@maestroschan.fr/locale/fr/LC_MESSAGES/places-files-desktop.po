@@ -1,17 +1,20 @@
+#
+# Romain F. T. <rrroschan@gmail.com>, 2019.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
+"Project-Id-Version: unnamed project\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-21 16:11+0100\n"
-"PO-Revision-Date: 2018-03-12 17:04+0100\n"
-"Last-Translator: \n"
-"Language-Team: \n"
+"POT-Creation-Date: 2019-03-21 16:15+0100\n"
+"PO-Revision-Date: 2019-03-21 16:15+0100\n"
+"Last-Translator: Romain F. T. <rrroschan@gmail.com>\n"
+"Language-Team: French <none>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.0.6\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Gtranslator 3.32.0\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
 
 #: places-and-files-on-desktop@maestroschan.fr/extension.js:75
 #: places-and-files-on-desktop@maestroschan.fr/extension.js:196
@@ -177,11 +180,11 @@ msgstr "Taille d'icône des listes de fichiers"
 
 #: places-and-files-on-desktop@maestroschan.fr/prefs.ui:269
 msgid "Places, recent files"
-msgstr ""
+msgstr "Emplacements, fichiers récents"
 
 #: places-and-files-on-desktop@maestroschan.fr/prefs.ui:275
 msgid "Places, desktop files"
-msgstr ""
+msgstr "Emplacements, fichiers du bureau"
 
 #: places-and-files-on-desktop@maestroschan.fr/prefs.ui:281
 msgid "Places, recent files and desktop files (side by side)"
@@ -193,7 +196,7 @@ msgstr ""
 
 #: places-and-files-on-desktop@maestroschan.fr/prefs.ui:299
 msgid "Custom (use dconf to set the layout)"
-msgstr "Personnalisé (utiliser dconf pour paramétrer la disposition"
+msgstr "Personnalisé (utiliser dconf pour paramétrer la disposition)"
 
 #: places-and-files-on-desktop@maestroschan.fr/prefs.ui:323
 msgid "Number of recent files listed"
