@@ -66,11 +66,5 @@
 			<summary>Active widgets positions</summary>
 			<description>List of integers between 0 and 3. '0' describes the left column, '1' the top-center row, '2' the bottom-center row, '3' the right column. Inactive boxes are hidden.</description>
 		</key>
-		
-		<key type="s" name="blacklist">
-			<default>""</default>
-			<summary>Legacy key</summary>
-			<description>Do not use</description>
-		</key>
 	</schema>
 </schemalist>

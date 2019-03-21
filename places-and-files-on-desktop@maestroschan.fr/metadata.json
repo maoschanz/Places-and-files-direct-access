@@ -4,8 +4,6 @@
   "gettext-domain": "places-files-desktop", 
   "name": "Convenient access to files", 
   "shell-version": [
-    "3.22",
-    "3.24",
     "3.26",
     "3.28",
     "3.30"
