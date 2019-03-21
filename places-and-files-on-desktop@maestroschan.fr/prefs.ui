@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface domain="places-files-desktop">
+
+	<object class="GtkAdjustment" id="adjustment_top">
+		<property name="lower">0</property>
+		<property name="upper">300</property>
+		<property name="step_increment">1</property>
+		<property name="page_increment">10</property>
+		<property name="value">0</property>
+	</object>
+
+	<object class="GtkAdjustment" id="adjustment_bottom">
+		<property name="lower">0</property>
+		<property name="upper">300</property>
+		<property name="step_increment">1</property>
+		<property name="page_increment">10</property>
+		<property name="value">0</property>
+	</object>
+
+	<object class="GtkAdjustment" id="adjustment_left">
+		<property name="lower">0</property>
+		<property name="upper">300</property>
+		<property name="step_increment">1</property>
+		<property name="page_increment">10</property>
+		<property name="value">0</property>
+	</object>
+
+	<object class="GtkAdjustment" id="adjustment_right">
+		<property name="lower">0</property>
+		<property name="upper">300</property>
+		<property name="step_increment">1</property>
+		<property name="page_increment">10</property>
+		<property name="value">0</property>
+	</object>
+
+	<object class="GtkStack" id="prefs_stack">
+		<property name="visible">True</property>
+		<property name="transition-type">slide-left-right</property>
+		
+		
+		<child>
+			<object class="GtkScrolledWindow" id="position_page">
+				<property name="visible">True</property>
+
+				<child>
+					<object class="GtkGrid">
+						<property name="visible">True</property>
+						<property name="expand">True</property>
+						<property name="row-spacing">12</property>
+						<property name="column-spacing">36</property>
+						<property name="halign">GTK_ALIGN_CENTER</property>
+						<property name="margin">25</property>
+
+						<child>
+							<object class="GtkLabel">
+								<property name="visible">True</property> 
+								<property name="expand">False</property>
+								<property name="label" translatable="yes">Display on:</property>
+							</object>
+							<packing>
+								<property name="left-attach">0</property>
+								<property name="top-attach">0</property>
+							</packing>
+						</child>
+						<child>
+							<object class="GtkComboBoxText" id="position_combobox">
+								<property name="visible">True</property>
+								<property name="expand">False</property>
+							</object>
+							<packing>
+								<property name="left-attach">1</property>
+								<property name="top-attach">0</property>
+							</packing>
+						</child>
+
+						<child>
+							<object class="GtkSeparator">
+								<property name="visible">True</property> 
+								<property name="expand">False</property>
+							</object>
+							<packing>
+								<property name="left-attach">0</property>
+								<property name="top-attach">1</property>
+								<property name="width">2</property>
+							</packing>
+						</child>
+
+						<child>
+							<object class="GtkLabel">
+								<property name="visible">True</property> 
+								<property name="expand">False</property>
+								<property name="label" translatable="yes">Top padding:</property>
+							</object>
+							<packing>
+								<property name="left-attach">0</property>
+								<property name="top-attach">2</property>
+							</packing>
+						</child>
+						<child>
+							<object class="GtkSpinButton" id="top_padding_spinbtn">
+								<property name="visible">True</property>
+								<property name="expand">False</property>
+								<property name="adjustment">adjustment_top</property>
+							</object>
+							<packing>
+								<property name="left-attach">1</property>
+								<property name="top-attach">2</property>
+							</packing>
+						</child>
+
+						<child>
+							<object class="GtkLabel">
+								<property name="visible">True</property> 
+								<property name="expand">False</property>
+								<property name="label" translatable="yes">Bottom padding:</property>
+							</object>
+							<packing>
+								<property name="left-attach">0</property>
+								<property name="top-attach">3</property>
+							</packing>
+						</child>
+						<child>
+							<object class="GtkSpinButton" id="bottom_padding_spinbtn">
+								<property name="visible">True</property>
+								<property name="expand">False</property>
+								<property name="adjustment">adjustment_bottom</property>
+							</object>
+							<packing>
+								<property name="left-attach">1</property>
+								<property name="top-attach">3</property>
+							</packing>
+						</child>
+
+						<child>
+							<object class="GtkLabel">
+								<property name="visible">True</property> 
+								<property name="expand">False</property>
+								<property name="label" translatable="yes">Left padding:</property>
+							</object>
+							<packing>
+								<property name="left-attach">0</property>
+								<property name="top-attach">4</property>
+							</packing>
+						</child>
+						<child>
+							<object class="GtkSpinButton" id="left_padding_spinbtn">
+								<property name="visible">True</property>
+								<property name="expand">False</property>
+								<property name="adjustment">adjustment_left</property>
+							</object>
+							<packing>
+								<property name="left-attach">1</property>
+								<property name="top-attach">4</property>
+							</packing>
+						</child>
+
+						<child>
+							<object class="GtkLabel">
+								<property name="visible">True</property> 
+								<property name="expand">False</property>
+								<property name="label" translatable="yes">Right padding:</property>
+							</object>
+							<packing>
+								<property name="left-attach">0</property>
+								<property name="top-attach">5</property>
+							</packing>
+						</child>
+						<child>
+							<object class="GtkSpinButton" id="right_padding_spinbtn">
+								<property name="visible">True</property>
+								<property name="expand">False</property>
+								<property name="adjustment">adjustment_right</property>
+							</object>
+							<packing>
+								<property name="left-attach">1</property>
+								<property name="top-attach">5</property>
+							</packing>
+						</child>
+
+					</object>
+				</child>
+			</object>
+			<packing>
+				<property name="name">page_position</property>
+				<property name="title" translatable="yes">Position</property>
+			</packing>
+		</child>
+
+		<child>
+			<object class="GtkScrolledWindow" id="layout_page">
+				<property name="visible">True</property>
+				
+				
+				
+<!--				TODO juste une groupe de radiobtn les gens qui veulent un truc plus avancé iront se faire foutre-->
+				
+				
+				
+			</object>
+			<packing>
+				<property name="name">page_layout</property>
+				<property name="title" translatable="yes">Layout</property>
+			</packing>
+		</child>
+
+		<child>
+			<object class="GtkScrolledWindow">
+				<property name="visible">True</property>
+				<child>
+					<object class="GtkBox">
+						<property name="visible">True</property>
+						<property name="spacing">16</property>
+						<property name="margin">32</property>
+						<property name="orientation">vertical</property>
+						<child>
+							<object class="GtkLabel">
+								<property name="visible">True</property>
+								<property name="halign">center</property>
+								<property name="label" translatable="yes">Convenient access to files</property>
+								<attributes>
+									<attribute name="weight" value="bold"/>
+									<attribute name="scale" value="2"/>
+								</attributes>
+							</object>
+						</child>
+						<child>
+							<object class="GtkImage" id="about_icon">
+								<property name="visible">True</property>
+							</object>
+						</child>
+						<child>
+							<object class="GtkLabel" id="label_description">
+								<property name="visible">True</property>
+								<property name="label" translatable="yes">Easy access to devices, bookmarks and recent files.</property>
+							</object>
+						</child>
+						<child>
+							<object class="GtkBox" id="link_box">
+								<property name="visible">True</property>
+								<property name="spacing">16</property>
+							</object>
+							<packing>
+								<property name="pack-type">end</property>
+							</packing>
+						</child>
+					</object>
+				</child>
+			</object>
+			<packing>
+				<property name="name">page_about</property>
+				<property name="title" translatable="yes">About</property>
+			</packing>
+		</child>
+	</object>
+</interface>
+

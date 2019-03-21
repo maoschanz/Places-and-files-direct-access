@@ -23,199 +23,44 @@ function init() {
 
 //-----------------------------------------------
 
-const ElementBox = new GObject.Class({
-	Name: 'PlacesOnDesktop.Prefs.ElementBox',
-	GTypeName: 'PlacesOnDesktopPrefsElementBox',
-	Extends: Gtk.Frame,
-	
-	_init: function(box_id, element_id, params) {
-		this.parent(params);
-		
-		this.element_id = element_id;
-		this.box_id = box_id;
-		
-		let box = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, halign: Gtk.Align.CENTER, valign: Gtk.Align.CENTER });
-		box.get_style_context().add_class('linked')
-		this.select_btn = new Gtk.ToggleButton({ label: _("Select an element…") });
-		this.options_btn = new Gtk.ToggleButton();
-		this.options_btn.set_image(Gtk.Image.new_from_icon_name('view-more-symbolic', Gtk.IconSize.MENU));
-		
-		this.select_popover = new Gtk.Popover(this.select_btn);
-		this.select_popover.set_relative_to(this.select_btn);
-		this.select_popover_box = new Gtk.Box({visible: true, orientation: Gtk.Orientation.VERTICAL, margin: 6});
-		this.select_popover.add(this.select_popover_box);
-		
-		this.buttons = [];
-		this.buttons['delete'] = new Gtk.ModelButton({ label: _("Delete this element"), visible: true })
-		this.buttons['searchbar'] = new Gtk.ModelButton({ label: _("Search bar"), visible: true })
-		this.buttons['places'] = new Gtk.ModelButton({ label: _("Places"), visible: true })
-		this.buttons['recent'] = new Gtk.ModelButton({ label: _("Recent files"), visible: true })
-		this.buttons['desktop'] = new Gtk.ModelButton({ label: _("Desktop folder"), visible: true })
-		this.buttons['starred'] = new Gtk.ModelButton({ label: _("Starred files"), visible: true })
-		
-		for (let i in this.buttons) {
-			this.select_popover_box.add(this.buttons[i]);
-		}
-		
-		this.buttons['delete'].connect('clicked', Lang.bind(this, function(){
-			log('todo supprimer des arrays');
-			this.destroy();
-		}));
-		this.buttons['searchbar'].connect('clicked', Lang.bind(this, function(){
-			this.element_id = 'searchbar';
-			this.save_new_id();
-		}));
-		this.buttons['places'].connect('clicked', Lang.bind(this, function(){
-			this.element_id = 'places';
-			this.save_new_id();
-		}));
-		this.buttons['recent'].connect('clicked', Lang.bind(this, function(){
-			this.element_id = 'recent';
-			this.save_new_id();
-		}));
-		this.buttons['desktop'].connect('clicked', Lang.bind(this, function(){
-			this.element_id = 'desktop';
-			this.save_new_id();
-		}));
-		this.buttons['starred'].connect('clicked', Lang.bind(this, function(){
-			this.element_id = 'starred';
-			this.save_new_id();
-		}));
-		
-		this.options_popover = new Gtk.Popover(this.options_btn);
-		this.options_popover.set_relative_to(this.options_btn);
-		this.options_popover_box = new Gtk.Box({visible: true, orientation: Gtk.Orientation.VERTICAL, margin: 6});
-		this.options_popover.add(this.options_popover_box);
-		
-		box.add(this.select_btn);
-		box.add(this.options_btn);
-		
-		this.select_btn.connect('toggled', Lang.bind(this, this.on_select_opened));
-		this.options_btn.connect('toggled', Lang.bind(this, this.on_options_opened));
-		this.select_popover.connect('closed', Lang.bind(this, this.on_select_closed));
-		this.options_popover.connect('closed', Lang.bind(this, this.on_options_closed));
-		
-		this.add(box);
-		this.show_all();
-		
-		this.options_btn.set_sensitive(this.element_id != null);
-	},
-	
-	on_select_closed: function(b) {
-		this.select_popover.popdown();
-		this.select_btn.set_active(false);
-	},
-	
-	on_select_opened: function(b) {
-		if (!b.get_active()) {
-			this.options_btn.set_sensitive(this.element_id != null);
-		} else {
-			this.select_popover.popup();
-		}
-	},
-	
-	on_options_closed: function(b) {
-		this.options_popover.popdown();
-		this.options_btn.set_active(false);
-	},
-	
-	on_options_opened: function(b) {
-		if (!b.get_active()) {
-			// application des réglages
-		} else {
-			this.options_popover_box.add(new Gtk.Button({ label: 'eeee', visible: true }));
-			this.options_popover.popup();
-		}
-	},
-	
-	save_new_id: function() {
-		let widgets = SETTINGS.get_strv('active-widgets');
-		widgets.push(this.element_id);
-		let positions = SETTINGS.get_strv('active-positions');
-		positions.push(this.box_id);
-		SETTINGS.set_strv('active-widgets', widgets);
-		SETTINGS.set_strv('active-positions', positions);
-	},
-	
-});
+//		this.buttons = [];
+//		this.buttons['delete'] = new Gtk.ModelButton({ label: _("Delete this element"), visible: true })
+//		this.buttons['searchbar'] = new Gtk.ModelButton({ label: _("Search bar"), visible: true })
+//		this.buttons['places'] = new Gtk.ModelButton({ label: _("Places"), visible: true })
+//		this.buttons['recent'] = new Gtk.ModelButton({ label: _("Recent files"), visible: true })
+//		this.buttons['desktop'] = new Gtk.ModelButton({ label: _("Desktop folder"), visible: true })
+//		this.buttons['starred'] = new Gtk.ModelButton({ label: _("Starred files"), visible: true })
+//	
+//	save_new_id: function() {
+//		let widgets = SETTINGS.get_strv('active-widgets');
+//		widgets.push(this.element_id);
+//		let positions = SETTINGS.get_strv('active-positions');
+//		positions.push(this.box_id);
+//		SETTINGS.set_strv('active-widgets', widgets);
+//		SETTINGS.set_strv('active-positions', positions);
+//	},
 
 //-----------------------------------------------
 
 const PlacesOnDesktopSettingsWidget = new GObject.Class({
 	Name: 'PlacesOnDesktop.Prefs.Widget',
 	GTypeName: 'PlacesOnDesktopPrefsWidget',
-	Extends: Gtk.Stack,
 
 	_init: function(params) {
-		this.parent({transition_type: Gtk.StackTransitionType.SLIDE_LEFT_RIGHT});
+		let builder = new Gtk.Builder();
+		builder.add_from_file(Me.path+'/prefs.ui');
+		this.prefs_stack = builder.get_object('prefs_stack');
 		
 		this.switcher = new Gtk.StackSwitcher({
 			halign: Gtk.Align.CENTER,
 			visible: true,
-			stack: this
+			stack: this.prefs_stack
 		});
-		
-		//---------------------------------------------------------------
-		
-		let builder = new Gtk.Builder();
-		builder.add_from_file(Me.path+"/ui/layout.ui");
-		builder.add_from_file(Me.path+"/ui/position.ui");
-//        builder.add_from_file(Me.path+"/ui/about.ui"); // TODO
-
-		let layout_page = builder.get_object("layout_page");
-		this.add_titled(layout_page, 'layout', _("Layout"));
-
-		let position_page = builder.get_object("position_page");
-		this.add_titled(position_page, 'position', _("Position"));
-		
-		let aboutPage = new Gtk.Box({ orientation: Gtk.Orientation.VERTICAL, margin: 25, spacing: 10 });
-		this.add_titled(aboutPage, 'about', _("About"));
 		
 		//--------------------------------------------------------
 		
 		//layout.ui //TODO
 //		let layout_btn = builder.get_object('layout_btn');
-		let box_0 = builder.get_object('box_0');
-
-		let box_0_add_btn = builder.get_object('box_0_add_btn');
-		let box_1_add_btn = builder.get_object('box_1_add_btn');
-		let box_2_add_btn = builder.get_object('box_2_add_btn');
-		let box_3_add_btn = builder.get_object('box_3_add_btn');
-		
-		let box_0_widgets = builder.get_object('box_0_widgets');
-		let box_1_widgets = builder.get_object('box_1_widgets');
-		let box_2_widgets = builder.get_object('box_2_widgets');
-		let box_3_widgets = builder.get_object('box_3_widgets');
-		
-		this.elements = [];
-		
-//		this.load_current_settings();
-		
-		box_0_add_btn.connect('clicked', Lang.bind(this, function() {
-			let new_element = new ElementBox('0', null);
-			box_0_widgets.add(new_element);
-			this.elements.push(new_element);
-		}));
-		
-		box_1_add_btn.connect('clicked', Lang.bind(this, function() {
-			let new_element = new ElementBox('1', null);
-			box_1_widgets.add(new_element);
-			this.elements.push(new_element);
-		}));
-		
-		box_2_add_btn.connect('clicked', Lang.bind(this, function() {
-			let new_element = new ElementBox('2', null);
-			box_2_widgets.add(new_element);
-			this.elements.push(new_element);
-		}));
-		
-		box_3_add_btn.connect('clicked', Lang.bind(this, function() {
-			let new_element = new ElementBox('3', null);
-			box_3_widgets.add(new_element);
-			this.elements.push(new_element);
-		}));
-		
-		
 		
 		
 		//position.ui
@@ -295,7 +140,7 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		this._typeSwitches.push( ['model', _("Model files")] );
 		
 //		for(var i = 0; i < this._typeSwitches.length; i++) {
-//			this.searchPage.add_row(			
+//			this.searchPage.add_row(
 //				this.createTypeSwitch(this._typeSwitches[i])
 //				, filterSection
 //			);
@@ -470,32 +315,11 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		
 		//--------------------------
 		
-		let labelName = Me.metadata.name.toString();
-		
-		let nameBox = new Gtk.Box({ orientation: Gtk.Orientation.VERTICAL, spacing: 15 });
-		nameBox.add(
-			new Gtk.Label({ label: "<b>" + _(labelName) + "</b>", use_markup: true, halign: Gtk.Align.CENTER })
+		builder.get_object('about_icon').set_from_pixbuf(
+			GdkPixbuf.Pixbuf.new_from_file_at_size(Me.path+'/images/about_icon.png', 128, 128)
 		);
-		aboutPage.add(nameBox);
 		
-		//--------------------------
-		
-		let a_image = new Gtk.Image({ pixbuf: GdkPixbuf.Pixbuf.new_from_file_at_size(Me.path+'/about_icon.png', 128, 128) });
-		aboutPage.add(a_image);
-		
-		//--------------------------
-		
-		let labelDescription = Me.metadata.description.toString();
-		
-		let DescriptionBox = new Gtk.Box({ orientation: Gtk.Orientation.VERTICAL, spacing: 15 });
-		DescriptionBox.add(
-			new Gtk.Label({ label: _( labelDescription ), use_markup: true, halign: Gtk.Align.CENTER })
-		);
-		aboutPage.add(DescriptionBox);
-		
-		//--------------------------
-		
-		let LinkBox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 10 });
+		let LinkBox = builder.get_object('link_box')
 		let a_version = ' (v' + Me.metadata.version.toString() + ') ';
 		
 		let url_button = new Gtk.LinkButton({
@@ -505,14 +329,12 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		
 		LinkBox.pack_start(url_button, false, false, 0);
 		LinkBox.pack_end(new Gtk.Label({ label: a_version, halign: Gtk.Align.START }), false, false, 0);
-		
-		aboutPage.pack_end(LinkBox, false, false, 0);
-		
+//		
 		//-------------------------
 	},
 	
 	load_current_settings: function() {
-		log('todo');
+		log('todo'); //TODO
 		
 		
 		
@@ -596,29 +418,16 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 //time he user try to access the settings' window
 function buildPrefsWidget() {
 	let widget = new PlacesOnDesktopSettingsWidget();
-//	widget.set_size_request(700, 300);
+//	widget.prefs_stack.set_size_request(700, 300);
 	
 	Mainloop.timeout_add(0, () => {
-		let headerBar = widget.get_toplevel().get_titlebar();
+		let headerBar = widget.prefs_stack.get_toplevel().get_titlebar();
 		headerBar.custom_title = widget.switcher;
-		
-		/*
-		let menu_btn = new Gtk.MenuButton();
-		menu_btn.set_image(Gtk.Image.new_from_icon_name('open-menu-symbolic', Gtk.IconSize.MENU))
-        let builder = new Gtk.Builder();
-        builder.add_from_file(Me.path+"/ui/menu.ui");
-        let menu = builder.get_object("prefs-menu");
-        let menu_popover = new Gtk.Popover(menu_btn);
-        menu_popover.bind_model(menu, 'win');
-        menu_btn.set_popover(menu_popover);
-		headerBar.pack_end(menu_btn)
-		headerBar.show_all();
-		*/
-		
 		return false;
 	});
 	
-	widget.show_all();
+	widget.prefs_stack.show_all();
 
-	return widget;
+	return widget.prefs_stack;
 }
+
