@@ -1,6 +1,5 @@
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
-//const Gtk = imports.gi.Gtk;
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const St = imports.gi.St;
@@ -63,7 +62,7 @@ var DesktopFilesList = new Lang.Class({
 		
 		this._monitor = this._directory.monitor(Gio.FileMonitorFlags.SEND_MOVED, null);
 		
-		this._updateSignal = this._monitor.connect('changed', Lang.bind(this, this._redisplay));
+		this._updateSignal = this._monitor.connect('changed', this._redisplay.bind(this));
 	},
 	
 	_buildFiles: function() {
@@ -87,17 +86,17 @@ var DesktopFilesList = new Lang.Class({
 		children.close(null);
 
 		dirs.sort(trierNom);
-		dirs.forEach(Lang.bind(this, function(fi) {
+		dirs.forEach( (fi) => {
 			let f = new DesktopFileButton(fi);
 			this._files.push(f);
 			this._content.add( f.actor );
-		}));
+		});
 		files.sort(trierNom);
-		files.forEach(Lang.bind(this, function(fi) {
+		files.forEach( (fi) => {
 			let f = new DesktopFileButton(fi);
 			this._files.push(f);
 			this._content.add( f.actor );
-		}));
+		});
 	},
 	
 	filter_widget: function(text) {
@@ -140,7 +139,7 @@ var DesktopFileButton = new Lang.Class({
 		});
 		
 		this.actor._delegate = this;
-		this._connexion2 = this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
+		this._connexion2 = this.actor.connect('button-press-event', this._onButtonPress.bind(this));
 		
 		this._menu = null;
 		this._menuManager = new PopupMenu.PopupMenuManager(this);
@@ -199,7 +198,8 @@ var DesktopFileButton = new Lang.Class({
 	},
 	
 	_onLauncher: function () {
-		let f = Gio.DesktopAppInfo.new_from_filename(GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP) + '/' + this._info.get_name());
+		let f = Gio.DesktopAppInfo.new_from_filename(GLib.get_user_special_dir(
+		   GLib.UserDirectory.DIRECTORY_DESKTOP) + '/' + this._info.get_name());
 		let command = f.get_string("Exec");
 		Util.trySpawnCommandLine(command);
 	},
@@ -214,9 +214,9 @@ var DesktopFileButton = new Lang.Class({
 
 		if (!this._menu) {
 			this._menu = new DesktopFileButtonMenu(this);
-			this._connexion = this._menu.connect('open-state-changed', Lang.bind(this, function (menu, isPoppedUp) {
+			this._connexion = this._menu.connect('open-state-changed', (menu, isPoppedUp) => {
 				if (!isPoppedUp) this._onMenuPoppedDown();
-			}));
+			});
 			this._menuManager.addMenu(this._menu);
 		}
 
@@ -265,11 +265,10 @@ const DesktopFileButtonMenu = new Lang.Class({
 		this.actor.add_style_class_name('app-well-menu');
 
 		// Chain our visibility and lifecycle to that of the source
-		source.actor.connect('notify::mapped', Lang.bind(this, function () {
-			if (!source.actor.mapped)
-				this.close();
-		}));
-		source.actor.connect('destroy', Lang.bind(this, this.destroy));
+		source.actor.connect('notify::mapped', () => {
+			if (!source.actor.mapped) this.close();
+		});
+		source.actor.connect('destroy', this.destroy.bind(this));
 
 		Main.uiGroup.add_actor(this.actor);
 	},
@@ -277,22 +276,19 @@ const DesktopFileButtonMenu = new Lang.Class({
 	_redisplay: function() {
 		this.removeAll();
 
-		this._appendMenuItem(_("Open")).connect('activate', Lang.bind(this, this._onOpen));
-		this._appendMenuItem(_("Execute")).connect('activate', Lang.bind(this, this._onExecute));
-		
+		this._appendMenuItem(_("Open")).connect('activate', this._onOpen.bind(this));
+		this._appendMenuItem(_("Execute")).connect('activate', this._onExecute.bind(this));
 		this._appendSeparator(); //----------------------------
-
-		this._appendMenuItem(_("Open parent folder")).connect('activate', Lang.bind(this, this._onParent));
-		
+		this._appendMenuItem(_("Open parent folder")).connect('activate', this._onParent.bind(this));
 		this._appendSeparator(); //----------------------------
-		
-//		this._appendMenuItem(_("Copy")).connect('activate', Lang.bind(this, this._onCopy)); // FIXME can't work ?
+//		this._appendMenuItem(_("Copy")).connect('activate', this._onCopy.bind(this)); // FIXME can't work ?
 		this._addRenameEntryAndButtons();
-		this._appendMenuItem(_("Delete")).connect('activate', Lang.bind(this, this._onDelete));
+		this._appendMenuItem(_("Delete")).connect('activate', this._onDelete.bind(this));
 	},
 	
 	_onParent: function() {
-		let uri = Gio.file_new_for_path(GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP)).get_uri();
+		let uri = Gio.file_new_for_path(GLib.get_user_special_dir(
+		                       GLib.UserDirectory.DIRECTORY_DESKTOP)).get_uri();
 		Gio.app_info_launch_default_for_uri(uri, global.create_app_launch_context(0, -1));
 	},
 	
@@ -341,8 +337,8 @@ const DesktopFileButtonMenu = new Lang.Class({
 		this.addMenuItem(this.renameItem);
 		this.addMenuItem(this.renameEntryItem);
 		
-		renameItemButton.connect('clicked', Lang.bind(this, this._onRename));
-		this.entry.connect('secondary-icon-clicked', Lang.bind(this, this._actuallyRename));
+		renameItemButton.connect('clicked', this._onRename.bind(this));
+		this.entry.connect('secondary-icon-clicked', this._actuallyRename.bind(this));
 		
 		this.renameEntryItem.actor.visible = false;
 	},	

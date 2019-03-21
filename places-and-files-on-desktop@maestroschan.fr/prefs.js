@@ -46,19 +46,20 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		let radio_btn_1 = builder.get_object('radio_btn_1');
 		let radio_btn_2 = builder.get_object('radio_btn_2');
 		let radio_btn_3 = builder.get_object('radio_btn_3');
+//		let radio_btn_3v = builder.get_object('radio_btn_3v');
 		let radio_btn_4 = builder.get_object('radio_btn_4');
 		let radio_btn_x = builder.get_object('radio_btn_x');
 		let number_recent = builder.get_object('number_recent');
 		
 		places_icon_size.set_value(SETTINGS.get_int('places-icon-size'));
 		places_icon_size.connect('value-changed', (widget) => {
-			var value = w.get_value_as_int();
+			var value = widget.get_value_as_int();
 			SETTINGS.set_int('places-icon-size', value);
 		});
 		
 		lists_icon_size.set_value(SETTINGS.get_int('recent-files-icon-size'));
 		lists_icon_size.connect('value-changed', (widget) => {
-			var value = w.get_value_as_int();
+			var value = widget.get_value_as_int();
 			SETTINGS.set_int('recent-files-icon-size', value);
 		});
 		
@@ -79,6 +80,12 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 			SETTINGS.set_strv('active-widgets', ['places', 'searchbar', 'recent', 'desktop']);
 			SETTINGS.set_strv('active-positions', ['0', '1', '2', '2']);
 		});
+		
+//		radio_btn_3v.connect('toggled', (widget) => {
+//			SETTINGS.set_boolean('not-overwrite-layout', false);
+//			SETTINGS.set_strv('active-widgets', ['places', 'searchbar', 'recent', 'desktop']);
+//			SETTINGS.set_strv('active-positions', ['0', '3', '3', '3']);
+//		});
 		
 		radio_btn_4.connect('toggled', (widget) => {
 			SETTINGS.set_boolean('not-overwrite-layout', false);
@@ -107,7 +114,11 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 			} else if (widgets == ['places', 'searchbar', 'desktop'].toString()) {
 				radio_btn_2.set_active(true);
 			} else if (widgets == ['places', 'searchbar', 'recent', 'desktop'].toString()) {
-				radio_btn_3.set_active(true);
+//				if (positions == ['0', '1', '2', '2'].toString()) {
+					radio_btn_3.set_active(true);
+//				} else {
+//					radio_btn_3v.set_active(true);
+//				}
 			} else if (widgets == ['searchbar', 'recent', 'desktop'].toString()) {
 				radio_btn_4.set_active(true);
 			} else {
@@ -117,7 +128,7 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		
 		number_recent.set_value(SETTINGS.get_int('number-of-recent-files'));
 		number_recent.connect('value-changed', (widget) => {
-			var value = w.get_value_as_int();
+			var value = widget.get_value_as_int();
 			SETTINGS.set_int('number-of-recent-files', value);
 		});
 		
@@ -140,25 +151,25 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		
 		top_padding_spinbtn.set_value(SETTINGS.get_int('top-padding'));
 		top_padding_spinbtn.connect('value-changed', (widget) => {
-			var value = w.get_value_as_int();
+			var value = widget.get_value_as_int();
 			SETTINGS.set_int('top-padding', value);
 		});
 		
 		bottom_padding_spinbtn.set_value(SETTINGS.get_int('bottom-padding'));
 		bottom_padding_spinbtn.connect('value-changed', (widget) => {
-			var value = w.get_value_as_int();
+			var value = widget.get_value_as_int();
 			SETTINGS.set_int('bottom-padding', value);
 		});
 		
 		left_padding_spinbtn.set_value(SETTINGS.get_int('left-padding'));
 		left_padding_spinbtn.connect('value-changed', (widget) => {
-			var value = w.get_value_as_int();
+			var value = widget.get_value_as_int();
 			SETTINGS.set_int('left-padding', value);
 		});
 		
 		right_padding_spinbtn.set_value(SETTINGS.get_int('right-padding'));
 		right_padding_spinbtn.connect('value-changed', (widget) => {
-			var value = w.get_value_as_int();
+			var value = widget.get_value_as_int();
 			SETTINGS.set_int('right-padding', value);
 		});
 		
@@ -170,7 +181,14 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 			GdkPixbuf.Pixbuf.new_from_file_at_size(Me.path+'/images/about_icon.png', 128, 128)
 		);
 		
-		let linkBox = builder.get_object('link_box')
+		let translation_credits = builder.get_object('translation_credits').get_label();
+		log(translation_credits);
+		if (translation_credits == 'translator-credits') {
+			builder.get_object('translation_label').set_label('');
+			builder.get_object('translation_credits').set_label('');
+		}
+		
+		let linkBox = builder.get_object('link_box')// FIXME padding ???
 		let a_version = ' (v' + Me.metadata.version.toString() + ') ';
 		
 		let url_button = new Gtk.LinkButton({

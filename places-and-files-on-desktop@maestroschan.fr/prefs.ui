@@ -278,9 +278,15 @@
 								<child>
 									<object class="GtkRadioButton" id="radio_btn_3">
 										<property name="group">radio_btn_1</property>
-										<property name="label" translatable="yes">Places, recent files, desktop files</property>
+										<property name="label" translatable="yes">Places, recent files and desktop files (side by side)</property>
 									</object>
 								</child>
+<!--								<child>-->
+<!--									<object class="GtkRadioButton" id="radio_btn_3v">-->
+<!--										<property name="group">radio_btn_1</property>-->
+<!--										<property name="label" translatable="yes">Places, recent files and desktop files (vertically stacked)</property>-->
+<!--									</object>-->
+<!--								</child>-->
 								<child>
 									<object class="GtkRadioButton" id="radio_btn_4">
 										<property name="group">radio_btn_1</property>
@@ -368,6 +374,47 @@
 						<child>
 							<object class="GtkBox" id="link_box">
 								<property name="spacing">16</property>
+							</object>
+							<packing>
+								<property name="pack-type">end</property>
+							</packing>
+						</child>
+						<child>
+							<object class="GtkBox">
+								<property name="spacing">16</property>
+								<child>
+									<object class="GtkBox">
+										<property name="spacing">16</property>
+										<child>
+											<object class="GtkLabel">
+												<property name="label" translatable="yes">Author:</property>
+											</object>
+										</child>
+										<child>
+											<object class="GtkLabel">
+												<property name="label">Romain F. T.</property>
+											</object>
+										</child>
+									</object>
+								</child>
+								<child>
+									<object class="GtkBox">
+									<property name="spacing">16</property>
+										<child>
+											<object class="GtkLabel" id="translation_label">
+												<property name="label" translatable="yes">Tranlators:</property>
+											</object>
+										</child>
+										<child>
+											<object class="GtkLabel" id="translation_credits">
+												<property name="label" translatable="yes">translator-credits</property>
+											</object>
+										</child>
+									</object>
+									<packing>
+										<property name="pack-type">end</property>
+									</packing>
+								</child>
 							</object>
 							<packing>
 								<property name="pack-type">end</property>

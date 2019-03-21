@@ -41,7 +41,6 @@ let SIGNAUX_OVERVIEW = [];
 let SIGNAUX_PARAM = [];
 let SIGNAL_MONITOR;
 
-//let MyConvenientLayout;
 let MyLayout;
 
 //------------------------------------------------
@@ -93,7 +92,8 @@ const PlaceButton = new Lang.Class({
 		this.placeIcon.animateZoomOut();
 		Util.trySpawnCommandLine('nautilus ' + this._info.file.get_uri());
 		//FIXME the "normal" method doesn't understand the trash, so this has to stay commented.
-//		Gio.app_info_launch_default_for_uri(this._info.file.get_uri(), global.create_app_launch_context(0, -1));
+//		Gio.app_info_launch_default_for_uri(this._info.file.get_uri(),
+//		                               global.create_app_launch_context(0, -1));
 	},
 	
 	_onMenuPoppedDown: function() {
@@ -195,12 +195,14 @@ const PlaceButtonMenu = new Lang.Class({
 		
 		if( this._source._info.name == _("Trash") ){
 			this._appendSeparator();
-			this._appendMenuItem(_("Empty")).connect('activate', this._onEmptyTrash.bind(this));
+			this._appendMenuItem(_("Empty")).connect('activate',
+			                                     this._onEmptyTrash.bind(this));
 		}
 
 		if( this._source._info.name == _("Recent Files") ){
 			this._appendSeparator();
-			this._appendMenuItem(_("Clear")).connect('activate', this._onEmptyRecent.bind(this));
+			this._appendMenuItem(_("Clear")).connect('activate',
+			                                    this._onEmptyRecent.bind(this));
 		}
 	},
 	
@@ -256,7 +258,8 @@ const PlaceButtonMenu = new Lang.Class({
 	},	
 		
 	_actuallyRename: function() {
-		let content = Shell.get_file_contents_utf8_sync(PLACES_MANAGER._bookmarksFile.get_path());
+		let content = Shell.get_file_contents_utf8_sync(
+		                              PLACES_MANAGER._bookmarksFile.get_path());
 		let lines = content.split('\n');
 
 		let currentUri = this._source._info.file.get_uri();
@@ -278,7 +281,8 @@ const PlaceButtonMenu = new Lang.Class({
 	},
 	
 	_onRemove: function() {
-		let content = Shell.get_file_contents_utf8_sync(PLACES_MANAGER._bookmarksFile.get_path());
+		let content = Shell.get_file_contents_utf8_sync(
+		                              PLACES_MANAGER._bookmarksFile.get_path());
 		let lines = content.split('\n');
 
 		let currentUri = this._source._info.file.get_uri();
@@ -498,18 +502,18 @@ function updateVisibility() {
 		MyLayout.hide();
 		return;
 	}
+
+	let gwsm;
 	if (global.hasOwnProperty('screen')) { // < 3.29
-		if (global.screen.get_workspace_by_index(global.screen.get_active_workspace_index()).list_windows() == '') {
-			MyLayout.show();
-		} else {
-			MyLayout.hide();
-		}
+		gwsm = global.screen;
 	} else { // > 3.29
-		if (global.workspaceManager.get_workspace_by_index(global.workspaceManager.get_active_workspace_index()).list_windows() == '') {
-			MyLayout.show();
-		} else {
-			MyLayout.hide();
-		}
+		gwsm = global.workspaceManager;
+	}
+
+	if (gwsm.get_workspace_by_index(gwsm.get_active_workspace_index()).list_windows() == '') {
+		MyLayout.show();
+	} else {
+		MyLayout.hide();
 	}
 }
 
@@ -550,16 +554,25 @@ function updateLayoutLayout() {
 		Main.layoutManager.overviewGroup.add_actor(MyLayout.actor);
 		//XXX dans ce contexte, qu'est this ?
 		if (global.hasOwnProperty('screen')) { // < 3.29
-			SIGNAUX_OVERVIEW[0] = global.screen.connect('notify::n-workspaces', updateVisibility.bind(this));
-			SIGNAUX_OVERVIEW[1] = global.screen.connect('restacked', updateVisibility.bind(this));
+			SIGNAUX_OVERVIEW[0] = global.screen.connect('notify::n-workspaces',
+			                                       updateVisibility.bind(this));
+			SIGNAUX_OVERVIEW[1] = global.screen.connect('restacked',
+			                                       updateVisibility.bind(this));
 		} else { // > 3.29
-			SIGNAUX_OVERVIEW[0] = global.workspaceManager.connect('notify::n-workspaces', updateVisibility.bind(this));
-			SIGNAUX_OVERVIEW[1] = global.display.connect('restacked', updateVisibility.bind(this));
+			SIGNAUX_OVERVIEW[0] = global.workspaceManager.connect(
+			               'notify::n-workspaces', updateVisibility.bind(this));
+			SIGNAUX_OVERVIEW[1] = global.display.connect('restacked',
+			                                       updateVisibility.bind(this));
 		}
-		SIGNAUX_OVERVIEW[2] = global.window_manager.connect('switch-workspace', updateVisibility.bind(this));
-		SIGNAUX_OVERVIEW[3] = Main.overview.viewSelector._showAppsButton.connect('notify::checked', updateVisibility.bind(this));
-		SIGNAUX_OVERVIEW[4] = Main.overview.viewSelector._text.connect('text-changed', updateVisibility.bind(this));
-		SIGNAUX_OVERVIEW[5] = Main.overview.connect('showing', updateVisibility.bind(this));
+
+		SIGNAUX_OVERVIEW[2] = global.window_manager.connect('switch-workspace',
+		                                           updateVisibility.bind(this));
+		SIGNAUX_OVERVIEW[3] = Main.overview.viewSelector._showAppsButton.connect(
+		                        'notify::checked', updateVisibility.bind(this));
+		SIGNAUX_OVERVIEW[4] = Main.overview.viewSelector._text.connect(
+		                           'text-changed', updateVisibility.bind(this));
+		SIGNAUX_OVERVIEW[5] = Main.overview.connect('showing',
+		                                           updateVisibility.bind(this));
 	} else {
 		Main.layoutManager._backgroundGroup.add_actor(MyLayout.actor);
 		MyLayout.show();
@@ -651,6 +664,8 @@ const ConvenientLayout = new Lang.Class({
 		let has1 = this.active_positions.includes('1');
 		let has2 = this.active_positions.includes('2');
 		let has3 = this.active_positions.includes('3');
+		
+//		FIXME le stacking de 2 listes échoue
 
 //		if (this.actor.width < this.actor.height) {
 //			this.actor.vertical = true;
@@ -696,13 +711,19 @@ function enable() {
 	MyLayout.fill_with_widgets();
 
 	SIGNAUX_PARAM = [];
-	SIGNAUX_PARAM[0] = SETTINGS.connect('changed::top-padding', MyLayout.adaptToMonitor.bind(MyLayout));
-	SIGNAUX_PARAM[1] = SETTINGS.connect('changed::bottom-padding', MyLayout.adaptToMonitor.bind(MyLayout));
-	SIGNAUX_PARAM[2] = SETTINGS.connect('changed::left-padding', MyLayout.adaptToMonitor.bind(MyLayout));
-	SIGNAUX_PARAM[3] = SETTINGS.connect('changed::right-padding', MyLayout.adaptToMonitor.bind(MyLayout));
-	SIGNAUX_PARAM[4] = SETTINGS.connect('changed::position', updateLayoutLayout.bind(MyLayout));
+	SIGNAUX_PARAM[0] = SETTINGS.connect('changed::top-padding',
+	                                    MyLayout.adaptToMonitor.bind(MyLayout));
+	SIGNAUX_PARAM[1] = SETTINGS.connect('changed::bottom-padding',
+	                                    MyLayout.adaptToMonitor.bind(MyLayout));
+	SIGNAUX_PARAM[2] = SETTINGS.connect('changed::left-padding',
+	                                    MyLayout.adaptToMonitor.bind(MyLayout));
+	SIGNAUX_PARAM[3] = SETTINGS.connect('changed::right-padding',
+	                                    MyLayout.adaptToMonitor.bind(MyLayout));
+	SIGNAUX_PARAM[4] = SETTINGS.connect('changed::position',
+	                                         updateLayoutLayout.bind(MyLayout));
 
-	SIGNAL_MONITOR = Main.layoutManager.connect('monitors-changed', MyLayout.adaptToMonitor.bind(MyLayout));
+	SIGNAL_MONITOR = Main.layoutManager.connect('monitors-changed',
+	                                    MyLayout.adaptToMonitor.bind(MyLayout));
 
 	updateLayoutLayout();
 }
