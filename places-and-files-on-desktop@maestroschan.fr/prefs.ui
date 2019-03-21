@@ -33,29 +33,48 @@
 		<property name="value">0</property>
 	</object>
 
+	<object class="GtkAdjustment" id="adjustment_places">
+		<property name="lower">32</property>
+		<property name="upper">256</property>
+		<property name="step_increment">1</property>
+		<property name="page_increment">10</property>
+		<property name="value">72</property>
+	</object>
+
+	<object class="GtkAdjustment" id="adjustment_list">
+		<property name="lower">8</property>
+		<property name="upper">32</property>
+		<property name="step_increment">1</property>
+		<property name="page_increment">10</property>
+		<property name="value">16</property>
+	</object>
+
+	<object class="GtkAdjustment" id="adjustment_recent">
+		<property name="lower">12</property>
+		<property name="upper">500</property>
+		<property name="step_increment">1</property>
+		<property name="page_increment">10</property>
+		<property name="value">100</property>
+	</object>
+
 	<object class="GtkStack" id="prefs_stack">
-		<property name="visible">True</property>
 		<property name="transition-type">slide-left-right</property>
-		
 		
 		<child>
 			<object class="GtkScrolledWindow" id="position_page">
-				<property name="visible">True</property>
-
 				<child>
 					<object class="GtkGrid">
-						<property name="visible">True</property>
 						<property name="expand">True</property>
 						<property name="row-spacing">12</property>
 						<property name="column-spacing">36</property>
-						<property name="halign">GTK_ALIGN_CENTER</property>
-						<property name="margin">25</property>
+						<property name="halign">center</property>
+						<property name="margin">24</property>
 
 						<child>
 							<object class="GtkLabel">
-								<property name="visible">True</property> 
+								<property name="halign">end</property>
 								<property name="expand">False</property>
-								<property name="label" translatable="yes">Display on:</property>
+								<property name="label" translatable="yes">Display on</property>
 							</object>
 							<packing>
 								<property name="left-attach">0</property>
@@ -64,7 +83,6 @@
 						</child>
 						<child>
 							<object class="GtkComboBoxText" id="position_combobox">
-								<property name="visible">True</property>
 								<property name="expand">False</property>
 							</object>
 							<packing>
@@ -75,7 +93,6 @@
 
 						<child>
 							<object class="GtkSeparator">
-								<property name="visible">True</property> 
 								<property name="expand">False</property>
 							</object>
 							<packing>
@@ -87,9 +104,9 @@
 
 						<child>
 							<object class="GtkLabel">
-								<property name="visible">True</property> 
 								<property name="expand">False</property>
-								<property name="label" translatable="yes">Top padding:</property>
+								<property name="halign">end</property>
+								<property name="label" translatable="yes">Top padding</property>
 							</object>
 							<packing>
 								<property name="left-attach">0</property>
@@ -98,7 +115,6 @@
 						</child>
 						<child>
 							<object class="GtkSpinButton" id="top_padding_spinbtn">
-								<property name="visible">True</property>
 								<property name="expand">False</property>
 								<property name="adjustment">adjustment_top</property>
 							</object>
@@ -110,9 +126,9 @@
 
 						<child>
 							<object class="GtkLabel">
-								<property name="visible">True</property> 
+								<property name="halign">end</property>
 								<property name="expand">False</property>
-								<property name="label" translatable="yes">Bottom padding:</property>
+								<property name="label" translatable="yes">Bottom padding</property>
 							</object>
 							<packing>
 								<property name="left-attach">0</property>
@@ -121,7 +137,6 @@
 						</child>
 						<child>
 							<object class="GtkSpinButton" id="bottom_padding_spinbtn">
-								<property name="visible">True</property>
 								<property name="expand">False</property>
 								<property name="adjustment">adjustment_bottom</property>
 							</object>
@@ -133,9 +148,9 @@
 
 						<child>
 							<object class="GtkLabel">
-								<property name="visible">True</property> 
+								<property name="halign">end</property>
 								<property name="expand">False</property>
-								<property name="label" translatable="yes">Left padding:</property>
+								<property name="label" translatable="yes">Left padding</property>
 							</object>
 							<packing>
 								<property name="left-attach">0</property>
@@ -144,7 +159,6 @@
 						</child>
 						<child>
 							<object class="GtkSpinButton" id="left_padding_spinbtn">
-								<property name="visible">True</property>
 								<property name="expand">False</property>
 								<property name="adjustment">adjustment_left</property>
 							</object>
@@ -156,9 +170,9 @@
 
 						<child>
 							<object class="GtkLabel">
-								<property name="visible">True</property> 
+								<property name="halign">end</property>
 								<property name="expand">False</property>
-								<property name="label" translatable="yes">Right padding:</property>
+								<property name="label" translatable="yes">Right padding</property>
 							</object>
 							<packing>
 								<property name="left-attach">0</property>
@@ -167,7 +181,6 @@
 						</child>
 						<child>
 							<object class="GtkSpinButton" id="right_padding_spinbtn">
-								<property name="visible">True</property>
 								<property name="expand">False</property>
 								<property name="adjustment">adjustment_right</property>
 							</object>
@@ -188,14 +201,144 @@
 
 		<child>
 			<object class="GtkScrolledWindow" id="layout_page">
-				<property name="visible">True</property>
-				
-				
-				
-<!--				TODO juste une groupe de radiobtn les gens qui veulent un truc plus avancé iront se faire foutre-->
-				
-				
-				
+				<child>
+					<object class="GtkGrid">
+						<property name="expand">True</property>
+						<property name="row-spacing">12</property>
+						<property name="column-spacing">36</property>
+						<property name="halign">center</property>
+						<property name="margin">24</property>
+						<child>
+							<object class="GtkLabel">
+								<property name="halign">end</property>
+								<property name="expand">False</property>
+								<property name="label" translatable="yes">Places icon size</property>
+							</object>
+							<packing>
+								<property name="left-attach">0</property>
+								<property name="top-attach">0</property>
+							</packing>
+						</child>
+						<child>
+							<object class="GtkSpinButton" id="places_icon_size">
+								<property name="expand">False</property>
+								<property name="adjustment">adjustment_places</property>
+							</object>
+							<packing>
+								<property name="left-attach">1</property>
+								<property name="top-attach">0</property>
+							</packing>
+						</child>
+						<child>
+							<object class="GtkLabel">
+								<property name="halign">end</property>
+								<property name="expand">False</property>
+								<property name="label" translatable="yes">Files lists icon size</property>
+							</object>
+							<packing>
+								<property name="left-attach">0</property>
+								<property name="top-attach">1</property>
+							</packing>
+						</child>
+						<child>
+							<object class="GtkSpinButton" id="lists_icon_size">
+								<property name="expand">False</property>
+								<property name="adjustment">adjustment_list</property>
+							</object>
+							<packing>
+								<property name="left-attach">1</property>
+								<property name="top-attach">1</property>
+							</packing>
+						</child>
+						<child>
+							<object class="GtkSeparator">
+								<property name="expand">False</property>
+							</object>
+							<packing>
+								<property name="left-attach">0</property>
+								<property name="top-attach">2</property>
+								<property name="width">2</property>
+							</packing>
+						</child>
+						<child>
+							<object class="GtkBox">
+								<property name="spacing">8</property>
+								<property name="orientation">vertical</property>
+								<child>
+									<object class="GtkRadioButton" id="radio_btn_1">
+										<property name="label" translatable="yes">Places, recent files (horizontal)</property>
+									</object>
+								</child>
+								<child>
+									<object class="GtkRadioButton" id="radio_btn_2">
+										<property name="group">radio_btn_1</property>
+										<property name="label" translatable="yes">Places, desktop files</property>
+									</object>
+								</child>
+<!--								<child>-->
+<!--									<object class="GtkRadioButton" id="radio_btn_3">-->
+<!--										<property name="group">radio_btn_1</property>-->
+<!--										<property name="label" translatable="yes">Places, recent files (vertical)</property>-->
+<!--									</object>-->
+<!--								</child>-->
+<!--								<child>-->
+<!--									<object class="GtkRadioButton" id="radio_btn_4">-->
+<!--										<property name="group">radio_btn_1</property>-->
+<!--										<property name="label" translatable="yes">Places, recent files, desktop files</property>-->
+<!--									</object>-->
+<!--								</child>-->
+<!--								<child>-->
+<!--									<object class="GtkRadioButton" id="radio_btn_5">-->
+<!--										<property name="group">radio_btn_1</property>-->
+<!--										<property name="label" translatable="yes">Recent files, desktop files</property>-->
+<!--									</object>-->
+<!--								</child>-->
+								<child>
+									<object class="GtkRadioButton" id="radio_btn_x">
+										<property name="group">radio_btn_1</property>
+										<property name="label" translatable="yes">Custom (use dconf to set the layout)</property>
+									</object>
+								</child>
+							</object>
+							<packing>
+								<property name="left-attach">0</property>
+								<property name="top-attach">3</property>
+								<property name="width">2</property>
+							</packing>
+						</child>
+						<child>
+							<object class="GtkSeparator">
+								<property name="expand">False</property>
+							</object>
+							<packing>
+								<property name="left-attach">0</property>
+								<property name="top-attach">4</property>
+								<property name="width">2</property>
+							</packing>
+						</child>
+						<child>
+							<object class="GtkLabel">
+								<property name="expand">False</property>
+								<property name="halign">end</property>
+								<property name="label" translatable="yes">Number of recent files listed</property>
+							</object>
+							<packing>
+								<property name="left-attach">0</property>
+								<property name="top-attach">5</property>
+							</packing>
+						</child>
+						<child>
+							<object class="GtkSpinButton" id="number_recent">
+								<property name="expand">False</property>
+								<property name="adjustment">adjustment_recent</property>
+							</object>
+							<packing>
+								<property name="left-attach">1</property>
+								<property name="top-attach">5</property>
+							</packing>
+						</child>
+					</object>
+				</child>
 			</object>
 			<packing>
 				<property name="name">page_layout</property>
@@ -205,16 +348,13 @@
 
 		<child>
 			<object class="GtkScrolledWindow">
-				<property name="visible">True</property>
 				<child>
 					<object class="GtkBox">
-						<property name="visible">True</property>
 						<property name="spacing">16</property>
 						<property name="margin">32</property>
 						<property name="orientation">vertical</property>
 						<child>
 							<object class="GtkLabel">
-								<property name="visible">True</property>
 								<property name="halign">center</property>
 								<property name="label" translatable="yes">Convenient access to files</property>
 								<attributes>
@@ -224,19 +364,15 @@
 							</object>
 						</child>
 						<child>
-							<object class="GtkImage" id="about_icon">
-								<property name="visible">True</property>
-							</object>
+							<object class="GtkImage" id="about_icon"></object>
 						</child>
 						<child>
 							<object class="GtkLabel" id="label_description">
-								<property name="visible">True</property>
 								<property name="label" translatable="yes">Easy access to devices, bookmarks and recent files.</property>
 							</object>
 						</child>
 						<child>
 							<object class="GtkBox" id="link_box">
-								<property name="visible">True</property>
 								<property name="spacing">16</property>
 							</object>
 							<packing>

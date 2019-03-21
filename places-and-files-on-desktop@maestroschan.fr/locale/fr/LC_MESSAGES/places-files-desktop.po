@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-04-13 12:23+0200\n"
+"POT-Creation-Date: 2019-03-21 11:01+0100\n"
 "PO-Revision-Date: 2018-03-12 17:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -13,145 +13,230 @@ msgstr ""
 "X-Generator: Poedit 2.0.6\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:76
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:194
 msgid "Trash"
 msgstr "Corbeille"
 
-msgid "Recent Files"
-msgstr "Fichiers récents"
-
-msgid "Other Locations"
-msgstr "Autres emplacements"
-
-msgid "Places"
-msgstr "Emplacements"
-
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:172
+#: places-and-files-on-desktop@maestroschan.fr/desktopFiles.js:280
+#: places-and-files-on-desktop@maestroschan.fr/recentFiles.js:288
 msgid "Open"
 msgstr "Ouvrir"
 
-msgid "Rename"
-msgstr "Renommer"
-
-msgid "Execute"
-msgstr "Exécuter"
-
-msgid "Delete"
-msgstr "Supprimer"
-
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:178
 msgid "Remove"
 msgstr "Retirer"
 
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:188
 msgid "Eject"
 msgstr "Éjecter"
 
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:191
 msgid "Unmount"
 msgstr "Démonter"
 
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:196
 msgid "Empty"
 msgstr "Vider"
 
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:199
+msgid "Recent Files"
+msgstr "Fichiers récents"
+
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:201
 msgid "Clear"
 msgstr "Nettoyer"
 
-msgid "Open parent folder"
-msgstr "Ouvrir le dossier parent"
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:221
+#: places-and-files-on-desktop@maestroschan.fr/desktopFiles.js:315
+msgid "Rename"
+msgstr "Renommer"
 
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:234
+#: places-and-files-on-desktop@maestroschan.fr/desktopFiles.js:328
 msgid "Type a name..."
 msgstr "Entrez un nom..."
 
-msgid "Copy path"
-msgstr "Copier le chemin"
-
-msgid "Remove from the list"
-msgstr "Retirer de la liste"
-
-msgid "Report bugs or ideas"
-msgstr "Rapporter des bugs ou des idées"
-
-msgid "Search"
-msgstr "Recherche"
-
-msgid "Filtering"
-msgstr "Filtrage"
-
-msgid "Position"
-msgstr "Position"
-
-msgid "Padding"
-msgstr "Marges"
-
-msgid "Top padding:"
-msgstr "Marge supérieure :"
-
-msgid "Bottom padding:"
-msgstr "Marge inférieure :"
-
-msgid "Left padding:"
-msgstr "Marge senestre :"
-
-msgid "Right padding:"
-msgstr "Marge dextre :"
-
-msgid "Display on:"
-msgstr "Afficher sur :"
-
-msgid "Desktop"
-msgstr "Bureau"
-
-msgid "Empty overview"
-msgstr "Vue d'ensemble vide"
-
-msgid "Others"
-msgstr "Autres"
-
-msgid "Icons"
-msgstr "Icônes"
-
-msgid "Favorite files"
-msgstr "Fichiers favoris"
-
-msgid "Recent files"
-msgstr "Fichiers récents"
-
-msgid "About"
-msgstr "À propos"
-
-msgid "Convenient access to files"
-msgstr "Accès pratique aux fichiers"
-
-msgid "Easy access to devices, bookmarks and recent files."
-msgstr "Un accès facile aux périphériques, aux signets et aux fichiers récents."
-
-msgid "Places icon size:"
-msgstr "Taille d'icône des emplacements :"
-
-msgid "Recent files icon size:"
-msgstr "Taille d'icône des fichiers récents :"
-
-msgid "Display files from:"
-msgstr "Afficher les fichiers depuis :"
-
-msgid "~/Desktop"
-msgstr "~/Bureau"
-
-msgid "Do not display"
-msgstr "Ne pas afficher"
-
-# FIXME
-#, fuzzy
-msgid "Starred files"
-msgstr "Fichiers étoilés"
-
-msgid "Number of recent files listed:"
-msgstr "Nombre de fichiers récents listés :"
-
-msgid "Search in paths:"
-msgstr "Rechercher dans les chemins :"
-
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:40
 msgid "Type here to search..."
 msgstr "Tapez ici pour chercher..."
 
-msgid "Clear List"
-msgstr "Effacer la liste"
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:75
+msgid "Search filters"
+msgstr "Filtres de recherche"
 
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:97
+msgid "Settings"
+msgstr "Paramètres"
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:211
+msgid "Search in files' path"
+msgstr "Rechercher dans les chemins"
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:216
 msgid "All files"
 msgstr "Tous les fichiers"
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:227
+msgid "Text files"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:227
+msgid "Image files"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:227
+msgid "Audio files"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:228
+msgid "Video files"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:228
+msgid "Application files"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:228
+msgid "Multipart files"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:229
+msgid "Message files"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:229
+msgid "Model files"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/desktopFiles.js:281
+msgid "Execute"
+msgstr "Exécuter"
+
+#: places-and-files-on-desktop@maestroschan.fr/desktopFiles.js:285
+#: places-and-files-on-desktop@maestroschan.fr/recentFiles.js:291
+msgid "Open parent folder"
+msgstr "Ouvrir le dossier parent"
+
+#: places-and-files-on-desktop@maestroschan.fr/desktopFiles.js:291
+msgid "Delete"
+msgstr "Supprimer"
+
+#: places-and-files-on-desktop@maestroschan.fr/recentFiles.js:293
+msgid "Copy path"
+msgstr "Copier le chemin"
+
+#: places-and-files-on-desktop@maestroschan.fr/recentFiles.js:296
+msgid "Remove from the list"
+msgstr "Retirer de la liste"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.js:111
+msgid "Desktop"
+msgstr "Bureau"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.js:112
+msgid "Empty overview"
+msgstr "Vue d'ensemble vide"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.js:154
+msgid "Report bugs or ideas"
+msgstr "Rapporter des bugs ou des idées"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:77
+msgid "Display on"
+msgstr "Afficher sur"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:109
+msgid "Top padding"
+msgstr "Marge supérieure"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:131
+msgid "Bottom padding"
+msgstr "Marge inférieure"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:153
+msgid "Left padding"
+msgstr "Marge senestre"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:175
+msgid "Right padding"
+msgstr "Marge dextre"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:198
+msgid "Position"
+msgstr "Position"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:215
+msgid "Places icon size"
+msgstr "Taille d'icône des emplacements"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:236
+msgid "Files lists icon size"
+msgstr "Taille d'icône des listes de fichiers"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:269
+msgid "Places, recent files (horizontal)"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:275
+msgid "Places, desktop files"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:299
+msgid "Custom (use dconf to set the layout)"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:323
+msgid "Number of recent files listed"
+msgstr "Nombre de fichiers récents listés"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:345
+msgid "Layout"
+msgstr "Disposition"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:359
+msgid "Convenient access to files"
+msgstr "Accès pratique aux fichiers"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:371
+msgid "Easy access to devices, bookmarks and recent files."
+msgstr ""
+"Un accès facile aux périphériques, aux signets et aux fichiers récents."
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:387
+msgid "About"
+msgstr "À propos"
+
+#~ msgid "Other Locations"
+#~ msgstr "Autres emplacements"
+
+#~ msgid "Places"
+#~ msgstr "Emplacements"
+
+#~ msgid "Search"
+#~ msgstr "Recherche"
+
+#~ msgid "Filtering"
+#~ msgstr "Filtrage"
+
+#~ msgid "Padding"
+#~ msgstr "Marges"
+
+#~ msgid "Others"
+#~ msgstr "Autres"
+
+#~ msgid "Icons"
+#~ msgstr "Icônes"
+
+#~ msgid "Favorite files"
+#~ msgstr "Fichiers favoris"
+
+#~ msgid "Recent files"
+#~ msgstr "Fichiers récents"
+
+#~ msgid "Recent files icon size"
+#~ msgstr "Taille d'icône des fichiers récents"
+
+#~ msgid "Clear List"
+#~ msgstr "Effacer la liste"
