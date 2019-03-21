@@ -266,7 +266,7 @@
 								<property name="orientation">vertical</property>
 								<child>
 									<object class="GtkRadioButton" id="radio_btn_1">
-										<property name="label" translatable="yes">Places, recent files (horizontal)</property>
+										<property name="label" translatable="yes">Places, recent files</property>
 									</object>
 								</child>
 								<child>
@@ -275,24 +275,18 @@
 										<property name="label" translatable="yes">Places, desktop files</property>
 									</object>
 								</child>
-<!--								<child>-->
-<!--									<object class="GtkRadioButton" id="radio_btn_3">-->
-<!--										<property name="group">radio_btn_1</property>-->
-<!--										<property name="label" translatable="yes">Places, recent files (vertical)</property>-->
-<!--									</object>-->
-<!--								</child>-->
-<!--								<child>-->
-<!--									<object class="GtkRadioButton" id="radio_btn_4">-->
-<!--										<property name="group">radio_btn_1</property>-->
-<!--										<property name="label" translatable="yes">Places, recent files, desktop files</property>-->
-<!--									</object>-->
-<!--								</child>-->
-<!--								<child>-->
-<!--									<object class="GtkRadioButton" id="radio_btn_5">-->
-<!--										<property name="group">radio_btn_1</property>-->
-<!--										<property name="label" translatable="yes">Recent files, desktop files</property>-->
-<!--									</object>-->
-<!--								</child>-->
+								<child>
+									<object class="GtkRadioButton" id="radio_btn_3">
+										<property name="group">radio_btn_1</property>
+										<property name="label" translatable="yes">Places, recent files, desktop files</property>
+									</object>
+								</child>
+								<child>
+									<object class="GtkRadioButton" id="radio_btn_4">
+										<property name="group">radio_btn_1</property>
+										<property name="label" translatable="yes">Recent files, desktop files</property>
+									</object>
+								</child>
 								<child>
 									<object class="GtkRadioButton" id="radio_btn_x">
 										<property name="group">radio_btn_1</property>

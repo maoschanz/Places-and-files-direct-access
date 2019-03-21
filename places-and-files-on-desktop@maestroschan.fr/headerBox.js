@@ -13,7 +13,6 @@ const _ = Gettext.gettext;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Convenience = Me.imports.convenience;
-
 const Extension = Me.imports.extension;
 
 //-------------------------------------------------
@@ -23,11 +22,8 @@ var HeaderBox = new Lang.Class({
 	Extends: St.BoxLayout,
 	
 	_init: function(layout) {
-
 		this.layout = layout;
-		
 		this.actor = this;
-		
 		this.parent({
 			vertical: false,
 			style_class: 'convenient-list-header',
@@ -53,14 +49,13 @@ var HeaderBox = new Lang.Class({
 				y_align: Clutter.ActorAlign.CENTER,
 			}),
 		});
-		this.searchEntry.get_clutter_text().connect(
-			'text-changed', 
-			Lang.bind(this, this._onSearchTextChanged)
-		);
-		this.searchEntry.connect('secondary-icon-clicked', Lang.bind(this, this._onIconRelease));
-//		this.searchEntry.connect('enter-event', Lang.bind(this, this.beginSearch));
-		this.searchEntry.connect('key-focus-in', Lang.bind(this, this.beginSearch)); // ???? XXX TODO
-		this.searchEntry.connect('key-focus-out', Lang.bind(this, this.endSearch));
+		this.searchEntry.get_clutter_text().connect('text-changed',
+		                                  this._onSearchTextChanged.bind(this));
+		this.searchEntry.connect('secondary-icon-clicked',
+		                                        this._onIconRelease.bind(this));
+//		this.searchEntry.connect('enter-event', this.beginSearch.bind(this));
+		this.searchEntry.connect('key-focus-in', this.beginSearch.bind(this)); // ???? XXX TODO
+		this.searchEntry.connect('key-focus-out', this.endSearch.bind(this));
 		ShellEntry.addContextMenu(this.searchEntry, null);
 		
 		//--------------------------------
@@ -105,7 +100,7 @@ var HeaderBox = new Lang.Class({
 			y_fill: true
 		});
 		
-		this.settingsButton.connect('clicked', Lang.bind(this, this.openSettings));
+		this.settingsButton.connect('clicked', this.openSettings.bind(this));
 
 		//--------------------------------
 		
@@ -149,7 +144,7 @@ var FilterMenuButton = new Lang.Class({
 
 	_init: function(bouton){
 		this.actor = bouton;
-		this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
+		this.actor.connect('button-press-event', this._onButtonPress.bind(this));
 		this._menu = null;
 		this._menuManager = new PopupMenu.PopupMenuManager(this);
 	},
@@ -193,7 +188,7 @@ const FilterMenu = new Lang.Class({
 		this.parent(source.actor, 0.5, St.Side.RIGHT);
 		this._source = source;
 		this.actor.add_style_class_name('app-well-menu');
-		this._source.actor.connect('destroy', Lang.bind(this, this.destroy));
+		this._source.actor.connect('destroy', this.destroy.bind(this));
 
 		// We want to keep the item hovered while the menu is up
 		this.blockSourceEvents = true;
@@ -258,3 +253,4 @@ const FilterMenu = new Lang.Class({
 	},
 });
 Signals.addSignalMethods(FilterMenu.prototype);
+

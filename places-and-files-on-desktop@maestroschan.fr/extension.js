@@ -77,10 +77,10 @@ const PlaceButton = new Lang.Class({
 			this._directory = Gio.file_new_for_uri("trash:///");
 			
 //			this._monitor = this._directory.monitor(Gio.FileMonitorFlags.SEND_MOVED, null);
-//			this._updateSignal = this._monitor.connect('changed', Lang.bind(this, this.update));
+//			this._updateSignal = this._monitor.connect('changed', this.update.bind(this));
 		}
 		
-		this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
+		this.actor.connect('button-press-event', this._onButtonPress.bind(this));
 		this._menu = null;
 		this._menuManager = new PopupMenu.PopupMenuManager(this);
 	},
@@ -106,7 +106,8 @@ const PlaceButton = new Lang.Class({
 
 		if (!this._menu) {
 			this._menu = new PlaceButtonMenu(this);
-			this.connexion = this._menu.connect('open-state-changed', Lang.bind(this, function (menu, isPoppedUp) {
+			this.connexion = this._menu.connect('open-state-changed',
+			                       Lang.bind(this, function (menu, isPoppedUp) {
 				if (!isPoppedUp) this._onMenuPoppedDown();
 			}));
 			this._menuManager.addMenu(this._menu);
@@ -161,7 +162,7 @@ const PlaceButtonMenu = new Lang.Class({
 		source.actor.connect('notify::mapped', Lang.bind(this, function () {
 			if (!source.actor.mapped) this.close();
 		}));
-		source.actor.connect('destroy', Lang.bind(this, this.destroy));
+		source.actor.connect('destroy', this.destroy.bind(this));
 
 		Main.uiGroup.add_actor(this.actor);
 	},
@@ -169,13 +170,14 @@ const PlaceButtonMenu = new Lang.Class({
 	_redisplay: function() {
 		this.removeAll();
 
-		this._appendMenuItem(_("Open") + " " + this._source._info.name).connect('activate', Lang.bind(this, this._onClicked));
+		this._appendMenuItem(_("Open") + " " + this._source._info.name).connect(
+		                                'activate', this._onClicked.bind(this));
 		
 		let couldBeRemoved = this._source._category == 'bookmarks';
 		if(couldBeRemoved) {
 			this._appendSeparator();
 			this._addRenameEntryAndButtons();
-			this._appendMenuItem(_("Remove")).connect('activate', Lang.bind(this, this._onRemove));
+			this._appendMenuItem(_("Remove")).connect('activate', this._onRemove.bind(this));
 		}
 		
 		let couldBeEjected = (this._source._info._mount && this._source._info._mount.can_eject());
@@ -185,20 +187,20 @@ const PlaceButtonMenu = new Lang.Class({
 			this._appendSeparator();
 		}
 		if(couldBeEjected){
-			this._appendMenuItem(_("Eject")).connect('activate', Lang.bind(this, this._onEject));
+			this._appendMenuItem(_("Eject")).connect('activate', this._onEject.bind(this));
 		}
 		if(couldBeUnmount){
-			this._appendMenuItem(_("Unmount")).connect('activate', Lang.bind(this, this._onUnmount));
+			this._appendMenuItem(_("Unmount")).connect('activate', this._onUnmount.bind(this));
 		}
 		
 		if( this._source._info.name == _("Trash") ){
 			this._appendSeparator();
-			this._appendMenuItem(_("Empty")).connect('activate', Lang.bind(this, this._onEmptyTrash));
+			this._appendMenuItem(_("Empty")).connect('activate', this._onEmptyTrash.bind(this));
 		}
 
 		if( this._source._info.name == _("Recent Files") ){
 			this._appendSeparator();
-			this._appendMenuItem(_("Clear")).connect('activate', Lang.bind(this, this._onEmptyRecent));
+			this._appendMenuItem(_("Clear")).connect('activate', this._onEmptyRecent.bind(this));
 		}
 	},
 	
@@ -247,8 +249,8 @@ const PlaceButtonMenu = new Lang.Class({
 		this.addMenuItem(this.renameItem);
 		this.addMenuItem(this.renameEntryItem);
 		
-		renameItemButton.connect('clicked', Lang.bind(this, this._onRename));
-		this.entry.connect('secondary-icon-clicked', Lang.bind(this, this._actuallyRename));
+		renameItemButton.connect('clicked', this._onRename.bind(this));
+		this.entry.connect('secondary-icon-clicked', this._actuallyRename.bind(this));
 		
 		this.renameEntryItem.actor.visible = false;
 	},	
@@ -302,15 +304,12 @@ const PlaceButtonMenu = new Lang.Class({
 
 		if (this._source._info._mount.can_unmount()) {
 			this._source._info._mount.eject_with_operation(Gio.MountUnmountFlags.NONE,
-											mountOp.mountOp,
-						null, // Gio.Cancellable
-						Lang.bind(this, this._ejectFinish));
+			                                      mountOp.mountOp, null, // Gio.Cancellable
+			                                      this._ejectFinish.bind(this));
 		} else {
 			this._source._info._mount.unmount_with_operation(Gio.MountUnmountFlags.NONE,
-				mountOp.mountOp,
-				null, // Gio.Cancellable
-				Lang.bind(this, this._unmountFinish)
-			);
+				                                 mountOp.mountOp, null, // Gio.Cancellable
+				                                 this._unmountFinish.bind(this));
 		}
 	},
 	
@@ -319,16 +318,12 @@ const PlaceButtonMenu = new Lang.Class({
 
 		if (this._source._info._mount.can_eject()) {
 			this._source._info._mount.eject_with_operation(Gio.MountUnmountFlags.NONE,
-				mountOp.mountOp,
-				null, // Gio.Cancellable
-				Lang.bind(this, this._ejectFinish)
-			);
+				                                  mountOp.mountOp, null, // Gio.Cancellable
+				                                  this._ejectFinish.bind(this));
 		} else {
 			this._source._info._mount.unmount_with_operation(Gio.MountUnmountFlags.NONE,
-				mountOp.mountOp,
-				null, // Gio.Cancellable
-				Lang.bind(this, this._unmountFinish)
-			);
+				                                mountOp.mountOp, null, // Gio.Cancellable
+				                                this._unmountFinish.bind(this));
 		}
 	},
 
@@ -421,16 +416,15 @@ const PlacesGrid = new Lang.Class({
 	
 	_init: function() {
 		this.parent();
-		
 		this.actor.style_class = 'places-grid';
 		
 		let monitor = Main.layoutManager.primaryMonitor;
 
 		this._placesItem = new Array();
-		PLACES_MANAGER.connect('special-updated', Lang.bind(this, this.redisplay ));
-		PLACES_MANAGER.connect('devices-updated', Lang.bind(this, this.redisplay ));
-		PLACES_MANAGER.connect('network-updated', Lang.bind(this, this.redisplay ));
-		PLACES_MANAGER.connect('bookmarks-updated', Lang.bind(this, this.redisplay));
+		PLACES_MANAGER.connect('special-updated', this.redisplay.bind(this));
+		PLACES_MANAGER.connect('devices-updated', this.redisplay.bind(this));
+		PLACES_MANAGER.connect('network-updated', this.redisplay.bind(this));
+		PLACES_MANAGER.connect('bookmarks-updated', this.redisplay.bind(this));
 		
 		this.buildItems();
 	},
@@ -456,7 +450,6 @@ const PlacesGrid = new Lang.Class({
 	
 	buildCategory: function(id) { 
 		let places = PLACES_MANAGER.get(id);
-
 		for (let i = 0; i < places.length; i++){
 			this._placesItem.push( new PlaceButton(places[i], id) );
 		}
@@ -495,186 +488,6 @@ const PlaceIcon = new Lang.Class({
 //-------------------------------------------------------
 
 /*
-	This class should only produce 1 single object during the execution.
-	However i'll not verify that, because singleton-related issues are boring.
-	
-	It acts as container, managing how "sub-actors" will be sized and displayed.
-	
-	Built "sub-actors" are:
-	- 1 PlacesGrid (inherits from IconGrid)
-	- 1 HeaderBox (a box with a search entry and a button)
-	- 1 RecentFiles.RecentFilesList (a ton of buttons with menus on them)
-	- Either 1 DesktopFiles.DesktopFilesList or 1 StarredFiles.StarredFilesList
-	
-	Actors are put in scrollviews, then scrollviews' width, height, visibility
-	and position are computed depending on user's settings and main monitor size
-	and proportions.
-*/
-const ConvenientLayout2 = new Lang.Class({
-	Name: 'ConvenientLayout2',
-	
-	_init: function () {
-		this.actor = new St.BoxLayout({
-			//main actor of the extension
-			vertical: false,
-		});
-		
-		this.placesGrid = new PlacesGrid();
-		
-		this.recentFilesList = new RecentFiles.RecentFilesList();
-//		this.starredFilesList = new StarredFiles.StarredFilesList(); //TODO à implémenter
-		this.starredFilesList = new DesktopFiles.DesktopFilesList(); //TODO à virer lol
-		this.desktopFilesList = new DesktopFiles.DesktopFilesList();
-		
-		this.headerBox = new HeaderBox.HeaderBox(this);
-		
-		this.placesGridScrollview = new St.ScrollView({
-			x_fill: true,
-			y_fill: true,
-			x_align: St.Align.MIDDLE,
-			y_align: St.Align.MIDDLE,
-			x_expand: true,
-			y_expand: true,
-			style_class: 'vfade', //lui bug moins ? FIXME
-			hscrollbar_policy: Gtk.PolicyType.NEVER,
-		});
-	
-		this.fileListsWithHeader = new St.BoxLayout({
-			vertical: true,
-		});
-		
-		this.fileListsOnly = new St.BoxLayout({
-			vertical: true,
-			style: 'spacing: 5px;',
-		});
-		
-		this.recentFilesScrollview = new St.ScrollView({
-			x_fill: true,
-			y_fill: true,
-			x_align: St.Align.MIDDLE,
-			y_align: St.Align.MIDDLE,
-			x_expand: true,
-			y_expand: true,
-//			style_class: 'vfade', //FIXME ??
-			hscrollbar_policy: Gtk.PolicyType.NEVER,
-		});
-		
-		this.starredFilesScrollview = new St.ScrollView({
-			x_fill: true,
-			y_fill: true,
-			x_align: St.Align.MIDDLE,
-			y_align: St.Align.MIDDLE,
-			x_expand: true,
-			y_expand: true,
-//			style_class: 'vfade', //FIXME ??
-			hscrollbar_policy: Gtk.PolicyType.NEVER,
-		});
-		
-		this.desktopFilesScrollview = new St.ScrollView({
-			x_fill: true,
-			y_fill: true,
-			x_align: St.Align.MIDDLE,
-			y_align: St.Align.MIDDLE,
-			x_expand: true,
-			y_expand: true,
-//			style_class: 'vfade', //FIXME ??
-			hscrollbar_policy: Gtk.PolicyType.NEVER,
-		});
-		
-		//------------------------
-		
-		this.placesGridScrollview.add_actor(this.placesGrid.actor);
-		this.recentFilesScrollview.add_actor(this.recentFilesList.actor);
-		this.starredFilesScrollview.add_actor(this.starredFilesList.actor);
-		this.desktopFilesScrollview.add_actor(this.desktopFilesList.actor);
-		this.fileListsOnly.add(this.recentFilesScrollview);
-		this.fileListsOnly.add(this.starredFilesScrollview);
-		this.fileListsOnly.add(this.desktopFilesScrollview);
-		
-		this.updateStarredVisibility();
-		
-		this.fileListsWithHeader.add(this.headerBox);
-		this.fileListsWithHeader.add(this.fileListsOnly);
-		
-		this.actor.add(this.placesGridScrollview); 
-		this.actor.add(this.fileListsWithHeader);
-		
-		//------------------------
-		
-		this.adaptToMonitor();
-	},
-	
-	adaptInternalWidgets: function () {
-		if (this.actor.width < this.actor.height) {
-			this.actor.vertical = true;
-			this.placesGridScrollview.height = Math.floor(this.actor.height *  0.4);
-			this.fileListsWithHeader.height = Math.floor(this.actor.height * 0.6);
-			this.placesGridScrollview.width = this.actor.width;
-			this.fileListsWithHeader.width = this.actor.width;
-		} else {
-			this.actor.vertical = false;
-			this.placesGridScrollview.height = this.actor.height;
-			this.fileListsWithHeader.height = this.actor.height;
-			this.placesGridScrollview.width = Math.floor(this.actor.width * 0.5);
-			this.fileListsWithHeader.width = Math.floor(this.actor.width * 0.5);
-		}
-		
-		if (this.fileListsWithHeader.width > LIST_MAX_WIDTH) {
-			this.fileListsOnly.vertical = false;
-		} else {
-			this.fileListsOnly.vertical = true;
-		}
-	},
-	
-	adaptToMonitor: function () {
-		//change global position and size of the main actor
-		
-		PADDING = [
-			SETTINGS.get_int('top-padding'),
-			SETTINGS.get_int('bottom-padding'),
-			SETTINGS.get_int('left-padding'),
-			SETTINGS.get_int('right-padding')
-		];
-	
-		let monitor = Main.layoutManager.primaryMonitor;
-		this.actor.width = Math.floor(monitor.width - (PADDING[2] + PADDING[3]));
-		this.actor.height = Math.floor(monitor.height - (PADDING[0] + PADDING[1]));
-		this.actor.set_position(
-			monitor.x + Math.floor(PADDING[2]),
-			monitor.y + Math.floor(PADDING[0])
-		);
-		
-		this.adaptInternalWidgets();
-	},
-	
-	updateStarredVisibility: function () {
-		this.desktopFilesScrollview.visible = false;
-		if (SETTINGS.get_string('favorites-files') == 'desktop' || SETTINGS.get_string('favorites-files') == 'both') {
-			this.desktopFilesScrollview.visible = true;
-		}
-		
-		this.starredFilesScrollview.visible = false;
-		if (SETTINGS.get_string('favorites-files') == 'starred' || SETTINGS.get_string('favorites-files') == 'both') {
-			this.starredFilesScrollview.visible = true;
-		}
-	},
-	
-	hide: function () {
-		this.actor.visible = false;
-	},
-	
-	show: function () {
-		this.actor.visible = true;
-	},
-	
-	destroy: function () {
-		//TODO ?
-	},
-});
-
-//------------------------------------------------
-
-/*
 	This function is called when the user performs an action which affects the visibility
 	of MyLayout in the case its actor has been added to the overviewGroup.
 	It can be opening or closing a window, changing the current workspace, beginning a
@@ -708,7 +521,9 @@ function updateVisibility() {
 	constructor, but is just moved to the new position.
 */
 function updateLayoutLayout() {
-	if (POSITION == 'overview') {
+	if (POSITION == '') {
+		// do nothing
+	} else if (POSITION == 'overview') {
 		Main.layoutManager.overviewGroup.remove_actor(MyLayout.actor);
 	} else {
 		Main.layoutManager._backgroundGroup.remove_actor(MyLayout.actor);
@@ -733,19 +548,18 @@ function updateLayoutLayout() {
 	
 	if (POSITION == 'overview') {
 		Main.layoutManager.overviewGroup.add_actor(MyLayout.actor);
-		//FIXME dans ce contexte, qu'est this ?
+		//XXX dans ce contexte, qu'est this ?
 		if (global.hasOwnProperty('screen')) { // < 3.29
-			SIGNAUX_OVERVIEW[0] = global.screen.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
-			SIGNAUX_OVERVIEW[1] = global.screen.connect('restacked', Lang.bind(this, updateVisibility));
+			SIGNAUX_OVERVIEW[0] = global.screen.connect('notify::n-workspaces', updateVisibility.bind(this));
+			SIGNAUX_OVERVIEW[1] = global.screen.connect('restacked', updateVisibility.bind(this));
 		} else { // > 3.29
-			SIGNAUX_OVERVIEW[0] = global.workspaceManager.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
-			SIGNAUX_OVERVIEW[1] = global.display.connect('restacked', Lang.bind(this, updateVisibility));
+			SIGNAUX_OVERVIEW[0] = global.workspaceManager.connect('notify::n-workspaces', updateVisibility.bind(this));
+			SIGNAUX_OVERVIEW[1] = global.display.connect('restacked', updateVisibility.bind(this));
 		}
-		SIGNAUX_OVERVIEW[2] = global.window_manager.connect('switch-workspace', Lang.bind(this, updateVisibility));
-		SIGNAUX_OVERVIEW[3] = Main.overview.viewSelector._showAppsButton.connect('notify::checked', Lang.bind(this, updateVisibility));
-		SIGNAUX_OVERVIEW[4] = Main.overview.viewSelector._text.connect('text-changed', Lang.bind(this, updateVisibility));
-		SIGNAUX_OVERVIEW[5] = Main.overview.connect('showing', Lang.bind(this, updateVisibility));
-		
+		SIGNAUX_OVERVIEW[2] = global.window_manager.connect('switch-workspace', updateVisibility.bind(this));
+		SIGNAUX_OVERVIEW[3] = Main.overview.viewSelector._showAppsButton.connect('notify::checked', updateVisibility.bind(this));
+		SIGNAUX_OVERVIEW[4] = Main.overview.viewSelector._text.connect('text-changed', updateVisibility.bind(this));
+		SIGNAUX_OVERVIEW[5] = Main.overview.connect('showing', updateVisibility.bind(this));
 	} else {
 		Main.layoutManager._backgroundGroup.add_actor(MyLayout.actor);
 		MyLayout.show();
@@ -763,27 +577,11 @@ const ConvenientLayout = new Lang.Class({
 			vertical: false,
 		});
 		
-		//---------
-		this.box_0 = new St.BoxLayout({
-			vertical: true,
-//			style: 'background-color: rgba(0, 255, 0, 0.3);',
-		});
-		this.box_m = new St.BoxLayout({
-			vertical: true,
-		});
-		this.box_1 = new St.BoxLayout({
-			vertical: false,
-//			style: 'background-color: rgba(0, 255, 255, 0.3);',
-		});
-		this.box_2 = new St.BoxLayout({
-			vertical: false,
-//			style: 'background-color: rgba(0, 0, 255, 0.3);',
-		});
-		this.box_3 = new St.BoxLayout({
-			vertical: true,
-//			style: 'background-color: rgba(255, 0, 255, 0.3);',
-		});
-		//---------
+		this.box_0 = new St.BoxLayout({ vertical: true });
+		this.box_m = new St.BoxLayout({ vertical: true });
+		this.box_1 = new St.BoxLayout({ vertical: false });
+		this.box_2 = new St.BoxLayout({ vertical: false });
+		this.box_3 = new St.BoxLayout({ vertical: true });
 		
 		this.actor.add(this.box_0);
 		this.box_m.add(this.box_1);
@@ -791,22 +589,13 @@ const ConvenientLayout = new Lang.Class({
 		this.actor.add(this.box_m);
 		this.actor.add(this.box_3);
 		
+		this.active_positions = SETTINGS.get_strv('active-positions');
 		this.adaptToMonitor();
-		
-		//---------------
-		
-		this.widget_places = new PlacesList();
-		this.widget_recent = new RecentFiles.RecentFilesList();
-//		this.widget_starred = new StarredFiles.StarredFilesList()
-		this.widget_searchbar = new HeaderBox.HeaderBox(this);
-		this.widget_desktop = new DesktopFiles.DesktopFilesList();
 	},
 	
 	filter_widgets: function(text) {
 		for (let i = 0; i < this.active_widgets.length; i++) {
-			log(this.active_widgets[i] + ' no start')
 			this['widget_' + this.active_widgets[i]].filter_widget(text);
-			log(this.active_widgets[i] + ' no end')
 		}
 	},
 	
@@ -819,11 +608,19 @@ const ConvenientLayout = new Lang.Class({
 	},
 	
 	fill_with_widgets: function () {
-		let active_positions = SETTINGS.get_strv('active-positions');
+		this.active_positions = SETTINGS.get_strv('active-positions');
 		this.active_widgets = SETTINGS.get_strv('active-widgets');
+
+		// TODO build only the useful ones
+		this.widget_places = new PlacesList();
+		this.widget_recent = new RecentFiles.RecentFilesList();
+//		this.widget_starred = new StarredFiles.StarredFilesList();
+		this.widget_desktop = new DesktopFiles.DesktopFilesList();
+		this.widget_searchbar = new HeaderBox.HeaderBox(this);
 		
-		for (let i = 0; i < this.active_widgets.length; i++) {
-			this['box_' + active_positions[i]].add(this['widget_' + this.active_widgets[i]].actor)
+		for (let i=0; i<this.active_widgets.length; i++) {
+			this['box_' + this.active_positions[i]].add(
+			                    this['widget_' + this.active_widgets[i]].actor);
 		}
 		
 		this.adaptInternalWidgets();
@@ -831,7 +628,6 @@ const ConvenientLayout = new Lang.Class({
 	
 	adaptToMonitor: function () {
 		//change global position and size of the main actor
-		
 		PADDING = [
 			SETTINGS.get_int('top-padding'),
 			SETTINGS.get_int('bottom-padding'),
@@ -851,21 +647,35 @@ const ConvenientLayout = new Lang.Class({
 	},
 	
 	adaptInternalWidgets: function () {
+		let has0 = this.active_positions.includes('0');
+		let has1 = this.active_positions.includes('1');
+		let has2 = this.active_positions.includes('2');
+		let has3 = this.active_positions.includes('3');
+
 //		if (this.actor.width < this.actor.height) {
 //			this.actor.vertical = true;
 //			// TODO
 //		} else {
-			// FIXME tout cela doit dépendre des paramètres, au moins en partie
-			// mais pas touche à la hauteur de box_1 et box_2
+			// XXX améliorable
+			// pas touche à la hauteur de box_1 et box_2
 			this.actor.vertical = false;
 			this.box_0.height = this.actor.height;
-//			this.box_1.height = Math.floor(this.actor.height * 0.8);
-//			this.box_2.height = Math.floor(this.actor.height * 0.2);
 			this.box_m.height = this.actor.height;
 			this.box_3.height = this.actor.height;
-			this.box_0.width = Math.floor(this.actor.width * 0.55);
-//			this.box_m.width = Math.floor(this.actor.width * 0.1);
-			this.box_3.width = Math.floor(this.actor.width * 0.45);
+			if (has0 && has3 && (has1 || has2)) {
+				this.box_0.width = Math.floor(this.actor.width * 0.3);
+				this.box_m.width = Math.floor(this.actor.width * 0.4);
+				this.box_3.width = Math.floor(this.actor.width * 0.3);
+			} else if (has0 && has3) {
+				this.box_0.width = Math.floor(this.actor.width * 0.5);
+				this.box_3.width = Math.floor(this.actor.width * 0.5);
+			} else if (has0 && (has1 || has2)) {
+				this.box_0.width = Math.floor(this.actor.width * 0.5);
+				this.box_m.width = Math.floor(this.actor.width * 0.5);
+			} else if (has3 && (has1 || has2)) {
+				this.box_m.width = Math.floor(this.actor.width * 0.5);
+				this.box_3.width = Math.floor(this.actor.width * 0.5);
+			}
 //		}
 	},
 });
@@ -873,11 +683,8 @@ const ConvenientLayout = new Lang.Class({
 //------------------------------------------------
 
 function enable() {
-	
 	SETTINGS = Convenience.getSettings('org.gnome.shell.extensions.places-files-desktop');
-	
-	POSITION = SETTINGS.get_string('position');
-	
+	POSITION = '';
 	PADDING = [
 		SETTINGS.get_int('top-padding'),
 		SETTINGS.get_int('bottom-padding'),
@@ -887,38 +694,17 @@ function enable() {
 
 	MyLayout = new ConvenientLayout();
 	MyLayout.fill_with_widgets();
-	
+
 	SIGNAUX_PARAM = [];
-	SIGNAUX_PARAM[0] = SETTINGS.connect('changed::top-padding', Lang.bind(MyLayout, MyLayout.adaptToMonitor));
-	SIGNAUX_PARAM[1] = SETTINGS.connect('changed::bottom-padding', Lang.bind(MyLayout, MyLayout.adaptToMonitor));
-	SIGNAUX_PARAM[2] = SETTINGS.connect('changed::left-padding', Lang.bind(MyLayout, MyLayout.adaptToMonitor));
-	SIGNAUX_PARAM[3] = SETTINGS.connect('changed::right-padding', Lang.bind(MyLayout, MyLayout.adaptToMonitor));
-	SIGNAUX_PARAM[4] = SETTINGS.connect('changed::position', Lang.bind(MyLayout, updateLayoutLayout));
-//	SIGNAUX_PARAM[5] = SETTINGS.connect('changed::favorites-files', Lang.bind(MyConvenientLayout, MyConvenientLayout.updateStarredVisibility));
-	
-	SIGNAL_MONITOR = Main.layoutManager.connect('monitors-changed', Lang.bind(MyLayout, MyLayout.adaptToMonitor));
+	SIGNAUX_PARAM[0] = SETTINGS.connect('changed::top-padding', MyLayout.adaptToMonitor.bind(MyLayout));
+	SIGNAUX_PARAM[1] = SETTINGS.connect('changed::bottom-padding', MyLayout.adaptToMonitor.bind(MyLayout));
+	SIGNAUX_PARAM[2] = SETTINGS.connect('changed::left-padding', MyLayout.adaptToMonitor.bind(MyLayout));
+	SIGNAUX_PARAM[3] = SETTINGS.connect('changed::right-padding', MyLayout.adaptToMonitor.bind(MyLayout));
+	SIGNAUX_PARAM[4] = SETTINGS.connect('changed::position', updateLayoutLayout.bind(MyLayout));
 
-	SIGNAUX_OVERVIEW = [];
-	
-	if (POSITION == 'overview') {
-		Main.layoutManager.overviewGroup.add_actor(MyLayout.actor);
-		
-		if (global.hasOwnProperty('screen')) { // < 3.29
-			SIGNAUX_OVERVIEW[0] = global.screen.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
-			SIGNAUX_OVERVIEW[1] = global.screen.connect('restacked', Lang.bind(this, updateVisibility));
-		} else { // > 3.29
-			SIGNAUX_OVERVIEW[0] = global.workspaceManager.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
-			SIGNAUX_OVERVIEW[1] = global.display.connect('restacked', Lang.bind(this, updateVisibility));
-		}
-		SIGNAUX_OVERVIEW[2] = global.window_manager.connect('switch-workspace', Lang.bind(this, updateVisibility));
-		SIGNAUX_OVERVIEW[3] = Main.overview.viewSelector._showAppsButton.connect('notify::checked', Lang.bind(this, updateVisibility));
-		SIGNAUX_OVERVIEW[4] = Main.overview.viewSelector._text.connect('text-changed', Lang.bind(this, updateVisibility));
-		SIGNAUX_OVERVIEW[5] = Main.overview.connect('showing', Lang.bind(this, updateVisibility));
+	SIGNAL_MONITOR = Main.layoutManager.connect('monitors-changed', MyLayout.adaptToMonitor.bind(MyLayout));
 
-	} else {
-		Main.layoutManager._backgroundGroup.add_actor(MyLayout.actor);
-		MyLayout.show();
-	}
+	updateLayoutLayout();
 }
 
 //------------------------------------------------

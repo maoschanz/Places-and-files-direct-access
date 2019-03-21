@@ -7,6 +7,7 @@ cd places-and-files-on-desktop@maestroschan.fr
 glib-compile-schemas ./schemas
 
 zip ../places-and-files-on-desktop@maestroschan.fr.zip convenience.js
+zip ../places-and-files-on-desktop@maestroschan.fr.zip recentFiles.js
 zip ../places-and-files-on-desktop@maestroschan.fr.zip desktopFiles.js
 zip ../places-and-files-on-desktop@maestroschan.fr.zip headerBox.js
 zip ../places-and-files-on-desktop@maestroschan.fr.zip placeDisplay.js

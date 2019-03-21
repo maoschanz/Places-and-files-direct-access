@@ -1,7 +1,6 @@
 
 const GObject = imports.gi.GObject;
 const Gtk = imports.gi.Gtk;
-const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const GdkPixbuf = imports.gi.GdkPixbuf;
 
@@ -46,34 +45,47 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		let lists_icon_size = builder.get_object('lists_icon_size');
 		let radio_btn_1 = builder.get_object('radio_btn_1');
 		let radio_btn_2 = builder.get_object('radio_btn_2');
-//		let radio_btn_3 = builder.get_object('radio_btn_3');
-//		let radio_btn_4 = builder.get_object('radio_btn_4');
+		let radio_btn_3 = builder.get_object('radio_btn_3');
+		let radio_btn_4 = builder.get_object('radio_btn_4');
 		let radio_btn_x = builder.get_object('radio_btn_x');
 		let number_recent = builder.get_object('number_recent');
 		
 		places_icon_size.set_value(SETTINGS.get_int('places-icon-size'));
-		places_icon_size.connect('value-changed', Lang.bind(this, function(w){
+		places_icon_size.connect('value-changed', (widget) => {
 			var value = w.get_value_as_int();
 			SETTINGS.set_int('places-icon-size', value);
-		}));
+		});
 		
 		lists_icon_size.set_value(SETTINGS.get_int('recent-files-icon-size'));
-		lists_icon_size.connect('value-changed', Lang.bind(this, function(w){
+		lists_icon_size.connect('value-changed', (widget) => {
 			var value = w.get_value_as_int();
 			SETTINGS.set_int('recent-files-icon-size', value);
-		}));
+		});
 		
-		radio_btn_1.connect('toggled', Lang.bind(this, function(w){
+		radio_btn_1.connect('toggled', (widget) => {
 			SETTINGS.set_boolean('not-overwrite-layout', false);
 			SETTINGS.set_strv('active-widgets', ['places', 'searchbar', 'recent']);
 			SETTINGS.set_strv('active-positions', ['0', '3', '3']);
-		}));
+		});
 		
-		radio_btn_2.connect('toggled', Lang.bind(this, function(w){
+		radio_btn_2.connect('toggled', (widget) => {
 			SETTINGS.set_boolean('not-overwrite-layout', false);
 			SETTINGS.set_strv('active-widgets', ['places', 'searchbar', 'desktop']);
 			SETTINGS.set_strv('active-positions', ['0', '3', '3']);
-		}));
+		});
+		
+		radio_btn_3.connect('toggled', (widget) => {
+			SETTINGS.set_boolean('not-overwrite-layout', false);
+			SETTINGS.set_strv('active-widgets', ['places', 'searchbar', 'recent', 'desktop']);
+			SETTINGS.set_strv('active-positions', ['0', '1', '2', '2']);
+		});
+		
+		radio_btn_4.connect('toggled', (widget) => {
+			SETTINGS.set_boolean('not-overwrite-layout', false);
+			SETTINGS.set_strv('active-widgets', ['searchbar', 'recent', 'desktop']);
+			SETTINGS.set_strv('active-positions', ['1', '2', '2']);
+		});
+		
 		
 //		'searchbar' _("Search bar")
 //		'places' _("Places")
@@ -81,22 +93,33 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 //		'desktop' _("Desktop folder")
 //		'starred' _("Starred files")
 		
-		radio_btn_x.connect('toggled', Lang.bind(this, function(w){
+		radio_btn_x.connect('toggled', (widget) => {
 			SETTINGS.set_boolean('not-overwrite-layout', true);
-		}));
+		});
 		
 		if (SETTINGS.get_boolean('not-overwrite-layout')) {
 			radio_btn_x.set_active(true);
 		} else {
-			//TODO
-			radio_btn_1.set_active(true);
+			let widgets = SETTINGS.get_strv('active-widgets').toString();
+			let positions = SETTINGS.get_strv('active-positions').toString();
+			if (widgets == ['places', 'searchbar', 'recent'].toString()) {
+				radio_btn_1.set_active(true);
+			} else if (widgets == ['places', 'searchbar', 'desktop'].toString()) {
+				radio_btn_2.set_active(true);
+			} else if (widgets == ['places', 'searchbar', 'recent', 'desktop'].toString()) {
+				radio_btn_3.set_active(true);
+			} else if (widgets == ['searchbar', 'recent', 'desktop'].toString()) {
+				radio_btn_4.set_active(true);
+			} else {
+				radio_btn_x.set_active(true);
+			}
 		}
 		
 		number_recent.set_value(SETTINGS.get_int('number-of-recent-files'));
-		number_recent.connect('value-changed', Lang.bind(this, function(w){
+		number_recent.connect('value-changed', (widget) => {
 			var value = w.get_value_as_int();
 			SETTINGS.set_int('number-of-recent-files', value);
-		}));
+		});
 		
 		//-------------------------------------------------------
 		
@@ -111,33 +134,33 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		position_combobox.append('desktop', _("Desktop"));
 		position_combobox.append('overview', _("Empty overview"));
 		position_combobox.active_id = SETTINGS.get_string('position');
-		position_combobox.connect("changed", (widget) => {
+		position_combobox.connect('changed', (widget) => {
 			SETTINGS.set_string('position', widget.get_active_id());
 		});
 		
 		top_padding_spinbtn.set_value(SETTINGS.get_int('top-padding'));
-		top_padding_spinbtn.connect('value-changed', Lang.bind(this, function(w){
+		top_padding_spinbtn.connect('value-changed', (widget) => {
 			var value = w.get_value_as_int();
 			SETTINGS.set_int('top-padding', value);
-		}));
+		});
 		
 		bottom_padding_spinbtn.set_value(SETTINGS.get_int('bottom-padding'));
-		bottom_padding_spinbtn.connect('value-changed', Lang.bind(this, function(w){
+		bottom_padding_spinbtn.connect('value-changed', (widget) => {
 			var value = w.get_value_as_int();
 			SETTINGS.set_int('bottom-padding', value);
-		}));
+		});
 		
 		left_padding_spinbtn.set_value(SETTINGS.get_int('left-padding'));
-		left_padding_spinbtn.connect('value-changed', Lang.bind(this, function(w){
+		left_padding_spinbtn.connect('value-changed', (widget) => {
 			var value = w.get_value_as_int();
 			SETTINGS.set_int('left-padding', value);
-		}));
+		});
 		
 		right_padding_spinbtn.set_value(SETTINGS.get_int('right-padding'));
-		right_padding_spinbtn.connect('value-changed', Lang.bind(this, function(w){
+		right_padding_spinbtn.connect('value-changed', (widget) => {
 			var value = w.get_value_as_int();
 			SETTINGS.set_int('right-padding', value);
-		}));
+		});
 		
 		//--------------------------
 		
