@@ -20,6 +20,8 @@ const Extension = Me.imports.extension;
 const Gettext = imports.gettext.domain('places-files-desktop');
 const _ = Gettext.gettext;
 
+var RECENT_MANAGER;
+
 //-------------------------------------------------
 
 function trierDate(x,y) {
@@ -61,7 +63,7 @@ var RecentFileButton = new Lang.Class({
 		});
 
 		this.actor._delegate = this;
-		this._connexion2 = this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
+		this.actor.connect('button-press-event', this._onButtonPress.bind(this));
 		
 		this._menu = null;
 		this._menuManager = new PopupMenu.PopupMenuManager(this);
@@ -148,9 +150,10 @@ var RecentFileButton = new Lang.Class({
 
 		if (!this._menu) {
 			this._menu = new RecentFileMenu(this);
-			this._connexion = this._menu.connect('open-state-changed', Lang.bind(this, function (menu, isPoppedUp) {
-				if (!isPoppedUp) this._onMenuPoppedDown();
-			}));
+			this._menu.connect('open-state-changed', (menu, isPoppedUp) => {
+				if (!isPoppedUp)
+					this._onMenuPoppedDown();
+			});
 			this._menuManager.addMenu(this._menu);
 		}
 
@@ -163,8 +166,6 @@ var RecentFileButton = new Lang.Class({
 	},
 	
 	destroy: function() {
-		this.actor.disconnect(this._connexion2);
-		this._menu.disconnect(this._connexion);
 		this.parent();
 	},
 });
@@ -196,23 +197,22 @@ var RecentFilesList = new Lang.Class({
 		});
 		this.actor.add_actor(this._content);
 		this._buildRecents();
-		this.conhandler = Extension.RECENT_MANAGER.connect('changed', Lang.bind(this, this._redisplay));
+		this.conhandler = RECENT_MANAGER.connect('changed', this._redisplay.bind(this));
 		
-		Extension.SETTINGS.connect('changed::blacklist-recent', Lang.bind(this, this._redisplay));
+		Extension.SETTINGS.connect('changed::blacklist-recent', this._redisplay.bind(this));
 	},
 	
 	_redisplay: function() {
-		this._content.destroy_all_children();
+		this._content.destroy_all_children(); //XXX
 		this._buildRecents();
 	},
 	
 	_buildRecents: function() {
 		/* inspired by the code from RecentItems@bananenfisch.net */
-		let allRecentFiles = Extension.RECENT_MANAGER.get_items();
+		let allRecentFiles = RECENT_MANAGER.get_items();
 		allRecentFiles.sort(trierDate);
 		
-		let blacklistString = Extension.SETTINGS.get_strv('blacklist-recent').toString();
-		let blacklistList = blacklistString.split(",");
+		let blacklistList = Extension.SETTINGS.get_strv('blacklist-recent').toString();
 		this._files = [];
 		
 		var i = 0;
@@ -250,7 +250,7 @@ var RecentFilesList = new Lang.Class({
 	},
 	
 	destroy() {
-		Extension.RECENT_MANAGER.disconnect(this.conhandler);
+//		RECENT_MANAGER.disconnect(this.conhandler);
 		this.parent();
 	},
 });
@@ -273,11 +273,13 @@ var RecentFileMenu = new Lang.Class({
 
 		this.actor.add_style_class_name('app-well-menu');
 
-		// Chain our visibility and lifecycle to that of the source
-		source.actor.connect('notify::mapped', Lang.bind(this, function () {
-			if (!source.actor.mapped) this.close();
-		}));
-		source.actor.connect('destroy', Lang.bind(this, this.destroy));
+		// Chain our visibility and lifecycle to that of the source // FIXME
+//		source.actor.connect('notify::mapped', () => {
+//			if (!source.actor.mapped) {
+//				this.close();
+//			}
+//		});
+		source.actor.connect('destroy', this.destroy.bind(this));
 
 		Main.uiGroup.add_actor(this.actor);
 	},
@@ -285,15 +287,15 @@ var RecentFileMenu = new Lang.Class({
 	_redisplay: function() {
 		this.removeAll();
 
-		this._appendMenuItem(_("Open") + " " + this._source.label).connect('activate', Lang.bind(this, this._onOpen));
-		//this._appendMenuItem(_("Open with")).connect('activate', Lang.bind(this, this._onOpenWith));
+		this._appendMenuItem(_("Open") + " " + this._source.label).connect('activate', this._onOpen.bind(this));
+		//this._appendMenuItem(_("Open with")).connect('activate', this._onOpenWith.bind(this));
 		this._appendSeparator();
-		this._appendMenuItem(_("Open parent folder")).connect('activate', Lang.bind(this, this._onParent));
+		this._appendMenuItem(_("Open parent folder")).connect('activate', this._onParent.bind(this));
 		if(this._source.path != null) {
-			this._appendMenuItem(_("Copy path")).connect('activate', Lang.bind(this, this._onCopyPath));
+			this._appendMenuItem(_("Copy path")).connect('activate', this._onCopyPath.bind(this));
 		}
 		this._appendSeparator();
-		this._appendMenuItem(_("Remove from the list")).connect('activate', Lang.bind(this, this._onRemove));
+		this._appendMenuItem(_("Remove from the list")).connect('activate', this._onRemove.bind(this));
 	},
 	
 	_onParent: function() {
@@ -325,7 +327,7 @@ var RecentFileMenu = new Lang.Class({
 	},
 	
 	_onRemove: function() {
-		Extension.RECENT_MANAGER.remove_item(this._source.uri);
+		RECENT_MANAGER.remove_item(this._source.uri);
 	},
 	
 	_appendSeparator: function () {

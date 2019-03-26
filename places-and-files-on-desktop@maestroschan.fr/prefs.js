@@ -93,12 +93,11 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 			SETTINGS.set_strv('active-positions', ['1', '2', '2']);
 		});
 		
-		
-//		'searchbar' _("Search bar")
-//		'places' _("Places")
-//		'recent' _("Recent files")
-//		'desktop' _("Desktop folder")
-//		'starred' _("Starred files")
+//		radio_btn_5.connect('toggled', (widget) => {
+//			SETTINGS.set_boolean('not-overwrite-layout', false);
+//			SETTINGS.set_strv('active-widgets', ['places', 'searchbar', 'starred']);
+//			SETTINGS.set_strv('active-positions', ['0', '3', '3']);
+//		});
 		
 		radio_btn_x.connect('toggled', (widget) => {
 			SETTINGS.set_boolean('not-overwrite-layout', true);
@@ -182,7 +181,6 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		);
 		
 		let translation_credits = builder.get_object('translation_credits').get_label();
-		log(translation_credits);
 		if (translation_credits == 'translator-credits') {
 			builder.get_object('translation_label').set_label('');
 			builder.get_object('translation_credits').set_label('');

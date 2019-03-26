@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: unnamed project\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-21 16:15+0100\n"
+"POT-Creation-Date: 2019-03-22 03:16+0100\n"
 "PO-Revision-Date: 2019-03-21 16:15+0100\n"
 "Last-Translator: Romain F. T. <rrroschan@gmail.com>\n"
 "Language-Team: French <none>\n"
@@ -134,15 +134,15 @@ msgstr "Copier le chemin"
 msgid "Remove from the list"
 msgstr "Retirer de la liste"
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.js:145
+#: places-and-files-on-desktop@maestroschan.fr/prefs.js:144
 msgid "Desktop"
 msgstr "Bureau"
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.js:146
+#: places-and-files-on-desktop@maestroschan.fr/prefs.js:145
 msgid "Empty overview"
 msgstr "Vue d'ensemble vide"
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.js:195
+#: places-and-files-on-desktop@maestroschan.fr/prefs.js:194
 msgid "Report bugs or ideas"
 msgstr "Rapporter des bugs ou des idées"
 
@@ -194,40 +194,40 @@ msgstr ""
 msgid "Recent files, desktop files"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:299
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:305
 msgid "Custom (use dconf to set the layout)"
 msgstr "Personnalisé (utiliser dconf pour paramétrer la disposition)"
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:323
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:329
 msgid "Number of recent files listed"
 msgstr "Nombre de fichiers récents listés"
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:345
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:351
 msgid "Layout"
 msgstr "Disposition"
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:359
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:365
 msgid "Convenient access to files"
 msgstr "Accès pratique aux fichiers"
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:371
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:377
 msgid "Easy access to devices, bookmarks and recent files."
 msgstr ""
 "Un accès facile aux périphériques, aux signets et aux fichiers récents."
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:390
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:396
 msgid "Author:"
 msgstr "Auteur :"
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:405
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:411
 msgid "Tranlators:"
 msgstr "Traducteur :"
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:410
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:416
 msgid "translator-credits"
 msgstr "Romain F. T."
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:428
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:434
 msgid "About"
 msgstr "À propos"
 

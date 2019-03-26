@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-21 16:15+0100\n"
+"POT-Creation-Date: 2019-03-22 03:16+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -135,15 +135,15 @@ msgstr ""
 msgid "Remove from the list"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.js:145
+#: places-and-files-on-desktop@maestroschan.fr/prefs.js:144
 msgid "Desktop"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.js:146
+#: places-and-files-on-desktop@maestroschan.fr/prefs.js:145
 msgid "Empty overview"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.js:195
+#: places-and-files-on-desktop@maestroschan.fr/prefs.js:194
 msgid "Report bugs or ideas"
 msgstr ""
 
@@ -195,38 +195,38 @@ msgstr ""
 msgid "Recent files, desktop files"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:299
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:305
 msgid "Custom (use dconf to set the layout)"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:323
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:329
 msgid "Number of recent files listed"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:345
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:351
 msgid "Layout"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:359
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:365
 msgid "Convenient access to files"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:371
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:377
 msgid "Easy access to devices, bookmarks and recent files."
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:390
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:396
 msgid "Author:"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:405
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:411
 msgid "Tranlators:"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:410
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:416
 msgid "translator-credits"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:428
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:434
 msgid "About"
 msgstr ""

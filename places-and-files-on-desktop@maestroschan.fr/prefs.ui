@@ -293,6 +293,12 @@
 										<property name="label" translatable="yes">Recent files, desktop files</property>
 									</object>
 								</child>
+<!--								<child>-->
+<!--									<object class="GtkRadioButton" id="radio_btn_5">-->
+<!--										<property name="group">radio_btn_1</property>-->
+<!--										<property name="label" translatable="yes">Places, favorite files</property>-->
+<!--									</object>-->
+<!--								</child>-->
 								<child>
 									<object class="GtkRadioButton" id="radio_btn_x">
 										<property name="group">radio_btn_1</property>
