@@ -1,8 +1,8 @@
+
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
 const GLib = imports.gi.GLib;
-const Lang = imports.lang;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
@@ -24,10 +24,8 @@ var PLACES_MANAGER;
 
 //-------------------------------------------------
 
-const PlaceButton = new Lang.Class({
-	Name: 'PlaceButton',
-	
-	_init: function( info, category ){
+class PlaceButton {
+	constructor (info, category) {
 		this._info = info;
 		this._category = category;
 		
@@ -39,8 +37,11 @@ const PlaceButton = new Lang.Class({
 			y_fill: true,
 		});
 		
-		this.placeIcon = new PlaceIcon(this._info);
-		this.actor.set_child( this.placeIcon.actor );
+		this.icon = new IconGrid.BaseIcon(this._info.name,
+		     { createIcon: this.createIcon.bind(this), setSizeManually: true });
+		this.icon.label.style_class = 'place-label';
+		
+		this.actor.set_child(this.icon.actor);
 		
 		if (this._info.name == _("Trash")) {
 			this._directory = Gio.file_new_for_uri("trash:///");
@@ -52,28 +53,36 @@ const PlaceButton = new Lang.Class({
 		this.actor.connect('button-press-event', this._onButtonPress.bind(this));
 		this._menu = null;
 		this._menuManager = new PopupMenu.PopupMenuManager(this);
-	},
+	}
 	
-	update: function() {
-		this.placeIcon.update();
-	},
-	
-	_onClicked: function() {
-		this.placeIcon.animateZoomOut();
+	createIcon () {
+		return (new St.Icon({
+			gicon: this._info.icon,
+			icon_size: Extension.SETTINGS.get_int('places-icon-size')
+		}));
+	}
+
+	update () {
+		PLACES_MANAGER._updateSpecials();
+		this.icon.createIcon();
+	}
+
+	_onClicked () {
+		this.icon.animateZoomOut();
 		Util.trySpawnCommandLine('nautilus ' + this._info.file.get_uri());
 		//FIXME the "normal" method doesn't understand the trash, so this has to stay commented.
 //		Gio.app_info_launch_default_for_uri(this._info.file.get_uri(),
 //		                               global.create_app_launch_context(0, -1));
-	},
-	
-	_onMenuPoppedDown: function() {
+	}
+
+	_onMenuPoppedDown () {
 		this.actor.sync_hover();
 		this.emit('menu-state-changed', false);
-	},
-	
-	popupMenu: function() {
-		this.actor.fake_release();
+	}
 
+	popupMenu () {
+		this.actor.fake_release();
+		
 		if (!this._menu) {
 			this._menu = new PlaceButtonMenu(this);
 			this._menu.connect('open-state-changed', (menu, isPoppedUp) => {
@@ -87,9 +96,9 @@ const PlaceButton = new Lang.Class({
 		this._menu.popup();
 		this._menuManager.ignoreRelease();
 		return false;
-	},
+	}
 	
-	_onButtonPress: function(actor, event) {
+	_onButtonPress (actor, event) {
 		let button = event.get_button();
 		if (button == 1) {
 			this._onClicked();
@@ -98,27 +107,24 @@ const PlaceButton = new Lang.Class({
 			return Clutter.EVENT_STOP;
 		}
 		return Clutter.EVENT_PROPAGATE;
-	},
+	}
 
-	destroy: function() {
+	destroy () {
 //		if (this._info.name == _("Trash")) {	
 //			this._monitor.disconnect(this._updateSignal);
 //		}
-		this.parent();
-	},
-});
+//		super.destroy(); // FIXME
+	}
+};
 Signals.addSignalMethods(PlaceButton.prototype);
 
-const PlaceButtonMenu = new Lang.Class({
-	Name: 'PlaceButtonMenu',
-	Extends: PopupMenu.PopupMenu,
-
-	_init: function(source) {
+class PlaceButtonMenu extends PopupMenu.PopupMenu {
+	constructor (source) {
 		let side = St.Side.LEFT;
 		if (Clutter.get_default_text_direction() == Clutter.TextDirection.RTL)
 			side = St.Side.RIGHT;
 
-		this.parent(source.actor, 0.5, side);
+		super(source.actor, 0.5, side);
 
 		// We want to keep the item hovered while the menu is up
 		this.blockSourceEvents = true;
@@ -133,9 +139,9 @@ const PlaceButtonMenu = new Lang.Class({
 		source.actor.connect('destroy', this.destroy.bind(this));
 
 		Main.uiGroup.add_actor(this.actor);
-	},
+	}
 
-	_redisplay: function() {
+	_redisplay () {
 		this.removeAll();
 		
 		//TODO %s
@@ -173,16 +179,15 @@ const PlaceButtonMenu = new Lang.Class({
 			this._appendMenuItem(_("Clear")).connect('activate',
 			                                    this._onEmptyRecent.bind(this));
 		}
-	},
-	
-	_onRename: function() {
+	}
+
+	_onRename () {
 		this.renameItem.actor.visible = false;
 		this.renameEntryItem.actor.visible = true;
-	
 		global.stage.set_key_focus(this.entry);
-	},
-	
-	_addRenameEntryAndButtons: function() {
+	}
+
+	_addRenameEntryAndButtons () {
 		this.renameItem = new PopupMenu.PopupBaseMenuItem({
 			reactive: true,
 			activate: true,
@@ -224,9 +229,9 @@ const PlaceButtonMenu = new Lang.Class({
 		this.entry.connect('secondary-icon-clicked', this._actuallyRename.bind(this));
 		
 		this.renameEntryItem.actor.visible = false;
-	},	
-		
-	_actuallyRename: function() {
+	}
+
+	_actuallyRename () {
 		let content = Shell.get_file_contents_utf8_sync(
 		                              PLACES_MANAGER._bookmarksFile.get_path());
 		let lines = content.split('\n');
@@ -247,9 +252,9 @@ const PlaceButtonMenu = new Lang.Class({
 		}
 		GLib.file_set_contents(PLACES_MANAGER._bookmarksFile.get_path(), content);
 		this.emit('bookmarks-updated');
-	},
-	
-	_onRemove: function() {
+	}
+
+	_onRemove () {
 		let content = Shell.get_file_contents_utf8_sync(
 		                              PLACES_MANAGER._bookmarksFile.get_path());
 		let lines = content.split('\n');
@@ -270,9 +275,9 @@ const PlaceButtonMenu = new Lang.Class({
 		}
 		GLib.file_set_contents(PLACES_MANAGER._bookmarksFile.get_path(), content);
 		this.emit('bookmarks-updated');
-	},
+	}
 	
-	_onUnmount: function() {
+	_onUnmount () {
 		let mountOp = new ShellMountOperation.ShellMountOperation(this._source._info._mount);
 
 		if (this._source._info._mount.can_unmount()) {
@@ -284,9 +289,9 @@ const PlaceButtonMenu = new Lang.Class({
 				                                 mountOp.mountOp, null, // Gio.Cancellable
 				                                 this._unmountFinish.bind(this));
 		}
-	},
-	
-	_onEject: function() {
+	}
+
+	_onEject () {
 		let mountOp = new ShellMountOperation.ShellMountOperation(this._source._info._mount);
 
 		if (this._source._info._mount.can_eject()) {
@@ -298,25 +303,25 @@ const PlaceButtonMenu = new Lang.Class({
 				                                mountOp.mountOp, null, // Gio.Cancellable
 				                                this._unmountFinish.bind(this));
 		}
-	},
+	}
 
-	_unmountFinish: function(mount, result) {
+	_unmountFinish (mount, result) {
 		try {
 			mount.unmount_with_operation_finish(result);
 		} catch(e) {
 			this._reportFailure(e);
 		}
-	},
+	}
 
-	_ejectFinish: function(mount, result) {
+	_ejectFinish (mount, result) {
 		try {
 			mount.eject_with_operation_finish(result);
 		} catch(e) {
 			this._reportFailure(e);
 		}
-	},
-	
-	_onEmptyTrash: function() {
+	}
+
+	_onEmptyTrash () {
 		//code from gnome-shell-trash-extension, by Axel von Bertoldi (https://github.com/bertoldia/gnome-shell-trash-extension)
 		let trash_file = Gio.file_new_for_uri("trash:///");
 		
@@ -326,70 +331,70 @@ const PlaceButtonMenu = new Lang.Class({
 			let child = trash_file.get_child(child_info.get_name());
 			child.delete(null);
 		}
-	},
-	
-	_onEmptyRecent: function() {
+	}
+
+	_onEmptyRecent () {
 		RECENT_MANAGER.purge_items();
-	},
+	}
 	
-	_onClicked: function() {
+	_onClicked () {
 		this._source._onClicked();
-	},
-	
-	_appendSeparator: function () {
+	}
+
+	_appendSeparator () {
 		let separator = new PopupMenu.PopupSeparatorMenuItem();
 		this.addMenuItem(separator);
-	},
+	}
 
-	_appendMenuItem: function(labelText) {
+	_appendMenuItem (labelText) {
 		let item = new PopupMenu.PopupMenuItem(labelText);
 		this.addMenuItem(item);
 		return item;
-	},
+	}
 
-	popup: function(activatingButton) {
+	popup (activatingButton) {
 		this._redisplay();
 		this.open();
-	},
-});
+	}
+};
 Signals.addSignalMethods(PlaceButtonMenu.prototype);
 
 //--------------------------
 
-var PlacesList = new Lang.Class({
-	Name: 'PlacesList',
-	
-	_init: function() {
-		this.actor = new St.ScrollView({
-			x_fill: true,
-			y_fill: true,
+var PlacesList = class PlacesList {
+	constructor () {
+//		this.actor = new St.ScrollView({
+//			x_fill: true,
+//			y_fill: true,
+//			x_align: St.Align.MIDDLE,
+//			y_align: St.Align.MIDDLE,
+//			x_expand: true,
+//			y_expand: true,
+//			style_class: 'vfade', // FIXME une grid n'est pas assez scrollable mtn
+//			hscrollbar_policy: Gtk.PolicyType.NEVER,
+//		});
+		this.actor = new St.BoxLayout({
 			x_align: St.Align.MIDDLE,
 			y_align: St.Align.MIDDLE,
 			x_expand: true,
 			y_expand: true,
-			style_class: 'vfade', //lui bug moins ? FIXME
-			hscrollbar_policy: Gtk.PolicyType.NEVER,
 		});
 		
 		this.grid = new PlacesGrid();
-		this.actor.add_actor(this.grid.actor);
-	},
+		this.actor.add_actor(this.grid.super_grid.actor);
+	}
 	
-	filter_widget: function(text) {
+	filter_widget (text) {
 		/* TODO ? */
-	},
+	}
 	
-	// destroy: function() {},
-	
-});
+	// destroy () {},
+};
 
-const PlacesGrid = new Lang.Class({
-	Name: 'PlacesGrid',
-	Extends: IconGrid.IconGrid,
-	
-	_init: function() {
-		this.parent();
-		this.actor.style_class = 'places-grid';
+class PlacesGrid {
+	constructor () {
+		this.super_grid = new IconGrid.IconGrid();
+		this.super_grid.actor.style_class = 'places-grid';
 		let monitor = Main.layoutManager.primaryMonitor;
 
 		this._placesItem = new Array();
@@ -398,10 +403,10 @@ const PlacesGrid = new Lang.Class({
 		PLACES_MANAGER.connect('network-updated', this.redisplay.bind(this));
 		PLACES_MANAGER.connect('bookmarks-updated', this.redisplay.bind(this));
 		this.buildItems();
-	},
-	
+	}
+
 	//This is a fork of extension.js from places-menu@gnome-shell-extensions.gcampax.github.com 
-	buildItems: function() {
+	buildItems () {
 		this._places = {
 			special: [],
 			devices: [],
@@ -413,45 +418,22 @@ const PlacesGrid = new Lang.Class({
 		this.buildCategory('bookmarks');
 		this.buildCategory('network');
 		for(var i = 0; i < this._placesItem.length; i++) {
-			this.addItem(this._placesItem[i]);
+			this.super_grid.addItem(this._placesItem[i]);
 		}
-	},
-	
-	buildCategory: function(id) { 
+	}
+
+	buildCategory (id) {
 		let places = PLACES_MANAGER.get(id);
 		for (let i = 0; i < places.length; i++){
 			this._placesItem.push( new PlaceButton(places[i], id) );
 		}
-	},
-	
-	redisplay: function(){
-		this._placesItem = []
-		this.removeAll();
-		this.buildItems();
-	},
-});
+	}
 
-const PlaceIcon = new Lang.Class({
-	Name: 'PlaceIcon',
-	Extends: IconGrid.BaseIcon,
-	
-	_init: function(info) {
-		this._info = info;
-		this.parent( this._info.name );
-		this.label.style_class = 'place-label';
-	},
-	
-	createIcon: function() {
-		return (new St.Icon({
-			gicon: this._info.icon,
-			icon_size: Extension.SETTINGS.get_int('places-icon-size')
-		}));
-	},
-	
-	update: function() {
-		PLACES_MANAGER._updateSpecials();
-		this.createIcon();
-	},
-});
+	redisplay () {
+		this._placesItem = []
+		this.super_grid.removeAll();
+		this.buildItems();
+	}
+};
 
 //-------------------------------------------------------

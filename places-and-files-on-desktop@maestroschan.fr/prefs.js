@@ -26,7 +26,7 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 	Name: 'PlacesOnDesktop.Prefs.Widget',
 	GTypeName: 'PlacesOnDesktopPrefsWidget',
 
-	_init: function(params) {
+	_init: function() {
 		let builder = new Gtk.Builder();
 		builder.add_from_file(Me.path+'/prefs.ui');
 		this.prefs_stack = builder.get_object('prefs_stack');
@@ -205,16 +205,12 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 //time he user try to access the settings' window
 function buildPrefsWidget() {
 	let widget = new PlacesOnDesktopSettingsWidget();
-//	widget.prefs_stack.set_size_request(700, 300);
-	
 	Mainloop.timeout_add(0, () => {
 		let headerBar = widget.prefs_stack.get_toplevel().get_titlebar();
 		headerBar.custom_title = widget.switcher;
 		return false;
 	});
-	
 	widget.prefs_stack.show_all();
-
 	return widget.prefs_stack;
 }
 

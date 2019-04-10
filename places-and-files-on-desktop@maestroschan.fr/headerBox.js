@@ -1,5 +1,5 @@
+
 const Clutter = imports.gi.Clutter;
-const Lang = imports.lang;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
@@ -17,17 +17,13 @@ const Extension = Me.imports.extension;
 
 //-------------------------------------------------
 
-var HeaderBox = new Lang.Class({
-	Name: 'HeaderBox',
-	Extends: St.BoxLayout,
-	
-	_init: function(layout) {
-		this.layout = layout;
-		this.actor = this;
-		this.parent({
+var HeaderBox = class HeaderBox {
+	constructor (layout) {
+		this.actor = new St.BoxLayout ({
 			vertical: false,
 			style_class: 'convenient-list-header',
 		});
+		this.layout = layout;
 		
 		this.searchEntry = new St.Entry({
 			name: 'searchEntry',
@@ -59,7 +55,7 @@ var HeaderBox = new Lang.Class({
 		ShellEntry.addContextMenu(this.searchEntry, null);
 		
 		//--------------------------------
-	
+		
 		this.filterButton = new St.Button({
 			child: new St.Icon({
 				icon_name: 'view-more-symbolic',
@@ -79,9 +75,9 @@ var HeaderBox = new Lang.Class({
 		});
 		
 		this.filterMenu = new FilterMenuButton(this.filterButton);
-
-		//--------------------------------
-	
+		
+		//----------------------------------------------------------------------
+		
 		this.settingsButton = new St.Button({
 			child: new St.Icon({
 				icon_name: 'emblem-system-symbolic',
@@ -101,67 +97,65 @@ var HeaderBox = new Lang.Class({
 		});
 		
 		this.settingsButton.connect('clicked', this.openSettings.bind(this));
-
+		
 		//--------------------------------
 		
-		this.add(new St.BoxLayout({x_expand: true,}));
-		this.add(this.searchEntry);
-		this.add(this.filterButton);
-		this.add(this.settingsButton);
-		this.add(new St.BoxLayout({x_expand: true,}));
-	},
-	
-	beginSearch: function() {
+		this.actor.add(new St.BoxLayout({x_expand: true,}));
+		this.actor.add(this.searchEntry);
+		this.actor.add(this.filterButton);
+		this.actor.add(this.settingsButton);
+		this.actor.add(new St.BoxLayout({x_expand: true,}));
+	}
+
+	beginSearch () {
 //		this.searchEntry.set_text('');
 		global.stage.set_key_focus(this.searchEntry);
-	},
-	
-	endSearch: function() {
+	}
+
+	endSearch () {
 		return;
-	},
-	
-	openSettings: function() {
+	}
+
+	openSettings () {
 		Util.spawn(["gnome-shell-extension-prefs", "places-and-files-on-desktop@maestroschan.fr"]);
-	},
-	
-	_onIconRelease: function() {
+	}
+
+	_onIconRelease () {
 		this.searchEntry.set_text('');
-	},
-	
-	_onSearchTextChanged: function() {
+	}
+
+	_onSearchTextChanged () {
 		this.layout.filter_widgets(this.searchEntry.get_text().toLowerCase());
-	},
-	
-	filter_widget: function(text) {
+	}
+
+	filter_widget (text) {
 		/* nothing */
-	},
-});
+	}
+};
 
 //------------------------
 
-var FilterMenuButton = new Lang.Class({
-	Name: 'FilterMenuButton',
-
-	_init: function(bouton){
+var FilterMenuButton = class FilterMenuButton {
+	constructor (bouton){
 		this.actor = bouton;
 		this.actor.connect('button-press-event', this._onButtonPress.bind(this));
 		this._menu = null;
 		this._menuManager = new PopupMenu.PopupMenuManager(this);
-	},
+	}
 
-	_onMenuPoppedDown: function() {
+	_onMenuPoppedDown () {
 		this.actor.sync_hover();
 		this.emit('menu-state-changed', false);
-	},
+	}
 
-	popupMenu: function() {
+	popupMenu () {
 		this.actor.fake_release();
 		if (!this._menu) {
 			this._menu = new FilterMenu(this);
-			this._menu.connect('open-state-changed', Lang.bind(this, function (menu, isPoppedUp) {
+			this._menu.connect('open-state-changed', (menu, isPoppedUp) => {
 				if (!isPoppedUp)
 					this._onMenuPoppedDown();
-			}));
+			});
 			this._menuManager.addMenu(this._menu);
 		}
 		this.emit('menu-state-changed', true);
@@ -169,23 +163,20 @@ var FilterMenuButton = new Lang.Class({
 		this._menu.popup();
 		this._menuManager.ignoreRelease();
 		return false;
-	},
+	}
 
-	_onButtonPress: function(actor, event) {
+	_onButtonPress (actor, event) {
 		this.popupMenu();
 		return Clutter.EVENT_STOP;
-	},
-});
+	}
+};
 Signals.addSignalMethods(FilterMenuButton.prototype);
 
 //------------------------------------------------
 
-const FilterMenu = new Lang.Class({
-	Name: 'FilterMenu',
-	Extends: PopupMenu.PopupMenu,
-
-	_init: function(source) {
-		this.parent(source.actor, 0.5, St.Side.RIGHT);
+class FilterMenu extends PopupMenu.PopupMenu {
+	constructor (source) {
+		super(source.actor, 0.5, St.Side.RIGHT);
 		this._source = source;
 		this.actor.add_style_class_name('app-well-menu');
 		this._source.actor.connect('destroy', this.destroy.bind(this));
@@ -194,9 +185,9 @@ const FilterMenu = new Lang.Class({
 		this.blockSourceEvents = true;
 
 		Main.uiGroup.add_actor(this.actor);
-	},
+	}
 
-	_redisplay: function() {
+	_redisplay () {
 		this.removeAll();
 		
 		let inPathSetting = Extension.SETTINGS.get_boolean('search-in-path');
@@ -204,14 +195,14 @@ const FilterMenu = new Lang.Class({
 		let blackListIsEmpty = (blackListSetting == '');
 		
 		this.inPathItem = new PopupMenu.PopupSwitchMenuItem(_("Search in files' path"), inPathSetting);
-		this.inPathItem.connect('toggled', Lang.bind(this, function (a, b, c) {
-			Extension.SETTINGS.set_boolean('search-in-path', b);
-		}));
+		this.inPathItem.connect('toggled', (a, b, c) => {
+			Extension.SETTINGS.set_boolean('search-in-path', b); //XXX à tester
+		});
 		
 		this.allFilesItem = new PopupMenu.PopupSwitchMenuItem(_("All files"), blackListIsEmpty);
-		this.allFilesItem.connect('toggled', Lang.bind(this, function (a, b, c) {
+		this.allFilesItem.connect('toggled', (a, b, c) => { //XXX à tester
 			Extension.SETTINGS.set_strv('blacklist-recent', []);
-		}));
+		});
 		
 		this.addMenuItem(this.inPathItem);
 		this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -226,7 +217,7 @@ const FilterMenu = new Lang.Class({
 		for (var i = 0; i < filesTypes.length; i++) {
 			let labelItem = filesTypesLabels[i] ;
 			let item = new PopupMenu.PopupMenuItem( labelItem );
-			item.connect('activate', Lang.bind(this, function(a, b, c) {
+			item.connect('activate', (a, b, c) => { //XXX à tester
 				let blr = Extension.SETTINGS.get_strv('blacklist-recent');
 				if (blr.includes(c)) {
 					let index = blr.indexOf(c);
@@ -237,7 +228,7 @@ const FilterMenu = new Lang.Class({
 					a.setOrnament(0);
 				}
 				Extension.SETTINGS.set_strv('blacklist-recent', blr);
-			}, filesTypes[i]));
+			}, filesTypes[i]); //XXX sans doute mauvais
 			if (blackListSetting.includes(filesTypes[i])) {
 				item.setOrnament(0);
 			} else {
@@ -245,12 +236,12 @@ const FilterMenu = new Lang.Class({
 			}
  			this.addMenuItem(item);
 		}
-	},
+	}
 
-	popup: function(activatingButton) {
+	popup (activatingButton) {
 		this._redisplay();
 		this.open();
-	},
-});
+	}
+};
 Signals.addSignalMethods(FilterMenu.prototype);
 

@@ -1,7 +1,6 @@
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
-const Lang = imports.lang;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
@@ -30,10 +29,8 @@ function trierNom(l,r) {
 /*
 This class is a fork of ListSearchResult or SearchResult (in search.js version 3.26)
 */
-var DesktopFilesList = new Lang.Class({
-	Name: 'DesktopFilesList',
-	
-	_init: function() {
+var DesktopFilesList = class DesktopFilesList {
+	constructor () {
 		this.actor = new St.BoxLayout({ style_class: 'search-section', vertical: true, x_expand: true });
 		this._resultDisplayBin = new St.Bin({ x_fill: true, y_fill: true });
 		this.actor.add(this._resultDisplayBin, { expand: true });
@@ -46,14 +43,14 @@ var DesktopFilesList = new Lang.Class({
 		this._resultDisplayBin.set_child(this._container);
 		this._initDirectory();
 		this._buildFiles();
-	},
-	
-	_redisplay: function() {
+	}
+
+	_redisplay () {
 		this._content.destroy_all_children();
 		this._buildFiles();
-	},
-	
-	_initDirectory: function () {		
+	}
+
+	_initDirectory () {
 		this._directory = Gio.file_new_for_path(
 			GLib.get_user_special_dir(
 				GLib.UserDirectory.DIRECTORY_DESKTOP
@@ -63,9 +60,9 @@ var DesktopFilesList = new Lang.Class({
 		this._monitor = this._directory.monitor(Gio.FileMonitorFlags.SEND_MOVED, null);
 		
 		this._updateSignal = this._monitor.connect('changed', this._redisplay.bind(this));
-	},
-	
-	_buildFiles: function() {
+	}
+
+	_buildFiles () {
 		let children = this._directory.enumerate_children('*', 0, null);
 		
 		this._files = [];
@@ -97,29 +94,27 @@ var DesktopFilesList = new Lang.Class({
 			this._files.push(f);
 			this._content.add( f.actor );
 		});
-	},
-	
-	filter_widget: function(text) {
+	}
+
+	filter_widget (text) {
 		this._files.forEach(function(f){
 			f.actor.visible = f.label.toLowerCase().includes(text);
 		});
-	},
-	
-	destroy() {
+	}
+
+	destroy () {
 		this._monitor.disconnect(this._updateSignal);
-		this.parent();
-	},
-});
+//		this.parent(); //FIXME
+	}
+};
 
 //--------------------------------------------------------
 
 /*
 This class is a fork of ListSearchResult or SearchResult (in search.js version 3.26)
 */
-var DesktopFileButton = new Lang.Class({
-	Name: 'DesktopFileButton',
-	
-	_init: function(info) {
+class DesktopFileButton {
+	constructor (info) {
 		this._info = info;
 		this.label = this._info.get_display_name();
 		this.icon = new St.Icon({
@@ -170,9 +165,9 @@ var DesktopFileButton = new Lang.Class({
 		});
 
 		this.actor.label_actor = title;
-	},
-	
-	_onButtonPress: function(actor, event) {
+	}
+
+	_onButtonPress (actor, event) {
 		let button = event.get_button();
 		if (button == 1) {
 			this.activate();
@@ -181,35 +176,35 @@ var DesktopFileButton = new Lang.Class({
 			return Clutter.EVENT_STOP;
 		}
 		return Clutter.EVENT_PROPAGATE;
-	},
-	
-	activate: function () {
+	}
+
+	activate () {
 		Gio.app_info_launch_default_for_uri(
 			'file://' + GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP) + '/' + this._info.get_name(),
 			global.create_app_launch_context(0, -1)
 		);
-	},
-	
-	_onExecute: function () {
+	}
+
+	_onExecute () {
 		Util.trySpawnCommandLine(
 			'"' + GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP)
 			+ '/' + this._info.get_name() + '"'
 		);
-	},
-	
-	_onLauncher: function () {
+	}
+
+	_onLauncher () {
 		let f = Gio.DesktopAppInfo.new_from_filename(GLib.get_user_special_dir(
 		   GLib.UserDirectory.DIRECTORY_DESKTOP) + '/' + this._info.get_name());
 		let command = f.get_string("Exec");
 		Util.trySpawnCommandLine(command);
-	},
-	
-	_onMenuPoppedDown: function () {
+	}
+
+	_onMenuPoppedDown () {
 		this.actor.sync_hover();
 		this.emit('menu-state-changed', false);
-	},
-	
-	popupMenu: function () {
+	}
+
+	popupMenu () {
 		this.actor.fake_release();
 
 		if (!this._menu) {
@@ -226,34 +221,31 @@ var DesktopFileButton = new Lang.Class({
 		this._menuManager.ignoreRelease();
 
 		return false;
-	},
-	
-	hide: function () {
+	}
+
+	hide () {
 		this.actor.visible = false;
-	},
-	
-	show: function () {
+	}
+
+	show () {
 		this.actor.visible = true;
-	},
-	
-	destroy: function() {
+	}
+
+	destroy () {
 		this.actor.disconnect(this._connexion2);
 		this._menu.disconnect(this._connexion);
-		this.parent();
-	},
-});
+//		this.parent(); //FIXME
+	}
+};
 Signals.addSignalMethods(DesktopFileButton.prototype);
 
-const DesktopFileButtonMenu = new Lang.Class({
-	Name: 'DesktopFileButtonMenu',
-	Extends: PopupMenu.PopupMenu,
-
-	_init: function(source) {
+class DesktopFileButtonMenu extends PopupMenu.PopupMenu {
+	constructor (source) {
 		let side = St.Side.BOTTOM;
 		if (Clutter.get_default_text_direction() == Clutter.TextDirection.RTL)
 			side = St.Side.TOP;
 
-		this.parent(source.actor, 0.5, side);
+		super(source.actor, 0.5, side);
 
 		// We want to keep the item hovered while the menu is up
 		this.blockSourceEvents = true;
@@ -271,11 +263,10 @@ const DesktopFileButtonMenu = new Lang.Class({
 		source.actor.connect('destroy', this.destroy.bind(this));
 
 		Main.uiGroup.add_actor(this.actor);
-	},
+	}
 
-	_redisplay: function() {
+	_redisplay () {
 		this.removeAll();
-
 		this._appendMenuItem(_("Open")).connect('activate', this._onOpen.bind(this));
 		this._appendMenuItem(_("Execute")).connect('activate', this._onExecute.bind(this));
 		this._appendSeparator(); //----------------------------
@@ -284,22 +275,22 @@ const DesktopFileButtonMenu = new Lang.Class({
 //		this._appendMenuItem(_("Copy")).connect('activate', this._onCopy.bind(this)); // FIXME can't work ?
 		this._addRenameEntryAndButtons();
 		this._appendMenuItem(_("Delete")).connect('activate', this._onDelete.bind(this));
-	},
-	
-	_onParent: function() {
+	}
+
+	_onParent () {
 		let uri = Gio.file_new_for_path(GLib.get_user_special_dir(
 		                       GLib.UserDirectory.DIRECTORY_DESKTOP)).get_uri();
 		Gio.app_info_launch_default_for_uri(uri, global.create_app_launch_context(0, -1));
-	},
-	
-	_onRename: function() {
+	}
+
+	_onRename () {
 		this.renameItem.actor.visible = false;
 		this.renameEntryItem.actor.visible = true;
 	
 		global.stage.set_key_focus(this.entry);
-	},
-	
-	_addRenameEntryAndButtons: function() {
+	}
+
+	_addRenameEntryAndButtons () {
 		this.renameItem = new PopupMenu.PopupBaseMenuItem({
 			reactive: true,
 			activate: true,
@@ -341,49 +332,49 @@ const DesktopFileButtonMenu = new Lang.Class({
 		this.entry.connect('secondary-icon-clicked', this._actuallyRename.bind(this));
 		
 		this.renameEntryItem.actor.visible = false;
-	},	
-		
-	_actuallyRename: function() {
+	}
+
+	_actuallyRename () {
 		this._file.set_display_name(this.entry.get_text(), null);
-	},	
-	
-	_onDelete: function(){
+	}
+
+	_onDelete () {
 		this._file.trash(null); //FIXME confirmation
-	},
-	
-	_onCopy: function(){
+	}
+
+	_onCopy () {
 //		Clipboard.set_text(CLIPBOARD_TYPE, this._path);
 		//TODO
-	},
+	}
 	
-	_onExecute: function() {
+	_onExecute () {
 		if(this._source._info.get_content_type() == 'application/x-desktop') {
 			this._source._onLauncher();
 		} else {
 			this._source._onExecute();
 		}
-	},
-	
-	_onOpen: function() {
+	}
+
+	_onOpen () {
 		this._source.activate();
-	},
-	
-	_appendSeparator: function () {
+	}
+
+	_appendSeparator () {
 		let separator = new PopupMenu.PopupSeparatorMenuItem();
 		this.addMenuItem(separator);
-	},
+	}
 
-	_appendMenuItem: function(labelText) {
+	_appendMenuItem (labelText) {
 		let item = new PopupMenu.PopupMenuItem(labelText);
 		this.addMenuItem(item);
 		return item;
-	},
+	}
 
-	popup: function(activatingButton) {
+	popup (activatingButton) {
 		this._redisplay();
 		this.open();
-	},
-});
+	}
+};
 Signals.addSignalMethods(DesktopFileButtonMenu.prototype);
 
 

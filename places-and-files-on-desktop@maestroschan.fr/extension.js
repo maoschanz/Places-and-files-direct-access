@@ -157,15 +157,15 @@ class ConvenientLayout {
 			this['widget_' + this.active_widgets[i]].filter_widget(text);
 		}
 	}
-	
+
 	hide () {
 		this.actor.visible = false;
 	}
-	
+
 	show () {
 		this.actor.visible = true;
 	}
-	
+
 	fill_with_widgets () {
 		this.active_positions = SETTINGS.get_strv('active-positions');
 		this.active_widgets = SETTINGS.get_strv('active-widgets');
