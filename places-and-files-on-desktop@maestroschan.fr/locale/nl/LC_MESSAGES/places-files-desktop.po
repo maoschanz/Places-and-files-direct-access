@@ -1,0 +1,233 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-03-22 03:16+0100\n"
+"PO-Revision-Date: 2019-04-10 17:20+0200\n"
+"Language-Team: Dutch <vistausss@outlook.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.1.1\n"
+"Last-Translator: Heimen Stoffels <vistausss@outlook.com>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: nl_NL\n"
+
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:75
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:196
+msgid "Trash"
+msgstr "Prullenbak"
+
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:173
+#: places-and-files-on-desktop@maestroschan.fr/desktopFiles.js:279
+#: places-and-files-on-desktop@maestroschan.fr/recentFiles.js:288
+msgid "Open"
+msgstr "Openen"
+
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:180
+msgid "Remove"
+msgstr "Verwijderen"
+
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:190
+msgid "Eject"
+msgstr "Uitwerpen"
+
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:193
+msgid "Unmount"
+msgstr "Ontkoppelen"
+
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:198
+msgid "Empty"
+msgstr "Leeg"
+
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:202
+msgid "Recent Files"
+msgstr "Recente bestanden"
+
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:204
+msgid "Clear"
+msgstr "Wissen"
+
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:225
+#: places-and-files-on-desktop@maestroschan.fr/desktopFiles.js:311
+msgid "Rename"
+msgstr "Naam wijzigen"
+
+#: places-and-files-on-desktop@maestroschan.fr/extension.js:238
+#: places-and-files-on-desktop@maestroschan.fr/desktopFiles.js:324
+msgid "Type a name..."
+msgstr "Typ een naam..."
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:36
+msgid "Type here to search..."
+msgstr "Typ hier om te zoeken..."
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:70
+msgid "Search filters"
+msgstr "Zoekfilters"
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:92
+msgid "Settings"
+msgstr "Instellingen"
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:206
+msgid "Search in files' path"
+msgstr "Bestandspad doorzoeken"
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:211
+msgid "All files"
+msgstr "Alle bestanden"
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:222
+msgid "Text files"
+msgstr "Tekstbestanden"
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:222
+msgid "Image files"
+msgstr "Afbeeldingsbestanden"
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:222
+msgid "Audio files"
+msgstr "Audiobestanden"
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:223
+msgid "Video files"
+msgstr "Videobestanden"
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:223
+msgid "Application files"
+msgstr "Toepassingsbestanden"
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:223
+msgid "Multipart files"
+msgstr "Bestanden bestaande uit meerdere delen"
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:224
+msgid "Message files"
+msgstr "Berichtbestanden"
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:224
+msgid "Model files"
+msgstr "Modelbestanden"
+
+#: places-and-files-on-desktop@maestroschan.fr/desktopFiles.js:280
+msgid "Execute"
+msgstr "Uitvoeren"
+
+#: places-and-files-on-desktop@maestroschan.fr/desktopFiles.js:282
+#: places-and-files-on-desktop@maestroschan.fr/recentFiles.js:291
+msgid "Open parent folder"
+msgstr "Bovenliggende map openen"
+
+#: places-and-files-on-desktop@maestroschan.fr/desktopFiles.js:286
+msgid "Delete"
+msgstr "Verwijderen"
+
+#: places-and-files-on-desktop@maestroschan.fr/recentFiles.js:293
+msgid "Copy path"
+msgstr "Pad kopiéren"
+
+#: places-and-files-on-desktop@maestroschan.fr/recentFiles.js:296
+msgid "Remove from the list"
+msgstr "Verwijderen van de lijst"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.js:144
+msgid "Desktop"
+msgstr "Bureaublad"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.js:145
+msgid "Empty overview"
+msgstr "Leeg overzicht"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.js:194
+msgid "Report bugs or ideas"
+msgstr "Meld bugs of deel ideeën"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:77
+msgid "Display on"
+msgstr "Tonen op"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:109
+msgid "Top padding"
+msgstr "Opvulling boven"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:131
+msgid "Bottom padding"
+msgstr "Opvulling onder"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:153
+msgid "Left padding"
+msgstr "Opvulling links"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:175
+msgid "Right padding"
+msgstr "Opvulling rechts"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:198
+msgid "Position"
+msgstr "Positie"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:215
+msgid "Places icon size"
+msgstr "Pictogramgrootte van 'Locaties'"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:236
+msgid "Files lists icon size"
+msgstr "Pictogramgrootte in bestandslijsten"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:269
+msgid "Places, recent files"
+msgstr "Locaties, recente bestanden"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:275
+msgid "Places, desktop files"
+msgstr "Locaties, bureaubladbestanden"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:281
+msgid "Places, recent files and desktop files (side by side)"
+msgstr "Locaties, recente bestanden en bureaubladbestanden (naast elkaar)"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:293
+msgid "Recent files, desktop files"
+msgstr "Recente bestanden, bureaubladbestanden"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:305
+msgid "Custom (use dconf to set the layout)"
+msgstr "Aangepast (gebruik dconf om de indeling in te stellen)"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:329
+msgid "Number of recent files listed"
+msgstr "Aantal te tonen recente bestanden"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:351
+msgid "Layout"
+msgstr "Indeling"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:365
+msgid "Convenient access to files"
+msgstr "Handige toegang tot je bestanden"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:377
+msgid "Easy access to devices, bookmarks and recent files."
+msgstr "Eenvoudig toegang tot je apparaten, bladwijzers en recente bestanden."
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:396
+msgid "Author:"
+msgstr "Auteur:"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:411
+msgid "Tranlators:"
+msgstr "Vertalers:"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:416
+msgid "translator-credits"
+msgstr "Heimen Stoffels"
+
+#: places-and-files-on-desktop@maestroschan.fr/prefs.ui:434
+msgid "About"
+msgstr "Over"
