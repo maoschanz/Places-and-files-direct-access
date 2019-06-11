@@ -27,7 +27,7 @@ let SIGNAUX_OVERVIEW = [];
 let SIGNAUX_PARAM = [];
 let SIGNAL_MONITOR;
 
-let MyLayout;
+let MyLayout = null;
 
 //------------------------------------------------
 
@@ -41,10 +41,11 @@ function init() {
 //-------------------------------------------------
 
 /*
-	This function is called when the user performs an action which affects the visibility
-	of MyLayout in the case its actor has been added to the overviewGroup.
-	It can be opening or closing a window, changing the current workspace, beginning a
-	research, or opening the applications grid.
+	This function is called when the user performs an action which affects the
+	visibility of MyLayout in the case its actor has been added to the
+	overviewGroup (this function is not called when it's on the desktop).
+	The action can be opening or closing a window, changing the current
+	workspace, beginning a search, or opening the applications grid.
 */
 function updateVisibility() {
 	if (Main.overview.viewSelector._activePage != Main.overview.viewSelector._workspacesPage) {
@@ -52,14 +53,8 @@ function updateVisibility() {
 		return;
 	}
 
-	let gwsm;
-	if (global.hasOwnProperty('screen')) { // < 3.29
-		gwsm = global.screen;
-	} else { // > 3.29
-		gwsm = global.workspaceManager;
-	}
-
-	if (gwsm.get_workspace_by_index(gwsm.get_active_workspace_index()).list_windows() == '') {
+	let i = global.workspaceManager.get_active_workspace_index();
+	if (global.workspaceManager.get_workspace_by_index(i).list_windows() == '') {
 		MyLayout.show();
 	} else {
 		MyLayout.hide();
@@ -69,9 +64,26 @@ function updateVisibility() {
 //------------------------------------------------
 
 /*
-	This function is called when the user set a new layout position. It almost corresponds to
-	a "disable and then enable again", except that MyLayout isn't rebuild from its
-	constructor, but is just moved to the new position.
+	Disconnect all signals in SIGNAUX_OVERVIEW
+*/
+function disconnectOverviewSignals() {
+	if (SIGNAUX_OVERVIEW.length != 0) {
+		global.workspaceManager.disconnect(SIGNAUX_OVERVIEW[0]);
+		global.display.disconnect(SIGNAUX_OVERVIEW[1]);
+		global.window_manager.disconnect(SIGNAUX_OVERVIEW[2]);
+		Main.overview.viewSelector._showAppsButton.disconnect(SIGNAUX_OVERVIEW[3]);
+		Main.overview.viewSelector._text.disconnect(SIGNAUX_OVERVIEW[4]);
+		Main.overview.disconnect(SIGNAUX_OVERVIEW[5]);
+	}
+	SIGNAUX_OVERVIEW = []
+}
+
+//------------------------------------------------
+
+/*
+	This function is called when the user set a new layout position. It almost
+	corresponds to a "disable and then enable again", except that MyLayout isn't
+	rebuild from its constructor, but is just moved to the new position.
 */
 function updateLayoutLayout() {
 	if (POSITION == '') {
@@ -82,38 +94,18 @@ function updateLayoutLayout() {
 		Main.layoutManager._backgroundGroup.remove_actor(MyLayout.actor);
 	}
 	
-//	if (SIGNAUX_OVERVIEW.length != 0) { //FIXME TODO
-//		if (global.hasOwnProperty('screen')) { // < 3.29
-//			global.screen.disconnect(SIGNAUX_OVERVIEW[0]);
-//			global.screen.disconnect(SIGNAUX_OVERVIEW[1]);
-//		} else { // > 3.29
-//			global.workspaceManager.disconnect(SIGNAUX_OVERVIEW[0]);
-//			global.display.disconnect(SIGNAUX_OVERVIEW[1]);
-//		}
-//		global.window_manager.disconnect(SIGNAUX_OVERVIEW[2]);
-//		Main.overview.viewSelector._showAppsButton.disconnect(SIGNAUX_OVERVIEW[3]);
-//		Main.overview.viewSelector._text.disconnect(SIGNAUX_OVERVIEW[4]);
-//		Main.overview.disconnect(SIGNAUX_OVERVIEW[5]);
-//	}
+	disconnectOverviewSignals();
 	
 	POSITION = SETTINGS.get_string('position');
 	SIGNAUX_OVERVIEW = [];
 	
 	if (POSITION == 'overview') {
 		Main.layoutManager.overviewGroup.add_actor(MyLayout.actor);
-		//XXX dans ce contexte, qu'est this ?
-		if (global.hasOwnProperty('screen')) { // < 3.29
-			SIGNAUX_OVERVIEW[0] = global.screen.connect('notify::n-workspaces',
-			                                       updateVisibility.bind(this));
-			SIGNAUX_OVERVIEW[1] = global.screen.connect('restacked',
-			                                       updateVisibility.bind(this));
-		} else { // > 3.29
-			SIGNAUX_OVERVIEW[0] = global.workspaceManager.connect(
-			               'notify::n-workspaces', updateVisibility.bind(this));
-			SIGNAUX_OVERVIEW[1] = global.display.connect('restacked',
-			                                       updateVisibility.bind(this));
-		}
-
+		// XXX dans ce contexte, qu'est this ?
+		SIGNAUX_OVERVIEW[0] = global.workspaceManager.connect(
+		                   'notify::n-workspaces', updateVisibility.bind(this));
+		SIGNAUX_OVERVIEW[1] = global.display.connect('restacked',
+		                                           updateVisibility.bind(this));
 		SIGNAUX_OVERVIEW[2] = global.window_manager.connect('switch-workspace',
 		                                           updateVisibility.bind(this));
 		SIGNAUX_OVERVIEW[3] = Main.overview.viewSelector._showAppsButton.connect(
@@ -253,9 +245,11 @@ function enable() {
 		SETTINGS.get_int('right-padding')
 	];
 
-	MyLayout = new ConvenientLayout();
-	MyLayout.fill_with_widgets();
-
+	if (MyLayout == null) {
+		MyLayout = new ConvenientLayout();
+		MyLayout.fill_with_widgets();
+	}
+	
 	SIGNAUX_PARAM = [];
 	SIGNAUX_PARAM[0] = SETTINGS.connect('changed::top-padding',
 	                                    MyLayout.adaptToMonitor.bind(MyLayout));
@@ -281,28 +275,14 @@ function disable() {
 		Main.layoutManager.overviewGroup.remove_actor(MyLayout.actor);
 	} else {
 		Main.layoutManager._backgroundGroup.remove_actor(MyLayout.actor);
-	}
-
+	} // FIXME ce n'est pas charlie de garder l'acteur en mémoire
+	
 //	log('disabling signals for places-and-files-on-desktop');
-//	for (var i = 0; i < SIGNAUX_PARAM.length; i++) { FIXME TODO
-//		SETTINGS.disconnect(SIGNAUX_PARAM[i]);
-//	}
-//	
-//	Main.layoutManager.disconnect(SIGNAL_MONITOR);
-//	
-//	if (SIGNAUX_OVERVIEW.length != 0) {
-//		if (global.hasOwnProperty('screen')) { // < 3.29
-//			global.screen.disconnect(SIGNAUX_OVERVIEW[0]);
-//			global.screen.disconnect(SIGNAUX_OVERVIEW[1]);
-//		} else { // > 3.29
-//			global.workspaceManager.disconnect(SIGNAUX_OVERVIEW[0]);
-//			global.display.disconnect(SIGNAUX_OVERVIEW[1]);
-//		}
-//		global.window_manager.disconnect(SIGNAUX_OVERVIEW[2]);
-//		Main.overview.viewSelector._showAppsButton.disconnect(SIGNAUX_OVERVIEW[3]);
-//		Main.overview.viewSelector._text.disconnect(SIGNAUX_OVERVIEW[4]);
-//		Main.overview.disconnect(SIGNAUX_OVERVIEW[5]);
-//	}
+	for (var i = 0; i < SIGNAUX_PARAM.length; i++) {
+		SETTINGS.disconnect(SIGNAUX_PARAM[i]);
+	}
+	Main.layoutManager.disconnect(SIGNAL_MONITOR);
+	disconnectOverviewSignals()
 //	log('signals for places-and-files-on-desktop disabled');
 }
 
