@@ -1,3 +1,4 @@
+'use strict';
 
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
@@ -39,14 +40,12 @@ var RecentFileButton = class RecentFileButton {
 	constructor (icon, label, uri) {
 		this.icon = new St.Icon({
 			gicon: icon,
-			style_class: 'popup-menu-icon', 
+			style_class: 'popup-menu-icon',
 			icon_size: Extension.SETTINGS.get_int('recent-files-icon-size')
 		});
-		this.label = label;
 		this.uri = uri;
 		let file = Gio.File.new_for_uri(this.uri);
-		this.path = file.get_path();
-		this.displayedPath = this.truncatePath();
+		let displayedPath = this.truncatePath(file.get_path());
 		
 		this.actor = new St.Button({
 			reactive: true,
@@ -57,9 +56,9 @@ var RecentFileButton = class RecentFileButton {
 			y_fill: true,
 			style_class: 'list-search-result',
 		});
-		
-		this.actor._delegate = this;
-		this.actor.connect('button-press-event', this._onButtonPress.bind(this));
+		this.signal = this.actor.connect('button-press-event', this._onButtonPress.bind(this));
+		// XXX ???? is it useful ?
+//		this.actor.connect('button-press-event', this._onButtonPress.bind(this));
 		
 		this._menu = null;
 		this._menuManager = new PopupMenu.PopupMenuManager(this);
@@ -83,7 +82,7 @@ var RecentFileButton = class RecentFileButton {
 			titleBox.add(this.icon);
 		}
 		
-		let title = new St.Label({ text: this.label });
+		let title = new St.Label({ text: label });
 		titleBox.add(title, {
 			x_fill: false,
 			y_fill: false,
@@ -94,14 +93,20 @@ var RecentFileButton = class RecentFileButton {
 		this.actor.label_actor = title;
 		
 		if (this.uri) {
-			this._descriptionLabel = new St.Label({ style_class: 'list-search-result-description', text: this.displayedPath });
-			content.add(this._descriptionLabel, {
+			let descriptionLabel = new St.Label({
+				style_class: 'list-search-result-description',
+				text: displayedPath
+			});
+			content.add(descriptionLabel, {
 				x_fill: false,
 				y_fill: false,
 				x_align: St.Align.START,
 				y_align: St.Align.MIDDLE
 			});
 		}
+		
+		this.searchableLabel = label.toLowerCase();
+		this.searchablePath = displayedPath.toLowerCase();
 	}
 
 	_onButtonPress (actor, event) {
@@ -115,13 +120,13 @@ var RecentFileButton = class RecentFileButton {
 		return Clutter.EVENT_PROPAGATE;
 	}
 
-	truncatePath () {
+	truncatePath (actualPath) {
 		let retValue = '';
-		if(this.path == null) {
+		if(actualPath == null) {
 			retValue = this.uri;
 		} else {
-			let temp = this.path.split('/');
-			for(var i=0; i<temp.length-1; i++){
+			let temp = actualPath.split('/');
+			for(var i = 0; i < temp.length-1; i++){
 				retValue += temp[i] + '/';
 			}
 			let home = GLib.get_home_dir();
@@ -145,9 +150,8 @@ var RecentFileButton = class RecentFileButton {
 
 	popupMenu () {
 		this.actor.fake_release();
-		
 		if (!this._menu) {
-			this._menu = new RecentFileMenu(this);
+			this._menu = new RecentFileMenu(this, this.actor, this.uri);
 			this._menu.connect('open-state-changed', (menu, isPoppedUp) => {
 				if (!isPoppedUp) {
 					this._onMenuPoppedDown();
@@ -155,17 +159,32 @@ var RecentFileButton = class RecentFileButton {
 			});
 			this._menuManager.addMenu(this._menu);
 		}
-		
 		this.emit('menu-state-changed', true);
 		this.actor.set_hover(true);
 		this._menu.popup();
 		this._menuManager.ignoreRelease();
-		
 		return false;
 	}
 
+	matchSearch (text, withPath) {
+		if (withPath) {
+			this.actor.visible = this.searchablePath.includes(text) || this.searchableLabel.includes(text);
+		} else {
+			this.actor.visible = this.searchableLabel.includes(text);
+		}
+	}
+
 	destroy () {
-		super.destroy();
+		this._menu = null;
+		this._menuManager = null;
+		
+		this.actor.disconnect(this.signal); // XXX probably useless
+		this.actor.destroy();
+		this.actor = null;
+		
+		this.uri = null;
+		this.searchableLabel = null;
+		this.searchablePath = null;
 	}
 };
 Signals.addSignalMethods(RecentFileButton.prototype);
@@ -185,19 +204,32 @@ var RecentFilesList = class RecentFilesList {
 		});
 		
 		this._content = new St.BoxLayout({
-			style_class: 'search-section-content convenient-files-list list-search-results', // FIXME ?
+			style_class: 'search-section-content convenient-files-list list-search-results',
 			vertical: true,
 			x_expand: true
 		});
+		
+		this.conhandler = RECENT_MANAGER.connect('changed', this._redisplay.bind(this));
+		Extension.SETTINGS.connect('changed::blacklist-recent', this._redisplay.bind(this));
+		
 		this.actor.add_actor(this._content);
 		this._buildRecents();
-		this.conhandler = RECENT_MANAGER.connect('changed', this._redisplay.bind(this));
-		
-		Extension.SETTINGS.connect('changed::blacklist-recent', this._redisplay.bind(this));
 	}
 
+	this._removeAll () {
+//		this._content.destroy_all_children(); //XXX would destroy actors only
+		this._content.remove_all_children();
+		this._files.forEach(function(f){
+				f.destroy();
+				delete f.actor; // XXX probably an overkill
+				f = null;
+			});
+		this._files = null; // XXX probably an overkill
+		this._files = [];
+	}
+	
 	_redisplay () {
-		this._content.destroy_all_children(); //XXX
+		this._removeAll();
 		this._buildRecents();
 	}
 
@@ -216,7 +248,8 @@ var RecentFilesList = class RecentFilesList {
 				shouldContinue = false;
 			} else {
 				let itemtype = allRecentFiles[i].get_mime_type();
-				if ((blacklistList.indexOf((itemtype.split("/"))[0]) == -1) && (allRecentFiles[i].exists())) {
+				let isCorrectMime = (blacklistList.indexOf((itemtype.split("/"))[0]) == -1);
+				if (isCorrectMime && allRecentFiles[i].exists()) {
 					let gicon = Gio.content_type_get_icon(itemtype);
 /*améliorable ? Gio.File.new_for_uri(****).query_info('standard::(((symbolic-)))icon', 0, null); */
 					this._files.push(new RecentFileButton(
@@ -232,36 +265,26 @@ var RecentFilesList = class RecentFilesList {
 	}
 
 	filter_widget (text) {
-		if (Extension.SETTINGS.get_boolean('search-in-path')) {
-			this._files.forEach(function(f){
-				f.actor.visible = f.displayedPath.toLowerCase().includes(text) || f.label.toLowerCase().includes(text);
-			});
-		} else {
-			this._files.forEach(function(f){
-				f.actor.visible = f.label.toLowerCase().includes(text);
-			});
-		}
+		let searchInPath = Extension.SETTINGS.get_boolean('search-in-path');
+		this._files.forEach(function(f){
+			f.matchSearch(text, searchInPath);
+		});
 	}
 
 	destroy() {
 //		RECENT_MANAGER.disconnect(this.conhandler);
-		super.destroy();
+		this._removeAll();
+		this.actor.destroy();
 	}
 };
 
 var RecentFileMenu = class RecentFileMenu extends PopupMenu.PopupMenu {
-	constructor (source) {
+	constructor (source, source_actor, uri) {
 		let side = St.Side.BOTTOM;
 		if (Clutter.get_default_text_direction() == Clutter.TextDirection.RTL)
 			side = St.Side.TOP;
-
-		super(source.actor, 0.5, side);
-
-		// We want to keep the item hovered while the menu is up
-		this.blockSourceEvents = true;
-
-		this._source = source;
-
+		super(source_actor, 0.5, side);
+		this.blockSourceEvents = true; // We want to keep the item hovered while the menu is up
 		this.actor.add_style_class_name('app-well-menu');
 
 		// Chain our visibility and lifecycle to that of the source // FIXME
@@ -270,33 +293,42 @@ var RecentFileMenu = class RecentFileMenu extends PopupMenu.PopupMenu {
 //				this.close();
 //			}
 //		});
-		source.actor.connect('destroy', this.destroy.bind(this));
+		source_actor.connect('destroy', this.destroy.bind(this));
 
 		Main.uiGroup.add_actor(this.actor);
+		
+		this._source = source;
+		this._source_uri = uri;
+	}
+	
+	_addSimpleMenuItem (label, callback) {
+		this._appendMenuItem(label).connect('activate', callback.bind(this));
 	}
 
 	_redisplay () {
 		this.removeAll();
 
-		this._appendMenuItem(_("Open") + " " + this._source.label).connect('activate', this._onOpen.bind(this));
-		//this._appendMenuItem(_("Open with")).connect('activate', this._onOpenWith.bind(this));
+		this._addSimpleMenuItem(_("Open"), this._onOpen);
+		//this._appendMenuItem(_("Open with")).connect('activate',
+		//                     this._onOpenWith.bind(this)); // TODO submenu
 		this._appendSeparator();
-		this._appendMenuItem(_("Open parent folder")).connect('activate', this._onParent.bind(this));
-		if(this._source.path != null) {
-			this._appendMenuItem(_("Copy path")).connect('activate', this._onCopyPath.bind(this));
+		this._addSimpleMenuItem(_("Open parent folder"), this._onParent);
+		if(this._source_uri != null) { //XXX pas sûr de moi
+			this._addSimpleMenuItem(_("Copy path"), this._onCopyPath);
 		}
 		this._appendSeparator();
-		this._appendMenuItem(_("Remove from the list")).connect('activate', this._onRemove.bind(this));
+		this._addSimpleMenuItem(_("Remove from the list"), this._onRemove);
 	}
 
 	_onParent () {
-		Gio.app_info_launch_default_for_uri(this._folderUri(), global.create_app_launch_context(0, -1));
+		Gio.app_info_launch_default_for_uri( this._folderUri(),
+		                              global.create_app_launch_context(0, -1) );
 	}
 
 	_folderUri () {
-		let temp = this._source.uri.split('/');
+		let temp = this._source_uri.split('/');
 		let temp2 = '';
-	
+		
 		for(var i = 0; i < temp.length; i++){
 			if (i != temp.length-1) {
 				temp2 += temp[i] + '/';
@@ -306,7 +338,8 @@ var RecentFileMenu = class RecentFileMenu extends PopupMenu.PopupMenu {
 	}
 
 	_onCopyPath () {
-		Clipboard.set_text(CLIPBOARD_TYPE, this._source.path);
+		let file = Gio.File.new_for_uri(this._source_uri);
+		Clipboard.set_text(CLIPBOARD_TYPE, file.get_path());
 	}
 
 	_onOpen () {
@@ -318,7 +351,7 @@ var RecentFileMenu = class RecentFileMenu extends PopupMenu.PopupMenu {
 	}
 
 	_onRemove () {
-		RECENT_MANAGER.remove_item(this._source.uri);
+		RECENT_MANAGER.remove_item(this._source_uri);
 	}
 
 	_appendSeparator () {

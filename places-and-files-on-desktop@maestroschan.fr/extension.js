@@ -245,7 +245,7 @@ function enable() {
 		SETTINGS.get_int('right-padding')
 	];
 
-	if (MyLayout == null) {
+	if (MyLayout == null) { // FIXME n'est pas compatible avec l'idée de changer ses paramètres
 		MyLayout = new ConvenientLayout();
 		MyLayout.fill_with_widgets();
 	}
