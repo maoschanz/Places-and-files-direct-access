@@ -8,142 +8,144 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-22 03:16+0100\n"
+"POT-Creation-Date: 2019-11-04 14:49+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: places-and-files-on-desktop@maestroschan.fr/extension.js:75
-#: places-and-files-on-desktop@maestroschan.fr/extension.js:196
-msgid "Trash"
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:32
+msgid "Type here to search…"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/extension.js:173
-#: places-and-files-on-desktop@maestroschan.fr/desktopFiles.js:279
-#: places-and-files-on-desktop@maestroschan.fr/recentFiles.js:288
-msgid "Open"
-msgstr ""
-
-#: places-and-files-on-desktop@maestroschan.fr/extension.js:180
-msgid "Remove"
-msgstr ""
-
-#: places-and-files-on-desktop@maestroschan.fr/extension.js:190
-msgid "Eject"
-msgstr ""
-
-#: places-and-files-on-desktop@maestroschan.fr/extension.js:193
-msgid "Unmount"
-msgstr ""
-
-#: places-and-files-on-desktop@maestroschan.fr/extension.js:198
-msgid "Empty"
-msgstr ""
-
-#: places-and-files-on-desktop@maestroschan.fr/extension.js:202
-msgid "Recent Files"
-msgstr ""
-
-#: places-and-files-on-desktop@maestroschan.fr/extension.js:204
-msgid "Clear"
-msgstr ""
-
-#: places-and-files-on-desktop@maestroschan.fr/extension.js:225
-#: places-and-files-on-desktop@maestroschan.fr/desktopFiles.js:311
-msgid "Rename"
-msgstr ""
-
-#: places-and-files-on-desktop@maestroschan.fr/extension.js:238
-#: places-and-files-on-desktop@maestroschan.fr/desktopFiles.js:324
-msgid "Type a name..."
-msgstr ""
-
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:36
-msgid "Type here to search..."
-msgstr ""
-
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:70
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:66
 msgid "Search filters"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:92
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:88
 msgid "Settings"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:206
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:197
 msgid "Search in files' path"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:211
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:202
 msgid "All files"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:222
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:213
 msgid "Text files"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:222
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:213
 msgid "Image files"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:222
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:213
 msgid "Audio files"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:223
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:214
 msgid "Video files"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:223
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:214
 msgid "Application files"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:223
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:214
 msgid "Multipart files"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:224
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:215
 msgid "Message files"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:224
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:215
 msgid "Model files"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/desktopFiles.js:280
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:46
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:171
+#: places-and-files-on-desktop@maestroschan.fr/placeDisplay.js:373
+msgid "Trash"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:148
+#: places-and-files-on-desktop@maestroschan.fr/viewDesktop.js:270
+#: places-and-files-on-desktop@maestroschan.fr/viewRecent.js:311
+msgid "Open"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:155
+msgid "Remove"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:165
+msgid "Eject"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:168
+msgid "Unmount"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:173
+msgid "Empty"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:177
+#: places-and-files-on-desktop@maestroschan.fr/placeDisplay.js:361
+msgid "Recent Files"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:179
+msgid "Clear"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:199
+#: places-and-files-on-desktop@maestroschan.fr/viewDesktop.js:302
+msgid "Rename"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:212
+#: places-and-files-on-desktop@maestroschan.fr/viewDesktop.js:315
+msgid "Type a name…"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/viewDesktop.js:271
 msgid "Execute"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/desktopFiles.js:282
-#: places-and-files-on-desktop@maestroschan.fr/recentFiles.js:291
+#: places-and-files-on-desktop@maestroschan.fr/viewDesktop.js:273
+#: places-and-files-on-desktop@maestroschan.fr/viewRecent.js:315
 msgid "Open parent folder"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/desktopFiles.js:286
+#: places-and-files-on-desktop@maestroschan.fr/viewDesktop.js:277
 msgid "Delete"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/recentFiles.js:293
+#: places-and-files-on-desktop@maestroschan.fr/viewRecent.js:317
 msgid "Copy path"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/recentFiles.js:296
+#: places-and-files-on-desktop@maestroschan.fr/viewRecent.js:320
 msgid "Remove from the list"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.js:144
+#: places-and-files-on-desktop@maestroschan.fr/prefs.js:148
 msgid "Desktop"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.js:145
+#: places-and-files-on-desktop@maestroschan.fr/prefs.js:149
 msgid "Empty overview"
 msgstr ""
 
-#: places-and-files-on-desktop@maestroschan.fr/prefs.js:194
+#: places-and-files-on-desktop@maestroschan.fr/prefs.js:198
 msgid "Report bugs or ideas"
 msgstr ""
 
@@ -229,4 +231,12 @@ msgstr ""
 
 #: places-and-files-on-desktop@maestroschan.fr/prefs.ui:434
 msgid "About"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/placeDisplay.js:365
+msgid "Other Locations"
+msgstr ""
+
+#: places-and-files-on-desktop@maestroschan.fr/placeDisplay.js:369
+msgid "Favorite files"
 msgstr ""

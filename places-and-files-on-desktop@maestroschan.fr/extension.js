@@ -10,15 +10,15 @@ const Convenience = Me.imports.convenience;
 
 const HeaderBox = Me.imports.headerBox;
 const PlaceDisplay = Me.imports.placeDisplay;
-const PlacesGrid = Me.imports.placesGrid;
-const RecentFiles = Me.imports.recentFiles;
-//const StarredFiles = Me.imports.starredFiles;
-const DesktopFiles = Me.imports.desktopFiles;
+
+const ViewBookmarks = Me.imports.viewBookmarks;
+const ViewRecent = Me.imports.viewRecent;
+const ViewDesktop = Me.imports.viewDesktop;
 
 const Gettext = imports.gettext.domain('places-files-desktop');
 const _ = Gettext.gettext;
 
-//-------------------------------------------------
+//------------------------------------------------------------------------------
 
 var SETTINGS;
 let PADDING = [];
@@ -29,16 +29,16 @@ let SIGNAL_MONITOR;
 
 let MyLayout = null;
 
-//------------------------------------------------
+//------------------------------------------------------------------------------
 
 function init() {
 	Convenience.initTranslations();
 	
-	PlacesGrid.PLACES_MANAGER = new PlaceDisplay.PlacesManager();
-	RecentFiles.RECENT_MANAGER = new Gtk.RecentManager();
+	ViewBookmarks.PLACES_MANAGER = new PlaceDisplay.PlacesManager();
+	ViewRecent.RECENT_MANAGER = new Gtk.RecentManager();
 }
 
-//-------------------------------------------------
+//------------------------------------------------------------------------------
 
 /*
 	This function is called when the user performs an action which affects the
@@ -61,7 +61,7 @@ function updateVisibility() {
 	}
 }
 
-//------------------------------------------------
+//------------------------------------------------------------------------------
 
 /*
 	Disconnect all signals in SIGNAUX_OVERVIEW
@@ -78,7 +78,7 @@ function disconnectOverviewSignals() {
 	SIGNAUX_OVERVIEW = []
 }
 
-//------------------------------------------------
+//------------------------------------------------------------------------------
 
 /*
 	This function is called when the user set a new layout position. It almost
@@ -163,10 +163,9 @@ class ConvenientLayout {
 		this.active_widgets = SETTINGS.get_strv('active-widgets');
 
 		// TODO build only the useful ones
-		this.widget_places = new PlacesGrid.PlacesList();
-		this.widget_recent = new RecentFiles.RecentFilesList();
-//		this.widget_starred = new StarredFiles.StarredFilesList();
-		this.widget_desktop = new DesktopFiles.DesktopFilesList();
+		this.widget_places = new ViewBookmarks.PlacesList();
+		this.widget_recent = new ViewRecent.RecentFilesList();
+		this.widget_desktop = new ViewDesktop.DesktopFilesList();
 		this.widget_searchbar = new HeaderBox.HeaderBox(this);
 		
 		for (let i=0; i<this.active_widgets.length; i++) {
@@ -233,7 +232,7 @@ class ConvenientLayout {
 	}
 };
 
-//------------------------------------------------
+//------------------------------------------------------------------------------
 
 function enable() {
 	SETTINGS = Convenience.getSettings('org.gnome.shell.extensions.places-files-desktop');
@@ -268,7 +267,7 @@ function enable() {
 	updateLayoutLayout();
 }
 
-//------------------------------------------------
+//------------------------------------------------------------------------------
 
 function disable() {
 	if (POSITION == 'overview') {
@@ -286,5 +285,5 @@ function disable() {
 //	log('signals for places-and-files-on-desktop disabled');
 }
 
-//------------------------------------------------
+//------------------------------------------------------------------------------
 

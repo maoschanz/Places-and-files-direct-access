@@ -1,6 +1,8 @@
 places-and-files-on-desktop@maestroschan.fr/extension.js
 places-and-files-on-desktop@maestroschan.fr/headerBox.js
-places-and-files-on-desktop@maestroschan.fr/desktopFiles.js
-places-and-files-on-desktop@maestroschan.fr/recentFiles.js
+places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js
+places-and-files-on-desktop@maestroschan.fr/viewDesktop.js
+places-and-files-on-desktop@maestroschan.fr/viewRecent.js
 places-and-files-on-desktop@maestroschan.fr/prefs.js
 places-and-files-on-desktop@maestroschan.fr/prefs.ui
+places-and-files-on-desktop@maestroschan.fr/placeDisplay.js

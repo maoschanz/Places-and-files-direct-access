@@ -7,7 +7,7 @@ const Main = imports.ui.main;
 const ShellMountOperation = imports.ui.shellMountOperation;
 
 const Gettext = imports.gettext.domain('gnome-shell-extensions');
-const _ = Gettext.gettext;
+const _2 = Gettext.gettext;
 //const N_ = function(x) { return x; }
 
 const Gettext2 = imports.gettext.domain('places-files-desktop');
@@ -46,7 +46,7 @@ class PlaceInfo {
             await this._launchDefaultForUri(this.file.get_uri(), context, null);
         } catch (e) {
             if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_MOUNTED)) {
-                Main.notifyError(_('Failed to launch “%s”').format(this.name), e.message);
+                Main.notifyError(_2('Failed to launch “%s”').format(this.name), e.message);
                 return;
             }
 
@@ -61,7 +61,7 @@ class PlaceInfo {
                     this._ensureMountAndLaunch(context, false);
             } catch (e) {
                 if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.FAILED_HANDLED))
-                    Main.notifyError(_('Failed to mount volume for “%s”').format(this.name), e.message);
+                    Main.notifyError(_2('Failed to mount volume for “%s”').format(this.name), e.message);
             } finally {
                 op.close();
             }
@@ -145,7 +145,7 @@ Signals.addSignalMethods(PlaceInfo.prototype);
 
 class RootInfo extends PlaceInfo {
     _init() {
-        super._init('devices', Gio.File.new_for_path('/'), _("Computer"));
+        super._init('devices', Gio.File.new_for_path('/'), _2("Computer"));
 
         let busName = 'org.freedesktop.hostname1';
         let objPath = '/org/freedesktop/hostname1';
@@ -168,7 +168,7 @@ class RootInfo extends PlaceInfo {
         // GDBusProxy will emit a g-properties-changed when hostname1 goes down
         // ignore it
         if (proxy.g_name_owner) {
-            this.name = proxy.PrettyHostname || _("Computer");
+            this.name = proxy.PrettyHostname || _2("Computer");
             this.emit('changed');
         }
     }
@@ -228,7 +228,7 @@ class PlaceDeviceInfo extends PlaceInfo {
     }
 
     _reportFailure(exception) {
-        let msg = _("Ejecting drive “%s” failed:").format(this._mount.get_name());
+        let msg = _2("Ejecting drive “%s” failed:").format(this._mount.get_name());
         Main.notifyError(msg, exception.message);
     }
 };
@@ -354,23 +354,23 @@ var PlacesManager = class {
 
         this._places.special.push(new PlaceInfo('special',
                                                 Gio.File.new_for_path(homePath),
-                                                _("Home")));
+                                                _2("Home")));
 
         this._places.special.push(new PlaceInfo('special',
                                                 Gio.File.new_for_uri('recent:///'),
-                                                _S("Recent Files")));
+                                                _("Recent Files")));
 
         this._places.special.push(new PlaceInfo('special',
                                                 Gio.File.new_for_uri('other-locations:///'),
-                                                _S("Other Locations")));
+                                                _("Other Locations")));
 
-        this._places.special.push(new PlaceInfo('special', //////FIXME 
+        this._places.special.push(new PlaceInfo('special', // XXX
                                                 Gio.File.new_for_uri('starred:///'),
-                                                _S("Starred files")));
+                                                _("Favorite files")));
 
         this._places.special.push(new PlaceInfo('special',
                                                 Gio.File.new_for_uri('trash:///'),
-                                                _S("Trash")));
+                                                _("Trash")));
 
         let specials = [];
         let dirs = DEFAULT_DIRECTORIES.slice();
@@ -414,7 +414,7 @@ var PlacesManager = class {
         this._places.devices.push(new RootInfo());
         this._places.network.push(new PlaceInfo('network',
                                                 Gio.File.new_for_uri('network:///'),
-                                                _("Browse Network"),
+                                                _2("Browse Network"),
                                                 'network-workgroup'));
 
         /* first go through all connected drives */

@@ -59,7 +59,7 @@
 		<key type="as" name="active-widgets">
 			<default>['places', 'searchbar', 'recent']</default>
 			<summary>Active widgets</summary>
-			<description>List of strings. Possible widgets are: places, searchbar, recent, starred, desktop</description>
+			<description>List of strings. Possible widgets are: places, searchbar, recent, desktop</description>
 		</key>
 		<key type="as" name="active-positions">
 			<default>['0', '3', '3']</default>

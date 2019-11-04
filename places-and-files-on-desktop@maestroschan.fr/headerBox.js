@@ -29,7 +29,7 @@ var HeaderBox = class HeaderBox {
 			name: 'searchEntry',
 			style_class: 'search-entry',
 			can_focus: true,
-			hint_text: _('Type here to search...'),
+			hint_text: _('Type here to search…'),
 			track_hover: true,
 			y_expand: false,
 			primary_icon: new St.Icon({
@@ -49,12 +49,12 @@ var HeaderBox = class HeaderBox {
 		                                  this._onSearchTextChanged.bind(this));
 		this.searchEntry.connect('secondary-icon-clicked',
 		                                        this._onIconRelease.bind(this));
-//		this.searchEntry.connect('enter-event', this.beginSearch.bind(this));
+		// this.searchEntry.connect('enter-event', this.beginSearch.bind(this));
 		this.searchEntry.connect('key-focus-in', this.beginSearch.bind(this)); // ???? XXX TODO
 		this.searchEntry.connect('key-focus-out', this.endSearch.bind(this));
 		ShellEntry.addContextMenu(this.searchEntry, null);
 		
-		//--------------------------------
+		//----------------------------------------------------------------------
 		
 		this.filterButton = new St.Button({
 			child: new St.Icon({
@@ -117,7 +117,7 @@ var HeaderBox = class HeaderBox {
 	}
 
 	openSettings () {
-		Util.spawn(["gnome-shell-extension-prefs", "places-and-files-on-desktop@maestroschan.fr"]);
+		Util.spawn(['gnome-shell-extension-prefs', 'places-and-files-on-desktop@maestroschan.fr']);
 	}
 
 	_onIconRelease () {
@@ -172,7 +172,7 @@ var FilterMenuButton = class FilterMenuButton {
 };
 Signals.addSignalMethods(FilterMenuButton.prototype);
 
-//------------------------------------------------
+//------------------------------------------------------------------------------
 
 class FilterMenu extends PopupMenu.PopupMenu {
 	constructor (source) {
@@ -245,3 +245,4 @@ class FilterMenu extends PopupMenu.PopupMenu {
 };
 Signals.addSignalMethods(FilterMenu.prototype);
 
+//------------------------------------------------------------------------------

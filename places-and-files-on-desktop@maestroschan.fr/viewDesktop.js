@@ -56,17 +56,17 @@ var DesktopFilesList = class DesktopFilesList {
 				GLib.UserDirectory.DIRECTORY_DESKTOP
 			)
 		);
-		
+
 		this._monitor = this._directory.monitor(Gio.FileMonitorFlags.SEND_MOVED, null);
-		
+
 		this._updateSignal = this._monitor.connect('changed', this._redisplay.bind(this));
 	}
 
 	_buildFiles () {
 		let children = this._directory.enumerate_children('*', 0, null);
-		
+
 		this._files = [];
-		
+
 		let files = [];
 		let dirs = [];
 		let file_info = null;
@@ -119,10 +119,10 @@ class DesktopFileButton {
 		this.label = this._info.get_display_name();
 		this.icon = new St.Icon({
 			gicon: this._info.get_icon(),
-			style_class: 'popup-menu-icon', 
+			style_class: 'popup-menu-icon',
 			icon_size: Extension.SETTINGS.get_int('recent-files-icon-size')
 		});
-		
+
 		this.actor = new St.Button({
 			reactive: true,
 			can_focus: true,
@@ -132,13 +132,13 @@ class DesktopFileButton {
 			y_fill: true,
 			style_class: 'list-search-result',
 		});
-		
+
 		this.actor._delegate = this;
 		this._connexion2 = this.actor.connect('button-press-event', this._onButtonPress.bind(this));
-		
+
 		this._menu = null;
 		this._menuManager = new PopupMenu.PopupMenuManager(this);
-		
+
 		let content = new St.BoxLayout({
 			style_class: 'list-search-result-content',
 			vertical: false
@@ -253,7 +253,7 @@ class DesktopFileButtonMenu extends PopupMenu.PopupMenu {
 		this._source = source;
 		this._path = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP) + '/' + this._source._info.get_name();
 		this._file = Gio.file_new_for_path(this._path);
-		
+
 		this.actor.add_style_class_name('app-well-menu');
 
 		// Chain our visibility and lifecycle to that of the source
@@ -286,7 +286,7 @@ class DesktopFileButtonMenu extends PopupMenu.PopupMenu {
 	_onRename () {
 		this.renameItem.actor.visible = false;
 		this.renameEntryItem.actor.visible = true;
-	
+
 		global.stage.set_key_focus(this.entry);
 	}
 
@@ -302,7 +302,7 @@ class DesktopFileButtonMenu extends PopupMenu.PopupMenu {
 			label: _("Rename")
 		});
 		this.renameItem.actor.add( renameItemButton );
-		
+
 		this.renameEntryItem = new PopupMenu.PopupBaseMenuItem({
 			reactive: false,
 			activate: true,
@@ -310,9 +310,9 @@ class DesktopFileButtonMenu extends PopupMenu.PopupMenu {
 			style_class: null,
 			can_focus: false
 		});
-		
+
 		this.entry = new St.Entry({
-			hint_text: _('Type a name...'),
+			hint_text: _('Type a name…'),
 			track_hover: true,
 			x_expand: true,
 			secondary_icon: new St.Icon({
@@ -322,15 +322,15 @@ class DesktopFileButtonMenu extends PopupMenu.PopupMenu {
 				y_align: Clutter.ActorAlign.CENTER,
 			}),
 		});
-		
+
 		this.renameEntryItem.actor.add( this.entry );
-		
+
 		this.addMenuItem(this.renameItem);
 		this.addMenuItem(this.renameEntryItem);
-		
+
 		renameItemButton.connect('clicked', this._onRename.bind(this));
 		this.entry.connect('secondary-icon-clicked', this._actuallyRename.bind(this));
-		
+
 		this.renameEntryItem.actor.visible = false;
 	}
 
@@ -346,7 +346,7 @@ class DesktopFileButtonMenu extends PopupMenu.PopupMenu {
 //		Clipboard.set_text(CLIPBOARD_TYPE, this._path);
 		//TODO
 	}
-	
+
 	_onExecute () {
 		if(this._source._info.get_content_type() == 'application/x-desktop') {
 			this._source._onLauncher();
