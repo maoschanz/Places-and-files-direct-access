@@ -56,12 +56,11 @@ var RecentFileButton = class RecentFileButton {
 			y_fill: true,
 			style_class: 'list-search-result',
 		});
+		// XXX ?? is it useful to remember the signal to disconnect it ?
 		this.signal = this.actor.connect('button-press-event', this._onButtonPress.bind(this));
-		// XXX ???? is it useful ?
-//		this.actor.connect('button-press-event', this._onButtonPress.bind(this));
 		
 		this._menu = null;
-		this._menuManager = new PopupMenu.PopupMenuManager(this);
+		this._menuManager = new PopupMenu.PopupMenuManager(this.actor);
 		
 		let content = new St.BoxLayout({
 			style_class: 'list-search-result-content',
@@ -216,7 +215,7 @@ var RecentFilesList = class RecentFilesList {
 		this._buildRecents();
 	}
 
-	this._removeAll () {
+	_removeAll () {
 //		this._content.destroy_all_children(); //XXX would destroy actors only
 		this._content.remove_all_children();
 		this._files.forEach(function(f){

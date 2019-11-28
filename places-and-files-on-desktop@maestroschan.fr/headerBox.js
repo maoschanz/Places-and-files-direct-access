@@ -15,6 +15,28 @@ const Me = ExtensionUtils.getCurrentExtension();
 const Convenience = Me.imports.convenience;
 const Extension = Me.imports.extension;
 
+const FILE_TYPES = [
+	'text',
+	'image',
+	'audio',
+	'video',
+	'application',
+	'multipart',
+	'message',
+	'model'
+];
+
+const FILE_TYPES_LABELS = [
+	_("Text files"),
+	_("Image files"),
+	_("Audio files"),
+	_("Video files"),
+	_("Application files"),
+	_("Multipart files"),
+	_("Message files"),
+	_("Model files")
+];
+
 //-------------------------------------------------
 
 var HeaderBox = class HeaderBox {
@@ -140,7 +162,7 @@ var FilterMenuButton = class FilterMenuButton {
 		this.actor = bouton;
 		this.actor.connect('button-press-event', this._onButtonPress.bind(this));
 		this._menu = null;
-		this._menuManager = new PopupMenu.PopupMenuManager(this);
+		this._menuManager = new PopupMenu.PopupMenuManager(this.actor);
 	}
 
 	_onMenuPoppedDown () {
@@ -193,34 +215,30 @@ class FilterMenu extends PopupMenu.PopupMenu {
 		let inPathSetting = Extension.SETTINGS.get_boolean('search-in-path');
 		let blackListSetting = Extension.SETTINGS.get_strv('blacklist-recent');
 		let blackListIsEmpty = (blackListSetting == '');
-		
+
 		this.inPathItem = new PopupMenu.PopupSwitchMenuItem(_("Search in files' path"), inPathSetting);
 		this.inPathItem.connect('toggled', (a, b, c) => {
 			Extension.SETTINGS.set_boolean('search-in-path', b); //XXX à tester
 		});
-		
+
 		this.allFilesItem = new PopupMenu.PopupSwitchMenuItem(_("All files"), blackListIsEmpty);
 		this.allFilesItem.connect('toggled', (a, b, c) => { //XXX à tester
 			Extension.SETTINGS.set_strv('blacklist-recent', []);
 		});
-		
+
 		this.addMenuItem(this.inPathItem);
+		return; // FIXME FIXME FIXME everything after that point is broken
 		this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 		this.addMenuItem(this.allFilesItem);
 
-		let filesTypes = ['text', 'image', 'audio', 'video', 'application',
-			'multipart', 'message', 'model'];
-		let filesTypesLabels = [_("Text files"), _("Image files"), _("Audio files"),
-			_("Video files"), _("Application files"), _("Multipart files"),
-			_("Message files"), _("Model files")];
-
-		for (var i = 0; i < filesTypes.length; i++) {
-			let labelItem = filesTypesLabels[i] ;
-			let item = new PopupMenu.PopupMenuItem( labelItem );
-			item.connect('activate', (a, b, c) => { //XXX à tester
+		for (var i = 0; i < FILE_TYPES.length; i++) {
+			let labelItem = FILE_TYPES_LABELS[i] ;
+			let item = new PopupMenu.PopupMenuItem(labelItem);
+			item.connect('activate', (a, b, c) => {
 				let blr = Extension.SETTINGS.get_strv('blacklist-recent');
-				if (blr.includes(c)) {
-					let index = blr.indexOf(c);
+				let fileType = FILE_TYPES[i];
+				if (blr.includes(fileType)) {
+					let index = blr.indexOf(fileType);
 					blr.splice(index, 1);
 					a.setOrnament(2);
 				} else {
@@ -228,13 +246,13 @@ class FilterMenu extends PopupMenu.PopupMenu {
 					a.setOrnament(0);
 				}
 				Extension.SETTINGS.set_strv('blacklist-recent', blr);
-			}, filesTypes[i]); //XXX sans doute mauvais
-			if (blackListSetting.includes(filesTypes[i])) {
+			}); //XXX ne marche pas
+			if (blackListSetting.includes(FILE_TYPES[i])) {
 				item.setOrnament(0);
 			} else {
 				item.setOrnament(2);
 			}
- 			this.addMenuItem(item);
+			this.addMenuItem(item);
 		}
 	}
 

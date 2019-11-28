@@ -28,33 +28,30 @@ class PlaceButton {
 	constructor (info, category) {
 		this._info = info;
 		this._category = category;
-		
-		this.actor = new St.Button({ style_class: 'app-well-app',
+
+		this.actor = new St.Button({
+			style_class: 'app-well-app',
 			reactive: true,
 			button_mask: St.ButtonMask.ONE | St.ButtonMask.TWO,
 			can_focus: true,
 			x_fill: true,
 			y_fill: true,
 		});
-		
-		this.icon = new IconGrid.BaseIcon(this._info.name,
-		     { createIcon: this.createIcon.bind(this), setSizeManually: true });
+		this.icon = new IconGrid.BaseIcon(this._info.name, {
+			createIcon: this.createIcon.bind(this),
+			setSizeManually: true
+		});
 		this.icon.label.style_class = 'place-label';
-		
-		this.actor.set_child(this.icon.actor);
-		
+		this.actor.set_child(this.icon);
+
 		if (this._info.name == _("Trash")) {
 			this._directory = Gio.file_new_for_uri("trash:///");
-			
-//			this._monitor = this._directory.monitor(Gio.FileMonitorFlags.SEND_MOVED, null);
-//			this._updateSignal = this._monitor.connect('changed', this.update.bind(this));
 		}
-		
 		this.actor.connect('button-press-event', this._onButtonPress.bind(this));
 		this._menu = null;
-		this._menuManager = new PopupMenu.PopupMenuManager(this);
+		this._menuManager = new PopupMenu.PopupMenuManager(this.actor);
 	}
-	
+
 	createIcon () {
 		return (new St.Icon({
 			gicon: this._info.icon,
@@ -69,10 +66,13 @@ class PlaceButton {
 
 	_onClicked () {
 		this.icon.animateZoomOut();
-		Util.trySpawnCommandLine('nautilus ' + this._info.file.get_uri());
-		//FIXME the "normal" method doesn't understand the trash, so this has to stay commented.
-//		Gio.app_info_launch_default_for_uri(this._info.file.get_uri(),
-//		                               global.create_app_launch_context(0, -1));
+		let uri = this._info.file.get_uri();
+		if ('trash:///' == uri || 'starred:///' == uri) {
+			Util.trySpawnCommandLine('nautilus ' + uri);
+		} else {
+			Gio.app_info_launch_default_for_uri(uri,
+			                           global.create_app_launch_context(0, -1));
+		}
 	}
 
 	_onMenuPoppedDown () {
@@ -97,7 +97,7 @@ class PlaceButton {
 		this._menuManager.ignoreRelease();
 		return false;
 	}
-	
+
 	_onButtonPress (actor, event) {
 		let button = event.get_button();
 		if (button == 1) {
@@ -110,10 +110,7 @@ class PlaceButton {
 	}
 
 	destroy () {
-//		if (this._info.name == _("Trash")) {	
-//			this._monitor.disconnect(this._updateSignal);
-//		}
-//		super.destroy(); // FIXME
+//		super.destroy(); // TODO
 	}
 };
 Signals.addSignalMethods(PlaceButton.prototype);
@@ -276,7 +273,7 @@ class PlaceButtonMenu extends PopupMenu.PopupMenu {
 		GLib.file_set_contents(PLACES_MANAGER._bookmarksFile.get_path(), content);
 		this.emit('bookmarks-updated');
 	}
-	
+
 	_onUnmount () {
 		let mountOp = new ShellMountOperation.ShellMountOperation(this._source._info._mount);
 
@@ -359,7 +356,7 @@ class PlaceButtonMenu extends PopupMenu.PopupMenu {
 };
 Signals.addSignalMethods(PlaceButtonMenu.prototype);
 
-//--------------------------
+//------------------------------------------------------------------------------
 
 var PlacesList = class PlacesList {
 	constructor () {
@@ -381,7 +378,7 @@ var PlacesList = class PlacesList {
 		});
 		
 		this.grid = new PlacesGrid();
-		this.actor.add_actor(this.grid.super_grid.actor);
+		this.actor.add_actor(this.grid.super_grid);
 	}
 	
 	filter_widget (text) {
@@ -394,7 +391,7 @@ var PlacesList = class PlacesList {
 class PlacesGrid {
 	constructor () {
 		this.super_grid = new IconGrid.IconGrid();
-		this.super_grid.actor.style_class = 'places-grid';
+		this.super_grid.style_class = 'places-grid';
 		let monitor = Main.layoutManager.primaryMonitor;
 
 		this._placesItem = new Array();
@@ -436,4 +433,5 @@ class PlacesGrid {
 	}
 };
 
-//-------------------------------------------------------
+//------------------------------------------------------------------------------
+

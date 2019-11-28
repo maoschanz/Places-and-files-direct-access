@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-04 14:49+0100\n"
+"POT-Creation-Date: 2019-11-28 15:02+0100\n"
 "PO-Revision-Date: 2019-04-10 17:20+0200\n"
 "Last-Translator: Heimen Stoffels <vistausss@outlook.com>\n"
 "Language-Team: Dutch <vistausss@outlook.com>\n"
@@ -18,101 +18,101 @@ msgstr ""
 "X-Generator: Poedit 2.1.1\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:32
-msgid "Type here to search…"
-msgstr "Typ hier om te zoeken…"
-
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:66
-msgid "Search filters"
-msgstr "Zoekfilters"
-
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:88
-msgid "Settings"
-msgstr "Instellingen"
-
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:197
-msgid "Search in files' path"
-msgstr "Bestandspad doorzoeken"
-
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:202
-msgid "All files"
-msgstr "Alle bestanden"
-
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:213
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:30
 msgid "Text files"
 msgstr "Tekstbestanden"
 
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:213
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:31
 msgid "Image files"
 msgstr "Afbeeldingsbestanden"
 
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:213
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:32
 msgid "Audio files"
 msgstr "Audiobestanden"
 
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:214
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:33
 msgid "Video files"
 msgstr "Videobestanden"
 
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:214
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:34
 msgid "Application files"
 msgstr "Toepassingsbestanden"
 
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:214
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:35
 msgid "Multipart files"
 msgstr "Bestanden bestaande uit meerdere delen"
 
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:215
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:36
 msgid "Message files"
 msgstr "Berichtbestanden"
 
-#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:215
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:37
 msgid "Model files"
 msgstr "Modelbestanden"
 
-#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:46
-#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:171
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:54
+msgid "Type here to search…"
+msgstr "Typ hier om te zoeken…"
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:88
+msgid "Search filters"
+msgstr "Zoekfilters"
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:110
+msgid "Settings"
+msgstr "Instellingen"
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:219
+msgid "Search in files' path"
+msgstr "Bestandspad doorzoeken"
+
+#: places-and-files-on-desktop@maestroschan.fr/headerBox.js:224
+msgid "All files"
+msgstr "Alle bestanden"
+
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:47
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:168
 #: places-and-files-on-desktop@maestroschan.fr/placeDisplay.js:373
 msgid "Trash"
 msgstr "Prullenbak"
 
-#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:148
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:145
 #: places-and-files-on-desktop@maestroschan.fr/viewDesktop.js:270
-#: places-and-files-on-desktop@maestroschan.fr/viewRecent.js:311
+#: places-and-files-on-desktop@maestroschan.fr/viewRecent.js:310
 msgid "Open"
 msgstr "Openen"
 
-#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:155
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:152
 msgid "Remove"
 msgstr "Verwijderen"
 
-#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:165
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:162
 msgid "Eject"
 msgstr "Uitwerpen"
 
-#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:168
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:165
 msgid "Unmount"
 msgstr "Ontkoppelen"
 
-#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:173
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:170
 msgid "Empty"
 msgstr "Leeg"
 
-#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:177
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:174
 #: places-and-files-on-desktop@maestroschan.fr/placeDisplay.js:361
 msgid "Recent Files"
 msgstr "Recente bestanden"
 
-#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:179
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:176
 msgid "Clear"
 msgstr "Wissen"
 
-#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:199
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:196
 #: places-and-files-on-desktop@maestroschan.fr/viewDesktop.js:302
 msgid "Rename"
 msgstr "Naam wijzigen"
 
-#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:212
+#: places-and-files-on-desktop@maestroschan.fr/viewBookmarks.js:209
 #: places-and-files-on-desktop@maestroschan.fr/viewDesktop.js:315
 msgid "Type a name…"
 msgstr "Typ een naam…"
@@ -122,7 +122,7 @@ msgid "Execute"
 msgstr "Uitvoeren"
 
 #: places-and-files-on-desktop@maestroschan.fr/viewDesktop.js:273
-#: places-and-files-on-desktop@maestroschan.fr/viewRecent.js:315
+#: places-and-files-on-desktop@maestroschan.fr/viewRecent.js:314
 msgid "Open parent folder"
 msgstr "Bovenliggende map openen"
 
@@ -130,11 +130,11 @@ msgstr "Bovenliggende map openen"
 msgid "Delete"
 msgstr "Verwijderen"
 
-#: places-and-files-on-desktop@maestroschan.fr/viewRecent.js:317
+#: places-and-files-on-desktop@maestroschan.fr/viewRecent.js:316
 msgid "Copy path"
 msgstr "Pad kopiéren"
 
-#: places-and-files-on-desktop@maestroschan.fr/viewRecent.js:320
+#: places-and-files-on-desktop@maestroschan.fr/viewRecent.js:319
 msgid "Remove from the list"
 msgstr "Verwijderen van de lijst"
 
