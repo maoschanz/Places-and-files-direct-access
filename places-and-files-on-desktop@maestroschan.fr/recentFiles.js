@@ -175,16 +175,14 @@ var HeaderBox = new Lang.Class({
 	Extends: St.BoxLayout,
 	
 	_init: function(layout) {
-		
 		this._listRecent = layout.recentFilesList;
 		this._listDesktop = layout.desktopFilesList;
-		this._listStarred = layout.starredFilesList;
-		
+
 		this.parent({
 			vertical: false,
 			style_class: 'convenient-list-header',
 		});
-		
+
 		this.searchEntry = new St.Entry({
 			name: 'searchEntry',
 			style_class: 'search-entry',
@@ -198,7 +196,7 @@ var HeaderBox = new Lang.Class({
 				style_class: 'system-status-icon',
 				y_align: Clutter.ActorAlign.CENTER,
 			}),
-			secondary_icon: new St.Icon({ //FIXME 3.18
+			secondary_icon: new St.Icon({
 				icon_name: 'edit-clear-symbolic',
 				icon_size: 16,
 				style_class: 'system-status-icon',
@@ -209,14 +207,14 @@ var HeaderBox = new Lang.Class({
 			'text-changed', 
 			Lang.bind(this, this._onSearchTextChanged)
 		);
-		this.searchEntry.connect('secondary-icon-clicked', Lang.bind(this, this._onIconRelease)); //FIXME 3.18
+		this.searchEntry.connect('secondary-icon-clicked', Lang.bind(this, this._onIconRelease));
 		ShellEntry.addContextMenu(this.searchEntry, null);
-		
+
 		//--------------------------------
-	
+
 		this.settingsButton = new St.Button({
 			child: new St.Icon({
-				icon_name: 'open-menu-symbolic',
+				icon_name: 'preferences-other-symbolic',
 				style_class: 'system-status-icon',
 				icon_size: 16,
 				y_align: Clutter.ActorAlign.CENTER,
@@ -224,31 +222,32 @@ var HeaderBox = new Lang.Class({
 			accessible_name: _("Settings"),
 			y_align: Clutter.ActorAlign.CENTER,
 			style_class: 'button',
+			style: 'padding-right: 12px; padding-left: 12px;',
 			reactive: true,
 			can_focus: true,
 			track_hover: true,
 			y_expand: false,
 			y_fill: true
 		});
-		
+
 		this.settingsButton.connect('clicked', Lang.bind(this, this.openSettings));
 
 		//--------------------------------
-		
+
 		this.add(new St.BoxLayout({x_expand: true,}));
 		this.add(this.searchEntry);
 		this.add(this.settingsButton);
 		this.add(new St.BoxLayout({x_expand: true,}));
 	},
-	
+
 	openSettings: function() {
 		Util.spawn(["gnome-shell-extension-prefs", "places-and-files-on-desktop@maestroschan.fr"]);
 	},
-	
+
 	_onIconRelease: function() {
 		this.searchEntry.set_text('');
 	},
-	
+
 	_onSearchTextChanged: function() {
 		let searched = this.searchEntry.get_text().toLowerCase();
 		if (Extension.SETTINGS.get_boolean('search-in-path')) {
@@ -260,9 +259,6 @@ var HeaderBox = new Lang.Class({
 				f.actor.visible = f.label.toLowerCase().includes(searched);
 			});
 		}
-		this._listStarred._files.forEach(function(f){
-			f.actor.visible = f.label.toLowerCase().includes(searched);
-		});
 		this._listDesktop._files.forEach(function(f){
 			f.actor.visible = f.label.toLowerCase().includes(searched);
 		});
@@ -274,7 +270,7 @@ This class is a fork of ListSearchResult or SearchResult (in search.js version 3
 */
 var RecentFilesList = new Lang.Class({
 	Name: 'RecentFilesList',
-	
+
 	_init: function() {
 		this.actor = new St.BoxLayout({ style_class: 'search-section', vertical: true, x_expand: true });
 		this._resultDisplayBin = new St.Bin({ x_fill: true, y_fill: true });
@@ -289,21 +285,21 @@ var RecentFilesList = new Lang.Class({
 		this._buildRecents();
 		this.conhandler = Extension.RECENT_MANAGER.connect('changed', Lang.bind(this, this._redisplay));
 	},
-	
+
 	_redisplay: function() {
 		this._content.destroy_all_children();
 		this._buildRecents();
 	},
-	
+
 	_buildRecents: function() {
 		/* inspired by the code from RecentItems@bananenfisch.net */
 		let Ritems = Extension.RECENT_MANAGER.get_items();
 		Ritems.sort(trierDate);
-		
+
 		let blacklistString = Extension.SETTINGS.get_string('blacklist').replace(/\s/g, ""); 
 		let blacklistList = blacklistString.split(",");
 		this._files = [];
-		
+
 		for(let i = 0 ; i < Extension.SETTINGS.get_int('number-of-recent-files') ; i++){
 			if(Ritems[i] == null || Ritems[i] == undefined) {
 				break;
@@ -323,7 +319,7 @@ var RecentFilesList = new Lang.Class({
 			}
 		}
 	},
-	
+
 	destroy() {
 		Extension.RECENT_MANAGER.disconnect(this.conhandler);
 		this.parent();
@@ -386,23 +382,23 @@ var RecentFileMenu = new Lang.Class({
 		}
 		return temp2;
 	},
-	
+
 	_onCopyPath: function() {
 		Clipboard.set_text(CLIPBOARD_TYPE, this._source.path);
 	},
-	
+
 	_onOpen: function() {
 		this._source.activate();
 	},
-	
+
 	_onOpenWith: function() {
 		//TODO
 	},
-	
+
 	_onRemove: function() {
 		Extension.RECENT_MANAGER.remove_item(this._source.uri);
 	},
-	
+
 	_appendSeparator: function () {
 		let separator = new PopupMenu.PopupSeparatorMenuItem();
 		this.addMenuItem(separator);
@@ -421,8 +417,7 @@ var RecentFileMenu = new Lang.Class({
 });
 Signals.addSignalMethods(RecentFileMenu.prototype);
 
-//-----------------------
-
+//------------------------------------------------------------------------------
 
 /*
 This class is a fork of ListSearchResult or SearchResult (in search.js version 3.26)
@@ -444,24 +439,24 @@ var DesktopFilesList = new Lang.Class({
 		this._initDirectory();
 		this._buildFiles();
 	},
-	
+
 	_redisplay: function() {
 		this._content.destroy_all_children();
 		this._buildFiles();
 	},
-	
-	_initDirectory: function () {		
+
+	_initDirectory: function () {
 		this._directory = Gio.file_new_for_path(
 			GLib.get_user_special_dir(
 				GLib.UserDirectory.DIRECTORY_DESKTOP
 			)
 		);
-		
+
 		this._monitor = this._directory.monitor(Gio.FileMonitorFlags.SEND_MOVED, null);
 		
 		this._updateSignal = this._monitor.connect('changed', Lang.bind(this, this._redisplay));
 	},
-	
+
 	_buildFiles: function() {
 		let children = this._directory.enumerate_children('*', 0, null);
 		
@@ -509,7 +504,7 @@ This class is a fork of ListSearchResult or SearchResult (in search.js version 3
 */
 var DesktopFileButton = new Lang.Class({
 	Name: 'DesktopFileButton',
-	
+
 	_init: function(info) {
 		this._info = info;
 		this.label = this._info.get_display_name();
@@ -518,7 +513,7 @@ var DesktopFileButton = new Lang.Class({
 			style_class: 'popup-menu-icon', 
 			icon_size: Extension.SETTINGS.get_int('recent-files-icon-size')
 		});
-		
+
 		this.actor = new St.Button({
 			reactive: true,
 			can_focus: true,
@@ -528,7 +523,7 @@ var DesktopFileButton = new Lang.Class({
 			y_fill: true,
 			style_class: 'list-search-result',
 		});
-		
+
 		this.actor._delegate = this;
 		this._connexion2 = this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
 		
@@ -573,21 +568,21 @@ var DesktopFileButton = new Lang.Class({
 		}
 		return Clutter.EVENT_PROPAGATE;
 	},
-	
+
 	activate: function () {
 		Gio.app_info_launch_default_for_uri(
 			'file://' + GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP) + '/' + this._info.get_name(),
 			global.create_app_launch_context(0, -1)
 		);
 	},
-	
+
 	_onExecute: function () {
 		Util.trySpawnCommandLine(
 			'"' + GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP)
 			+ '/' + this._info.get_name() + '"'
 		);
 	},
-	
+
 	_onLauncher: function () {
 		let f = Gio.DesktopAppInfo.new_from_filename(GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP) + '/' + this._info.get_name());
 		let command = f.get_string("Exec");
@@ -617,15 +612,15 @@ var DesktopFileButton = new Lang.Class({
 
 		return false;
 	},
-	
+
 	hide: function () {
 		this.actor.visible = false;
 	},
-	
+
 	show: function () {
 		this.actor.visible = true;
 	},
-	
+
 	destroy: function() {
 		this.actor.disconnect(this._connexion2);
 		this._menu.disconnect(this._connexion);

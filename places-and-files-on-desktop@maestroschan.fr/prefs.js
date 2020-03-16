@@ -44,29 +44,32 @@ const PrefsPage = new Lang.Class({
 	},
 	
 	add_section: function(titre) {
-		let section = new Gtk.Box({
+		let titledSection = new Gtk.Box({
 			orientation: Gtk.Orientation.VERTICAL,
 			spacing: 6,
 		});
 		if (titre != "") {
-			section.add(new Gtk.Label({
+			titledSection.add(new Gtk.Label({
 				label: '<b>' + titre + '</b>',
 				halign: Gtk.Align.START,
 				use_markup: true,
 			}));
 		}
-	
-		let a = new Gtk.ListBox({
-			//titre ?
+
+		let listbox = new Gtk.ListBox({
 			can_focus: false,
 			has_focus: false,
 			is_focus: false,
 			has_default: false,
 			selection_mode: Gtk.SelectionMode.NONE,
 		});
-		section.add(a);
-		this.stackpageMainBox.add(section);
-		return a;
+
+		let frame = new Gtk.Frame();
+		titledSection.add(frame);
+		frame.add(listbox)
+		this.stackpageMainBox.add(titledSection);
+
+		return listbox;
 	},
 
 	add_row: function(filledbox, section) {
@@ -75,8 +78,7 @@ const PrefsPage = new Lang.Class({
 			has_focus: false,
 			is_focus: false,
 			has_default: false,
-//			activatable: false,
-			selectable: false,	
+			selectable: false,
 		});
 		a.add(filledbox);
 		section.add(a);

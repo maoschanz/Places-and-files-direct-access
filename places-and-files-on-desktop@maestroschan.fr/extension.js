@@ -43,7 +43,6 @@ let MyConvenientLayout;
 
 function init() {
 	Convenience.initTranslations();
-	
 	PLACES_MANAGER = new PlaceDisplay.PlacesManager();
 	RECENT_MANAGER = new Gtk.RecentManager();
 }
@@ -52,11 +51,11 @@ function init() {
 
 const PlaceButton = new Lang.Class({
 	Name: 'PlaceButton',
-	
+
 	_init: function( info, category ){
 		this._info = info;
 		this._category = category;
-		
+
 		this.actor = new St.Button({ style_class: 'app-well-app',
 			reactive: true,
 			button_mask: St.ButtonMask.ONE | St.ButtonMask.TWO,
@@ -64,38 +63,38 @@ const PlaceButton = new Lang.Class({
 			x_fill: true,
 			y_fill: true,
 		});
-		
+
 		this.placeIcon = new PlaceIcon(this._info);
 		this.actor.set_child( this.placeIcon.actor );
-		
+
 		if (this._info.name == _("Trash")) {
-			this._directory = Gio.file_new_for_uri("trash:///");
-			
+			this._directory = Gio.file_new_for_uri('trash:///');
+
 			this._monitor = this._directory.monitor(Gio.FileMonitorFlags.SEND_MOVED, null);
 			this._updateSignal = this._monitor.connect('changed', Lang.bind(this, this.update));
 		}
-		
+
 		this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
 		this._menu = null;
 		this._menuManager = new PopupMenu.PopupMenuManager(this);
 	},
-	
+
 	update: function() {
 		this.placeIcon.update();
 	},
-	
+
 	_onClicked: function() {
 		this.placeIcon.animateZoomOut();
-		Util.trySpawnCommandLine('nautilus ' + this._info.file.get_uri());
-		//FIXME the "normal" method don't understand the trash, so this has to stay commented.
-//		Gio.app_info_launch_default_for_uri(this._info.file.get_uri(), global.create_app_launch_context(0, -1));
+		//Util.trySpawnCommandLine('nautilus ' + this._info.file.get_uri());
+		//FIXME the "normal" method don't understand the trash
+		Gio.app_info_launch_default_for_uri(this._info.file.get_uri(), global.create_app_launch_context(0, -1));
 	},
-	
+
 	_onMenuPoppedDown: function() {
 		this.actor.sync_hover();
 		this.emit('menu-state-changed', false);
 	},
-	
+
 	popupMenu: function() {
 		this.actor.fake_release();
 
@@ -113,7 +112,7 @@ const PlaceButton = new Lang.Class({
 		this._menuManager.ignoreRelease();
 		return false;
 	},
-	
+
 	_onButtonPress: function(actor, event) {
 		let button = event.get_button();
 		if (button == 1) {
@@ -127,7 +126,7 @@ const PlaceButton = new Lang.Class({
 
 	destroy: function() {
 		this._menu.disconnect(this._connexion);
-		if (this._info.name == _("Trash")) {	
+		if (this._info.name == _("Trash")) {
 			this._monitor.connect(this._updateSignal);
 		}
 		this.parent();
@@ -165,17 +164,17 @@ const PlaceButtonMenu = new Lang.Class({
 		this.removeAll();
 
 		this._appendMenuItem(_("Open") + " " + this._source._info.name).connect('activate', Lang.bind(this, this._onClicked));
-		
+
 		let couldBeRemoved = this._source._category == 'bookmarks';
 		if(couldBeRemoved) {
 			this._appendSeparator();
 			this._addRenameEntryAndButtons();
 			this._appendMenuItem(_("Remove")).connect('activate', Lang.bind(this, this._onRemove));
 		}
-		
+
 		let couldBeEjected = (this._source._info._mount && this._source._info._mount.can_eject());
 		let couldBeUnmount = (this._source._info._mount && this._source._info._mount.can_unmount());
-		
+
 		if(couldBeEjected || couldBeUnmount){
 			this._appendSeparator();
 		}
@@ -185,7 +184,7 @@ const PlaceButtonMenu = new Lang.Class({
 		if(couldBeUnmount){
 			this._appendMenuItem(_("Unmount")).connect('activate', Lang.bind(this, this._onUnmount));
 		}
-		
+
 		if( this._source._info.name == _("Trash") ){
 			this._appendSeparator();
 			this._appendMenuItem(_("Empty")).connect('activate', Lang.bind(this, this._onEmptyTrash));
@@ -196,14 +195,14 @@ const PlaceButtonMenu = new Lang.Class({
 			this._appendMenuItem(_("Clear")).connect('activate', Lang.bind(this, this._onEmptyRecent));
 		}
 	},
-	
+
 	_onRename: function() {
 		this.renameItem.actor.visible = false;
 		this.renameEntryItem.actor.visible = true;
-	
+
 		global.stage.set_key_focus(this.entry);
 	},
-	
+
 	_addRenameEntryAndButtons: function() {
 		this.renameItem = new PopupMenu.PopupBaseMenuItem({
 			reactive: true,
@@ -216,7 +215,7 @@ const PlaceButtonMenu = new Lang.Class({
 			label: _("Rename")
 		});
 		this.renameItem.actor.add( renameItemButton );
-		
+
 		this.renameEntryItem = new PopupMenu.PopupBaseMenuItem({
 			reactive: false,
 			activate: true,
@@ -224,9 +223,9 @@ const PlaceButtonMenu = new Lang.Class({
 			style_class: null,
 			can_focus: false
 		});
-		
+
 		this.entry = new St.Entry({
-			hint_text: _('Type a name...'),
+			hint_text: _('Type a name…'),
 			track_hover: true,
 			x_expand: true,
 			secondary_icon: new St.Icon({
@@ -236,24 +235,24 @@ const PlaceButtonMenu = new Lang.Class({
 				y_align: Clutter.ActorAlign.CENTER,
 			}),
 		});
-		
+
 		this.renameEntryItem.actor.add( this.entry );
-		
+
 		this.addMenuItem(this.renameItem);
 		this.addMenuItem(this.renameEntryItem);
-		
+
 		renameItemButton.connect('clicked', Lang.bind(this, this._onRename));
 		this.entry.connect('secondary-icon-clicked', Lang.bind(this, this._actuallyRename));
-		
+
 		this.renameEntryItem.actor.visible = false;
-	},	
-		
+	},
+
 	_actuallyRename: function() {
 		let content = Shell.get_file_contents_utf8_sync(PLACES_MANAGER._bookmarksFile.get_path());
 		let lines = content.split('\n');
 
 		let currentUri = this._source._info.file.get_uri();
-		
+
 		for (let i = 0; i < lines.length; i++) {
 			let line = lines[i];
 			let components = line.split(' ');
@@ -269,13 +268,13 @@ const PlaceButtonMenu = new Lang.Class({
 		GLib.file_set_contents(PLACES_MANAGER._bookmarksFile.get_path(), content);
 		this.emit('bookmarks-updated');
 	},
-	
+
 	_onRemove: function() {
 		let content = Shell.get_file_contents_utf8_sync(PLACES_MANAGER._bookmarksFile.get_path());
 		let lines = content.split('\n');
 
 		let currentUri = this._source._info.file.get_uri();
-		
+
 		for (let i = 0; i < lines.length; i++) {
 			let line = lines[i];
 			let components = line.split(' ');
@@ -291,7 +290,7 @@ const PlaceButtonMenu = new Lang.Class({
 		GLib.file_set_contents(PLACES_MANAGER._bookmarksFile.get_path(), content);
 		this.emit('bookmarks-updated');
 	},
-	
+
 	_onUnmount: function() {
 		let mountOp = new ShellMountOperation.ShellMountOperation(this._source._info._mount);
 
@@ -308,7 +307,7 @@ const PlaceButtonMenu = new Lang.Class({
 			);
 		}
 	},
-	
+
 	_onEject: function() {
 		let mountOp = new ShellMountOperation.ShellMountOperation(this._source._info._mount);
 
@@ -342,11 +341,11 @@ const PlaceButtonMenu = new Lang.Class({
 			this._reportFailure(e);
 		}
 	},
-	
+
 	_onEmptyTrash: function() {
 		//code from gnome-shell-trash-extension, by Axel von Bertoldi (https://github.com/bertoldia/gnome-shell-trash-extension)
-		let trash_file = Gio.file_new_for_uri("trash:///");
-		
+		let trash_file = Gio.file_new_for_uri('trash:///');
+
 		let children = trash_file.enumerate_children('*', 0, null);
 		let child_info = null;
 		while ((child_info = children.next_file(null)) != null) {
@@ -354,15 +353,15 @@ const PlaceButtonMenu = new Lang.Class({
 			child.delete(null);
 		}
 	},
-	
+
 	_onEmptyRecent: function() {
 		RECENT_MANAGER.purge_items();
 	},
-	
+
 	_onClicked: function() {
 		this._source._onClicked();
 	},
-	
+
 	_appendSeparator: function () {
 		let separator = new PopupMenu.PopupSeparatorMenuItem();
 		this.addMenuItem(separator);
@@ -384,12 +383,12 @@ Signals.addSignalMethods(PlaceButtonMenu.prototype);
 const PlacesGrid = new Lang.Class({
 	Name: 'PlacesGrid',
 	Extends: IconGrid.IconGrid,
-	
+
 	_init: function() {
 		this.parent();
-		
+
 		this.actor.style_class = 'places-grid';
-		
+
 		let monitor = Main.layoutManager.primaryMonitor;
 
 		this._placesItem = new Array();
@@ -397,13 +396,11 @@ const PlacesGrid = new Lang.Class({
 		PLACES_MANAGER.connect('devices-updated', Lang.bind(this, this.redisplay ));
 		PLACES_MANAGER.connect('network-updated', Lang.bind(this, this.redisplay ));
 		PLACES_MANAGER.connect('bookmarks-updated', Lang.bind(this, this.redisplay));
-		
+
 		this.buildItems();
 	},
-	
-	/*
-	This is a fork of extension.js from places-menu@gnome-shell-extensions.gcampax.github.com 
-	*/
+
+	// This is a fork of extension.js from places-menu@gnome-shell-extensions.gcampax.github.com
 	buildItems: function() {
 		this._places = {
 			special: [],
@@ -419,7 +416,7 @@ const PlacesGrid = new Lang.Class({
 			this.addItem(this._placesItem[i]);
 		}
 	},
-	
+
 	buildCategory: function(id) { 
 		let places = PLACES_MANAGER.get(id);
 
@@ -427,7 +424,7 @@ const PlacesGrid = new Lang.Class({
 			this._placesItem.push( new PlaceButton(places[i], id) );
 		}
 	},
-	
+
 	redisplay: function(){
 		this._placesItem = []
 		this.removeAll();
@@ -438,20 +435,20 @@ const PlacesGrid = new Lang.Class({
 const PlaceIcon = new Lang.Class({
 	Name: 'PlaceIcon',
 	Extends: IconGrid.BaseIcon,
-	
+
 	_init: function(info) {
 		this._info = info;
 		this.parent( this._info.name );
 		this.label.style_class = 'place-label';
 	},
-	
+
 	createIcon: function() {
 		return (new St.Icon({
 			gicon: this._info.icon,
 			icon_size: SETTINGS.get_int('places-icon-size')
 		}));
 	},
-	
+
 	update: function() {
 		PLACES_MANAGER._updateSpecials();
 		this.createIcon();
@@ -463,37 +460,35 @@ const PlaceIcon = new Lang.Class({
 /*
 	This class should only produce 1 single object during the execution.
 	However i'll not verify that, because singleton-related issues are boring.
-	
+
 	It acts as container, managing how "sub-actors" will be sized and displayed.
-	
+
 	Built "sub-actors" are:
 	- 1 PlacesGrid (inherits from IconGrid)
 	- 1 HeaderBox (a box with a search entry and a button)
 	- 1 RecentFiles.RecentFilesList (a ton of buttons with menus on them)
-	- Either 1 RecentFiles.DesktopFilesList or 1 RecentFiles.StarredFilesList
-	
+	- 1 RecentFiles.DesktopFilesList
+
 	Actors are put in scrollviews, then scrollviews' width, height, visibility
 	and position are computed depending on user's settings and main monitor size
 	and proportions.
 */
 const ConvenientLayout = new Lang.Class({
 	Name: 'ConvenientLayout',
-	
+
 	_init: function () {
 		this.actor = new St.BoxLayout({
 			//main actor of the extension
 			vertical: false,
 		});
-		
+
 		this.placesGrid = new PlacesGrid();
-		
+
 		this.recentFilesList = new RecentFiles.RecentFilesList();
-//		this.starredFilesList = new RecentFiles.StarredFilesList(); //TODO à implémenter
-		this.starredFilesList = new RecentFiles.DesktopFilesList(); //TODO à virer lol
 		this.desktopFilesList = new RecentFiles.DesktopFilesList();
-		
+
 		this.headerBox = new RecentFiles.HeaderBox(this);
-		
+
 		this.placesGridScrollview = new St.ScrollView({
 			x_fill: true,
 			y_fill: true,
@@ -504,16 +499,16 @@ const ConvenientLayout = new Lang.Class({
 			style_class: 'vfade', //lui bug moins ? FIXME
 			hscrollbar_policy: Gtk.PolicyType.NEVER,
 		});
-	
+
 		this.fileListsWithHeader = new St.BoxLayout({
 			vertical: true,
 		});
-		
+
 		this.fileListsOnly = new St.BoxLayout({
 			vertical: true,
 			style: 'spacing: 5px;',
 		});
-		
+
 		this.recentFilesScrollview = new St.ScrollView({
 			x_fill: true,
 			y_fill: true,
@@ -524,7 +519,7 @@ const ConvenientLayout = new Lang.Class({
 //			style_class: 'vfade', //FIXME ??
 			hscrollbar_policy: Gtk.PolicyType.NEVER,
 		});
-		
+
 		this.starredFilesScrollview = new St.ScrollView({
 			x_fill: true,
 			y_fill: true,
@@ -535,7 +530,7 @@ const ConvenientLayout = new Lang.Class({
 //			style_class: 'vfade', //FIXME ??
 			hscrollbar_policy: Gtk.PolicyType.NEVER,
 		});
-		
+
 		this.desktopFilesScrollview = new St.ScrollView({
 			x_fill: true,
 			y_fill: true,
@@ -546,30 +541,29 @@ const ConvenientLayout = new Lang.Class({
 //			style_class: 'vfade', //FIXME ??
 			hscrollbar_policy: Gtk.PolicyType.NEVER,
 		});
-		
+
 		//------------------------
-		
+
 		this.placesGridScrollview.add_actor(this.placesGrid.actor);
 		this.recentFilesScrollview.add_actor(this.recentFilesList.actor);
-		this.starredFilesScrollview.add_actor(this.starredFilesList.actor);
 		this.desktopFilesScrollview.add_actor(this.desktopFilesList.actor);
 		this.fileListsOnly.add(this.recentFilesScrollview);
 		this.fileListsOnly.add(this.starredFilesScrollview);
 		this.fileListsOnly.add(this.desktopFilesScrollview);
-		
+
 		this.updateStarredVisibility();
-		
+
 		this.fileListsWithHeader.add(this.headerBox);
 		this.fileListsWithHeader.add(this.fileListsOnly);
-		
+
 		this.actor.add(this.placesGridScrollview); 
 		this.actor.add(this.fileListsWithHeader);
-		
+
 		//------------------------
-		
+
 		this.adaptToMonitor();
 	},
-	
+
 	adaptInternalWidgets: function () {
 		if (this.actor.width < this.actor.height) {
 			this.actor.vertical = true;
@@ -584,24 +578,24 @@ const ConvenientLayout = new Lang.Class({
 			this.placesGridScrollview.width = Math.floor(this.actor.width * 0.5);
 			this.fileListsWithHeader.width = Math.floor(this.actor.width * 0.5);
 		}
-		
+
 		if (this.fileListsWithHeader.width > LIST_MAX_WIDTH) {
 			this.fileListsOnly.vertical = false;
 		} else {
 			this.fileListsOnly.vertical = true;
 		}
 	},
-	
+
 	adaptToMonitor: function () {
 		//change global position and size of the main actor
-		
+
 		PADDING = [
 			SETTINGS.get_int('top-padding'),
 			SETTINGS.get_int('bottom-padding'),
 			SETTINGS.get_int('left-padding'),
 			SETTINGS.get_int('right-padding')
 		];
-	
+
 		let monitor = Main.layoutManager.primaryMonitor;
 		this.actor.width = Math.floor(monitor.width - (PADDING[2] + PADDING[3]));
 		this.actor.height = Math.floor(monitor.height - (PADDING[0] + PADDING[1]));
@@ -609,30 +603,25 @@ const ConvenientLayout = new Lang.Class({
 			monitor.x + Math.floor(PADDING[2]),
 			monitor.y + Math.floor(PADDING[0])
 		);
-		
+
 		this.adaptInternalWidgets();
 	},
-	
+
 	updateStarredVisibility: function () {
 		this.desktopFilesScrollview.visible = false;
-		if (SETTINGS.get_string('favorites-files') == 'desktop' || SETTINGS.get_string('favorites-files') == 'both') {
+		if (SETTINGS.get_string('favorites-files') == 'desktop') {
 			this.desktopFilesScrollview.visible = true;
 		}
-		
-		this.starredFilesScrollview.visible = false;
-		if (SETTINGS.get_string('favorites-files') == 'starred' || SETTINGS.get_string('favorites-files') == 'both') {
-			this.starredFilesScrollview.visible = true;
-		}
 	},
-	
+
 	hide: function () {
 		this.actor.visible = false;
 	},
-	
+
 	show: function () {
 		this.actor.visible = true;
 	},
-	
+
 	destroy: function () {
 		//TODO ?
 	},
@@ -671,7 +660,7 @@ function updateLayoutLayout() {
 	} else {
 		Main.layoutManager._backgroundGroup.remove_actor(MyConvenientLayout.actor);
 	}
-	
+
 	if (SIGNAUX_OVERVIEW.length != 0) {
 		Main.overview.disconnect(SIGNAUX_OVERVIEW[0]);
 		global.screen.disconnect(SIGNAUX_OVERVIEW[1]);
@@ -680,10 +669,10 @@ function updateLayoutLayout() {
 		Main.overview.viewSelector._text.disconnect(SIGNAUX_OVERVIEW[4]);
 		global.screen.disconnect(SIGNAUX_OVERVIEW[5]);
 	}
-	
+
 	POSITION = SETTINGS.get_string('position');
 	SIGNAUX_OVERVIEW = [];
-	
+
 	if (POSITION == 'overview') {
 		Main.layoutManager.overviewGroup.add_actor(MyConvenientLayout.actor);
 		//FIXME dans ce contexte, qu'est this ?
@@ -693,7 +682,7 @@ function updateLayoutLayout() {
 		SIGNAUX_OVERVIEW[3] = Main.overview.viewSelector._showAppsButton.connect('notify::checked', Lang.bind(this, updateVisibility));
 		SIGNAUX_OVERVIEW[4] = Main.overview.viewSelector._text.connect('text-changed', Lang.bind(this, updateVisibility));
 		SIGNAUX_OVERVIEW[5] = global.screen.connect('restacked', Lang.bind(this, updateVisibility));
-		
+
 	} else {
 		Main.layoutManager._backgroundGroup.add_actor(MyConvenientLayout.actor);
 		MyConvenientLayout.show();
@@ -703,11 +692,11 @@ function updateLayoutLayout() {
 //------------------------------------------------
 
 function enable() {
-	
+
 	SETTINGS = Convenience.getSettings('org.gnome.shell.extensions.places-files-desktop');
-	
+
 	POSITION = SETTINGS.get_string('position');
-	
+
 	PADDING = [
 		SETTINGS.get_int('top-padding'),
 		SETTINGS.get_int('bottom-padding'),
@@ -716,7 +705,7 @@ function enable() {
 	];
 
 	MyConvenientLayout = new ConvenientLayout();
-	
+
 	SIGNAUX_PARAM = [];
 	SIGNAUX_PARAM[0] = SETTINGS.connect('changed::top-padding', Lang.bind(MyConvenientLayout, MyConvenientLayout.adaptToMonitor));
 	SIGNAUX_PARAM[1] = SETTINGS.connect('changed::bottom-padding', Lang.bind(MyConvenientLayout, MyConvenientLayout.adaptToMonitor));
@@ -724,21 +713,19 @@ function enable() {
 	SIGNAUX_PARAM[3] = SETTINGS.connect('changed::right-padding', Lang.bind(MyConvenientLayout, MyConvenientLayout.adaptToMonitor));
 	SIGNAUX_PARAM[4] = SETTINGS.connect('changed::favorites-files', Lang.bind(MyConvenientLayout, MyConvenientLayout.updateStarredVisibility));
 	SIGNAUX_PARAM[5] = SETTINGS.connect('changed::position', Lang.bind(MyConvenientLayout, updateLayoutLayout));
-	
+
 	SIGNAL_MONITOR = Main.layoutManager.connect('monitors-changed', Lang.bind(MyConvenientLayout, MyConvenientLayout.adaptToMonitor));
-	
+
 	SIGNAUX_OVERVIEW = [];
-	
 	if (POSITION == 'overview') {
 		Main.layoutManager.overviewGroup.add_actor(MyConvenientLayout.actor);
-		
+
 		SIGNAUX_OVERVIEW[0] = Main.overview.connect('showing', Lang.bind(this, updateVisibility));
 		SIGNAUX_OVERVIEW[1] = global.screen.connect('notify::n-workspaces', Lang.bind(this, updateVisibility));
 		SIGNAUX_OVERVIEW[2] = global.window_manager.connect('switch-workspace', Lang.bind(this, updateVisibility));
 		SIGNAUX_OVERVIEW[3] = Main.overview.viewSelector._showAppsButton.connect('notify::checked', Lang.bind(this, updateVisibility));
 		SIGNAUX_OVERVIEW[4] = Main.overview.viewSelector._text.connect('text-changed', Lang.bind(this, updateVisibility));
 		SIGNAUX_OVERVIEW[5] = global.screen.connect('restacked', Lang.bind(this, updateVisibility));
-		
 	} else {
 		Main.layoutManager._backgroundGroup.add_actor(MyConvenientLayout.actor);
 		MyConvenientLayout.show();
@@ -752,14 +739,14 @@ function disable() {
 		Main.layoutManager.overviewGroup.remove_actor(MyConvenientLayout.actor);
 	} else {
 		Main.layoutManager._backgroundGroup.remove_actor(MyConvenientLayout.actor);
-	}	
-	
+	}
+
 	for (var i = 0; i < SIGNAUX_PARAM.length; i++) {
 		SETTINGS.disconnect(SIGNAUX_PARAM[i]);
 	}
-	
+
 	global.screen.disconnect(SIGNAL_MONITOR);
-	
+
 	if (SIGNAUX_OVERVIEW.length != 0) {
 		Main.overview.disconnect(SIGNAUX_OVERVIEW[0]);
 		global.screen.disconnect(SIGNAUX_OVERVIEW[1]);
