@@ -1,15 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="places-files-desktop">
 	<schema id="org.gnome.shell.extensions.places-files-desktop" path="/org/gnome/shell/extensions/places-files-desktop/">
-		<key type="i" name="places-icon-size">
-			<default>72</default>
-			<summary>Places icon size</summary>
-			<description>Icon size (in pixels) for the "places" grid.</description>
-		</key>
-		<key type="i" name="recent-files-icon-size">
+		<key type="i" name="icon-size">
 			<default>22</default>
-			<summary>Recent files icon size</summary>
-			<description>Recent files icon size (in pixels).</description>
+			<summary>Icon size</summary>
+			<description>The size of the icons in files lists (in pixels).</description>
 		</key>
 		<key type="i" name="number-of-recent-files">
 			<default>50</default>
@@ -21,6 +16,7 @@
 			<summary>Blacklisted type categories</summary>
 			<description>List of strings. Possible types are: text, image, audio, video, application, multipart, message, model (these correspond to the MIME standard.)</description>
 		</key>
+
 		<key type="i" name="top-padding">
 			<default>40</default>
 			<summary>Top padding</summary>
@@ -56,6 +52,7 @@
 			<summary>If the preferences dialog should overwrite the layout settings</summary>
 			<description>If it's false, the layout isn't managed by the preferences dialog, but by the user using dconf</description>
 		</key>
+
 		<key type="as" name="active-widgets">
 			<default>['places', 'searchbar', 'recent']</default>
 			<summary>Active widgets</summary>
@@ -68,3 +65,4 @@
 		</key>
 	</schema>
 </schemalist>
+

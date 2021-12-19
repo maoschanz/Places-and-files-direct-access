@@ -28,8 +28,6 @@ let SIGNAL_MONITOR;
 
 let MyLayout = null;
 
-//------------------------------------------------------------------------------
-
 function init() {
 	ExtensionUtils.initTranslations();
 
@@ -40,10 +38,10 @@ function init() {
 //------------------------------------------------------------------------------
 
 /*
-	This function is called when the user performs an action which affects the
-	visibility of MyLayout in the case its actor has been added to the
-	overviewGroup (this function is not called when it's on the desktop).
-	The action can be opening or closing a window, changing the current
+	Called when the user performs an action which affects the visibility of
+	`MyLayout` in the case its actor has been added to the `overviewGroup` (this
+	function is NOT called when it's on the desktop).
+	Such an action can be: opening or closing a window, changing the current
 	workspace, beginning a search, or opening the applications grid.
 */
 function updateVisibility() {
@@ -80,9 +78,10 @@ function disconnectOverviewSignals() {
 //------------------------------------------------------------------------------
 
 /*
-	This function is called when the user set a new layout position. It almost
-	corresponds to a "disable and then enable again", except that MyLayout isn't
-	rebuild from its constructor, but is just moved to the new position.
+	Called when the user set a new layout position.
+	It almost corresponds to a "disable and then enable again", except that
+	`MyLayout` isn't rebuild from its constructor, but is just moved to the new
+	position.
 */
 function updateLayoutLayout() {
 	if (POSITION == '') {
@@ -119,7 +118,7 @@ function updateLayoutLayout() {
 	}
 }
 
-//----------------------
+//------------------------------------------------------------------------------
 
 class ConvenientLayout {
 	constructor () {

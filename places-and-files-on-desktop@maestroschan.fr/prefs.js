@@ -42,21 +42,14 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 	//--------------------------------------------------------------------------
 
 	_buildLayoutPage: function(builder) {
-		let places_icon_size = builder.get_object('places_icon_size');
 		let lists_icon_size = builder.get_object('lists_icon_size');
-		
-		places_icon_size.set_value(SETTINGS.get_int('places-icon-size'));
-		places_icon_size.connect('value-changed', (widget) => {
-			var value = widget.get_value_as_int();
-			SETTINGS.set_int('places-icon-size', value);
-		});
-		
-		lists_icon_size.set_value(SETTINGS.get_int('recent-files-icon-size'));
+
+		lists_icon_size.set_value(SETTINGS.get_int('icon-size'));
 		lists_icon_size.connect('value-changed', (widget) => {
 			var value = widget.get_value_as_int();
-			SETTINGS.set_int('recent-files-icon-size', value);
+			SETTINGS.set_int('icon-size', value);
 		});
-		
+
 		//----------------------------------------------------------------------
 
 		let radio_btn_1 = builder.get_object('radio_btn_1');
@@ -208,7 +201,7 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 
 //-----------------------------------------------
 
-// I guess this is like the "enable" in extension.js : something called each
+// I guess this is like the "enable" in `extension.js`: something called each
 // time he user try to access the settings' window
 function buildPrefsWidget() {
 	let widget = new PlacesOnDesktopSettingsWidget();

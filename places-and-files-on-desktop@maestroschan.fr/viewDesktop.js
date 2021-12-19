@@ -119,7 +119,7 @@ class DesktopFileButton {
 		this.icon = new St.Icon({
 			gicon: this._info.get_icon(),
 			style_class: 'popup-menu-icon',
-			icon_size: Extension.SETTINGS.get_int('recent-files-icon-size')
+			icon_size: Extension.SETTINGS.get_int('icon-size')
 		});
 
 		this.actor = new St.Button({

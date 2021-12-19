@@ -54,7 +54,7 @@ class PlaceButton {
 	createIcon () {
 		return (new St.Icon({
 			gicon: this._info.icon,
-			icon_size: Extension.SETTINGS.get_int('places-icon-size')
+			icon_size: Extension.SETTINGS.get_int('icon-size')
 		}));
 	}
 

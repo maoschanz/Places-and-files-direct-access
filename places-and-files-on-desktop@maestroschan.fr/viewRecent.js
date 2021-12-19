@@ -40,7 +40,7 @@ var RecentFileButton = class RecentFileButton {
 		this.icon = new St.Icon({
 			gicon: icon,
 			style_class: 'popup-menu-icon',
-			icon_size: Extension.SETTINGS.get_int('recent-files-icon-size')
+			icon_size: Extension.SETTINGS.get_int('icon-size')
 		});
 		this.uri = uri;
 		let file = Gio.File.new_for_uri(this.uri);
