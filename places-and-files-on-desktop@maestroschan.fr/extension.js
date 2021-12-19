@@ -33,7 +33,7 @@ let MyLayout = null;
 
 function init() {
 	Convenience.initTranslations();
-	
+
 	ViewBookmarks.PLACES_MANAGER = new PlaceDisplay.PlacesManager();
 	ViewRecent.RECENT_MANAGER = new Gtk.RecentManager();
 }
@@ -143,7 +143,7 @@ class ConvenientLayout {
 		this.active_positions = SETTINGS.get_strv('active-positions');
 		this.adaptToMonitor();
 	}
-	
+
 	filter_widgets (text) {
 		for (let i = 0; i < this.active_widgets.length; i++) {
 			this['widget_' + this.active_widgets[i]].filter_widget(text);
@@ -175,7 +175,7 @@ class ConvenientLayout {
 		
 		this.adaptInternalWidgets();
 	}
-	
+
 	adaptToMonitor () {
 		//change global position and size of the main actor
 		PADDING = [
@@ -195,7 +195,7 @@ class ConvenientLayout {
 		
 		this.adaptInternalWidgets();
 	}
-	
+
 	adaptInternalWidgets () {
 		let has0 = this.active_positions.includes('0');
 		let has1 = this.active_positions.includes('1');
@@ -248,7 +248,7 @@ function enable() {
 		MyLayout = new ConvenientLayout();
 		MyLayout.fill_with_widgets();
 	}
-	
+
 	SIGNAUX_PARAM = [];
 	SIGNAUX_PARAM[0] = SETTINGS.connect('changed::top-padding',
 	                                    MyLayout.adaptToMonitor.bind(MyLayout));
@@ -275,7 +275,7 @@ function disable() {
 	} else {
 		Main.layoutManager._backgroundGroup.remove_actor(MyLayout.actor);
 	} // FIXME ce n'est pas charlie de garder l'acteur en mémoire
-	
+
 //	log('disabling signals for places-and-files-on-desktop');
 	for (var i = 0; i < SIGNAUX_PARAM.length; i++) {
 		SETTINGS.disconnect(SIGNAUX_PARAM[i]);
