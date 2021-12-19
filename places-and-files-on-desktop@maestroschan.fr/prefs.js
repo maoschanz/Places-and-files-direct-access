@@ -9,18 +9,15 @@ const _ = Gettext.gettext;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const Convenience = Me.imports.convenience;
-
-//-----------------------------------------------
 
 var SETTINGS;
 
 function init() {
-	Convenience.initTranslations();
-	SETTINGS = Convenience.getSettings('org.gnome.shell.extensions.places-files-desktop');
+	ExtensionUtils.initTranslations();
+	SETTINGS = ExtensionUtils.getSettings();
 }
 
-//-----------------------------------------------
+//------------------------------------------------------------------------------
 
 const PlacesOnDesktopSettingsWidget = new GObject.Class({
 	Name: 'PlacesOnDesktop.Prefs.Widget',

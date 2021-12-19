@@ -15,7 +15,6 @@ const CLIPBOARD_TYPE = St.ClipboardType.CLIPBOARD;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const Convenience = Me.imports.convenience;
 const Extension = Me.imports.extension;
 
 const Gettext = imports.gettext.domain('places-files-desktop');
@@ -23,7 +22,7 @@ const _ = Gettext.gettext;
 
 var RECENT_MANAGER;
 
-//-------------------------------------------------
+//------------------------------------------------------------------------------
 
 function trierDate(x,y) {
 	return y.get_modified() - x.get_modified();
@@ -33,7 +32,7 @@ function trierNom(l,r) {
 	return l.get_display_name().localeCompare(r.get_display_name());
 }
 
-//--------------------------------------------------------
+//------------------------------------------------------------------------------
 
 // This class is a fork of ListSearchResult or SearchResult (in search.js version 3.26)
 var RecentFileButton = class RecentFileButton {

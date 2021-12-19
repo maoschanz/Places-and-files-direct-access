@@ -6,7 +6,6 @@ const Gtk = imports.gi.Gtk;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const Convenience = Me.imports.convenience;
 
 const HeaderBox = Me.imports.headerBox;
 const PlaceDisplay = Me.imports.placeDisplay;
@@ -32,7 +31,7 @@ let MyLayout = null;
 //------------------------------------------------------------------------------
 
 function init() {
-	Convenience.initTranslations();
+	ExtensionUtils.initTranslations();
 
 	ViewBookmarks.PLACES_MANAGER = new PlaceDisplay.PlacesManager();
 	ViewRecent.RECENT_MANAGER = new Gtk.RecentManager();
@@ -235,7 +234,7 @@ class ConvenientLayout {
 //------------------------------------------------------------------------------
 
 function enable() {
-	SETTINGS = Convenience.getSettings('org.gnome.shell.extensions.places-files-desktop');
+	SETTINGS = ExtensionUtils.getSettings();
 	POSITION = '';
 	PADDING = [
 		SETTINGS.get_int('top-padding'),
