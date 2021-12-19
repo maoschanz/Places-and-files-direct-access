@@ -51,7 +51,8 @@
 
 	<object class="GtkStack" id="prefs_stack">
 		<property name="transition-type">slide-left-right</property>
-		
+
+		<!-- "Position" tab -->
 		<child>
 			<object class="GtkScrolledWindow" id="position_page">
 				<child>
@@ -191,6 +192,7 @@
 			</packing>
 		</child>
 
+		<!-- "Layout" tab -->
 		<child>
 			<object class="GtkScrolledWindow" id="layout_page">
 				<child>
@@ -200,6 +202,7 @@
 						<property name="column-spacing">36</property>
 						<property name="halign">center</property>
 						<property name="margin">24</property>
+
 						<child>
 							<object class="GtkLabel">
 								<property name="halign">end</property>
@@ -221,6 +224,7 @@
 								<property name="top-attach">1</property>
 							</packing>
 						</child>
+
 						<child>
 							<object class="GtkSeparator">
 								<property name="expand">False</property>
@@ -231,6 +235,7 @@
 								<property name="width">2</property>
 							</packing>
 						</child>
+
 						<child>
 							<object class="GtkBox">
 								<property name="spacing">8</property>
@@ -283,6 +288,7 @@
 								<property name="width">2</property>
 							</packing>
 						</child>
+
 						<child>
 							<object class="GtkSeparator">
 								<property name="expand">False</property>
@@ -293,6 +299,7 @@
 								<property name="width">2</property>
 							</packing>
 						</child>
+
 						<child>
 							<object class="GtkLabel">
 								<property name="expand">False</property>
@@ -316,6 +323,7 @@
 						</child>
 					</object>
 				</child>
+
 			</object>
 			<packing>
 				<property name="name">page_layout</property>
@@ -323,6 +331,7 @@
 			</packing>
 		</child>
 
+		<!-- "About" tab -->
 		<child>
 			<object class="GtkScrolledWindow">
 				<child>
@@ -330,6 +339,7 @@
 						<property name="spacing">16</property>
 						<property name="margin">32</property>
 						<property name="orientation">vertical</property>
+
 						<child>
 							<object class="GtkLabel">
 								<property name="halign">center</property>
@@ -340,9 +350,7 @@
 								</attributes>
 							</object>
 						</child>
-						<child>
-							<object class="GtkImage" id="about_icon"></object>
-						</child>
+
 						<child>
 							<object class="GtkLabel" id="label_description">
 								<property name="label" translatable="yes">Easy access to devices, bookmarks and recent files.</property>
@@ -356,6 +364,7 @@
 								<property name="pack-type">end</property>
 							</packing>
 						</child>
+
 						<child>
 							<object class="GtkBox">
 								<property name="spacing">16</property>
@@ -397,6 +406,7 @@
 								<property name="pack-type">end</property>
 							</packing>
 						</child>
+
 					</object>
 				</child>
 			</object>

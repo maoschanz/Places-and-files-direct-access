@@ -40,7 +40,6 @@ class PlaceButton {
 			createIcon: this.createIcon.bind(this),
 			setSizeManually: true
 		});
-		this.icon.label.style_class = 'place-label';
 		this.actor.set_child(this.icon);
 
 		if (this._info.name == _("Trash")) {
@@ -390,7 +389,6 @@ var PlacesList = class PlacesList {
 class PlacesGrid {
 	constructor () {
 		this.super_grid = new IconGrid.IconGrid();
-		this.super_grid.style_class = 'places-grid';
 		let monitor = Main.layoutManager.primaryMonitor;
 
 		this._placesItem = new Array();

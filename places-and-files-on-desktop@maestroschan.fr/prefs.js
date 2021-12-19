@@ -170,11 +170,6 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 	//--------------------------------------------------------------------------
 
 	_buildAboutPage: function(builder) {
-		let imgPath = Me.path + '/images/about_icon.png';
-		builder.get_object('about_icon').set_from_pixbuf(
-			GdkPixbuf.Pixbuf.new_from_file_at_size(imgPath, 128, 128)
-		);
-
 		let translation_credits = builder.get_object('translation_credits').get_label();
 		if (translation_credits == 'translator-credits') {
 			builder.get_object('translation_label').set_label('');
