@@ -138,14 +138,11 @@ class ConvenientLayout {
 		this.actor.add(this.box_m);
 		this.actor.add(this.box_3);
 		
-		this.active_positions = SETTINGS.get_strv('active-positions');
+		// this.active_positions = SETTINGS.get_strv('active-positions');
 		this.adaptToMonitor();
 	}
 
 	filter_widgets (text) {
-		for (let i = 0; i < this.active_widgets.length; i++) {
-			this['widget_' + this.active_widgets[i]].filter_widget(text);
-		}
 	}
 
 	hide () {
@@ -157,21 +154,11 @@ class ConvenientLayout {
 	}
 
 	fill_with_widgets () {
-		this.active_positions = SETTINGS.get_strv('active-positions');
-		this.active_widgets = SETTINGS.get_strv('active-widgets');
+		return;
 
 		// TODO build only the useful ones
-		this.widget_places = new ViewBookmarks.PlacesList();
-		this.widget_recent = new ViewRecent.RecentFilesList();
-		this.widget_desktop = new ViewDesktop.DesktopFilesList();
-		this.widget_searchbar = new HeaderBox.HeaderBox(this);
 		
-		for (let i=0; i<this.active_widgets.length; i++) {
-			this['box_' + this.active_positions[i]].add(
-			                    this['widget_' + this.active_widgets[i]].actor);
-		}
 		
-		this.adaptInternalWidgets();
 	}
 
 	adaptToMonitor () {
@@ -195,10 +182,10 @@ class ConvenientLayout {
 	}
 
 	adaptInternalWidgets () {
-		let has0 = this.active_positions.includes('0');
-		let has1 = this.active_positions.includes('1');
-		let has2 = this.active_positions.includes('2');
-		let has3 = this.active_positions.includes('3');
+		let has0 = false;
+		let has1 = false;
+		let has2 = false;
+		let has3 = false;
 		
 //		FIXME le stacking de 2 listes échoue
 

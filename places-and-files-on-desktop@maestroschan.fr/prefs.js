@@ -34,91 +34,25 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 			stack: this.prefs_stack
 		});
 		
-		this._buildLayoutPage(builder);
+		this._buildContentPage(builder);
 		this._buildPositionPage(builder);
 		this._buildAboutPage(builder);
 	},
 
-	//--------------------------------------------------------------------------
+	////////////////////////////////////////////////////////////////////////////
 
-	_buildLayoutPage: function(builder) {
+	_buildContentPage: function(builder) {
 		let lists_icon_size = builder.get_object('lists_icon_size');
-
 		lists_icon_size.set_value(SETTINGS.get_int('icon-size'));
 		lists_icon_size.connect('value-changed', (widget) => {
 			var value = widget.get_value_as_int();
 			SETTINGS.set_int('icon-size', value);
 		});
 
-		//----------------------------------------------------------------------
-
-		let radio_btn_1 = builder.get_object('radio_btn_1');
-		let radio_btn_2 = builder.get_object('radio_btn_2');
-		let radio_btn_3 = builder.get_object('radio_btn_3');
-		// let radio_btn_3v = builder.get_object('radio_btn_3v');
-		let radio_btn_4 = builder.get_object('radio_btn_4');
-		let radio_btn_x = builder.get_object('radio_btn_x');
-
-		radio_btn_1.connect('toggled', (widget) => {
-			SETTINGS.set_boolean('not-overwrite-layout', false);
-			SETTINGS.set_strv('active-widgets', ['places', 'searchbar', 'recent']);
-			SETTINGS.set_strv('active-positions', ['0', '3', '3']);
-		});
-		
-		radio_btn_2.connect('toggled', (widget) => {
-			SETTINGS.set_boolean('not-overwrite-layout', false);
-			SETTINGS.set_strv('active-widgets', ['places', 'searchbar', 'desktop']);
-			SETTINGS.set_strv('active-positions', ['0', '3', '3']);
-		});
-		
-		radio_btn_3.connect('toggled', (widget) => {
-			SETTINGS.set_boolean('not-overwrite-layout', false);
-			SETTINGS.set_strv('active-widgets', ['places', 'searchbar', 'recent', 'desktop']);
-			SETTINGS.set_strv('active-positions', ['0', '1', '2', '2']);
-		});
-		
-		// radio_btn_3v.connect('toggled', (widget) => {
-		// 	SETTINGS.set_boolean('not-overwrite-layout', false);
-		// 	SETTINGS.set_strv('active-widgets', ['places', 'searchbar', 'recent', 'desktop']);
-		// 	SETTINGS.set_strv('active-positions', ['0', '3', '3', '3']);
-		// });
-		
-		radio_btn_4.connect('toggled', (widget) => {
-			SETTINGS.set_boolean('not-overwrite-layout', false);
-			SETTINGS.set_strv('active-widgets', ['searchbar', 'recent', 'desktop']);
-			SETTINGS.set_strv('active-positions', ['1', '2', '2']);
-		});
-		
-		radio_btn_x.connect('toggled', (widget) => {
-			SETTINGS.set_boolean('not-overwrite-layout', true);
-		});
-		
-		if (SETTINGS.get_boolean('not-overwrite-layout')) {
-			radio_btn_x.set_active(true);
-		} else {
-			let widgets = SETTINGS.get_strv('active-widgets').toString();
-			let positions = SETTINGS.get_strv('active-positions').toString();
-			if (widgets == ['places', 'searchbar', 'recent'].toString()) {
-				radio_btn_1.set_active(true);
-			} else if (widgets == ['places', 'searchbar', 'desktop'].toString()) {
-				radio_btn_2.set_active(true);
-			} else if (widgets == ['places', 'searchbar', 'recent', 'desktop'].toString()) {
-//				if (positions == ['0', '1', '2', '2'].toString()) {
-					radio_btn_3.set_active(true);
-//				} else {
-//					radio_btn_3v.set_active(true);
-//				}
-			} else if (widgets == ['searchbar', 'recent', 'desktop'].toString()) {
-				radio_btn_4.set_active(true);
-			} else {
-				radio_btn_x.set_active(true);
-			}
-		}
-		
-		//----------------------------------------------------------------------
+		this._addContentColumn('left');
+		this._addContentColumn('right');
 
 		let number_recent = builder.get_object('number_recent');
-
 		number_recent.set_value(SETTINGS.get_int('number-of-recent-files'));
 		number_recent.connect('value-changed', (widget) => {
 			var value = widget.get_value_as_int();
@@ -126,7 +60,51 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		});
 	},
 
-	//--------------------------------------------------------------------------
+	_addContentColumn(side) {
+		let value;
+
+		let radio_content1 = builder.get_object('radio_' + side + '_content');
+		let radio_content2 = builder.get_object('radio_' + side + '_content2');
+		let radio_content3 = builder.get_object('radio_' + side + '_content3');
+
+		value = SETTINGS.get_string('content-' + side);
+		radio_content1.set_active(value === 'places');
+		radio_content2.set_active(value === 'recent');
+		radio_content3.set_active(value === 'desktop');
+
+		radio_content1.connect('toggled', (widget) => {
+			SETTINGS.set_string('content-' + side, 'places');
+		});
+		radio_content2.connect('toggled', (widget) => {
+			SETTINGS.set_string('content-' + side, 'recent');
+		});
+		radio_content3.connect('toggled', (widget) => {
+			SETTINGS.set_string('content-' + side, 'desktop');
+		});
+
+		//----------------------------------------------------------------------
+
+		let radio_searchbar1 = builder.get_object('radio' + side + 'searchbar');
+		let radio_searchbar2 = builder.get_object('radio' + side + 'searchbar2');
+		let radio_searchbar3 = builder.get_object('radio' + side + 'searchbar3');
+
+		value = SETTINGS.get_string('searchbar-' + side);
+		radio_searchbar1.set_active(value === 'top');
+		radio_searchbar2.set_active(value === 'bottom');
+		radio_searchbar3.set_active(value === 'none');
+
+		radio_searchbar1.connect('toggled', (widget) => {
+			SETTINGS.set_string('searchbar-' + side, 'top');
+		});
+		radio_searchbar2.connect('toggled', (widget) => {
+			SETTINGS.set_string('searchbar-' + side, 'bottom');
+		});
+		radio_searchbar3.connect('toggled', (widget) => {
+			SETTINGS.set_string('searchbar-' + side, 'none');
+		});
+	},
+
+	////////////////////////////////////////////////////////////////////////////
 
 	_buildPositionPage: function(builder) {
 		let position_combobox = builder.get_object('position_combobox');
@@ -167,7 +145,7 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		});
 	},
 
-	//--------------------------------------------------------------------------
+	////////////////////////////////////////////////////////////////////////////
 
 	_buildAboutPage: function(builder) {
 		let translation_credits = builder.get_object('translation_credits').get_label();

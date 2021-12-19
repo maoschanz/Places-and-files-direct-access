@@ -6,6 +6,12 @@
 			<summary>Icon size</summary>
 			<description>The size of the icons in files lists (in pixels).</description>
 		</key>
+		<key type="b" name="search-in-path">
+			<default>false</default>
+			<summary>If the search among files should be done based on the file path.</summary>
+			<description>If "true", the search among files will be done based on the file path; if "false", it will be based on the file name only.</description>
+		</key>
+
 		<key type="i" name="number-of-recent-files">
 			<default>50</default>
 			<summary>Number of recent files.</summary>
@@ -42,26 +48,30 @@
 			<summary>Where the extension should display its shit</summary>
 			<description>Accepted values are "desktop" and "overview".</description>
 		</key>
-		<key type="b" name="search-in-path">
-			<default>false</default>
-			<summary>If the search among recent files should be done based on the file path.</summary>
-			<description>If "true", the search among recent files will be done based on the file path; if "false", it will be based on the file name only.</description>
-		</key>
-		<key type="b" name="not-overwrite-layout">
-			<default>false</default>
-			<summary>If the preferences dialog should overwrite the layout settings</summary>
-			<description>If it's false, the layout isn't managed by the preferences dialog, but by the user using dconf</description>
-		</key>
 
-		<key type="as" name="active-widgets">
-			<default>['places', 'searchbar', 'recent']</default>
-			<summary>Active widgets</summary>
-			<description>List of strings. Possible widgets are: places, searchbar, recent, desktop</description>
+		<key type="s" name="content-left">
+			<default>"places"</default>
+			<summary>Content at the left</summary>
+			<description>Content of the left column. Possible values are: places,
+			recent, desktop</description>
 		</key>
-		<key type="as" name="active-positions">
-			<default>['0', '3', '3']</default>
-			<summary>Active widgets positions</summary>
-			<description>List of integers between 0 and 3. '0' describes the left column, '1' the top-center row, '2' the bottom-center row, '3' the right column. Inactive boxes are hidden.</description>
+		<key type="s" name="searchbar-left">
+			<default>"none"</default>
+			<summary>Position of the searchbar (left)</summary>
+			<description>Position of the searchbar for the left column. Possible
+			values are: none, top, bottom</description>
+		</key>
+		<key type="s" name="content-right">
+			<default>"recent"</default>
+			<summary>Content at the right</summary>
+			<description>Content of the right column. Possible values are: places,
+			recent, desktop</description>
+		</key>
+		<key type="s" name="searchbar-right">
+			<default>"bottom"</default>
+			<summary>Position of the searchbar (right)</summary>
+			<description>Position of the searchbar for the right column. Possible
+			values are: none, top, bottom</description>
 		</key>
 	</schema>
 </schemalist>
