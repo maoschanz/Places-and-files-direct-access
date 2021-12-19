@@ -7,7 +7,7 @@ const Main = imports.ui.main;
 const ShellMountOperation = imports.ui.shellMountOperation;
 
 const Gettext = imports.gettext.domain('gnome-shell-extensions');
-const _2 = Gettext.gettext;
+const _ = Gettext.gettext;
 //const N_ = function(x) { return x; }
 
 const Gettext2 = imports.gettext.domain('places-files-desktop');
@@ -23,8 +23,8 @@ const Hostname1Iface = '<node> \
 const Hostname1 = Gio.DBusProxy.makeProxyWrapper(Hostname1Iface);
 
 class PlaceInfo {
-    constructor() {
-        this._init.apply(this, arguments);
+    constructor(...params) {
+        this._init(...params);
     }
 
     _init(kind, file, name, icon) {
@@ -44,14 +44,14 @@ class PlaceInfo {
     async _ensureMountAndLaunch(context, tryMount) {
         try {
             await this._launchDefaultForUri(this.file.get_uri(), context, null);
-        } catch (e) {
-            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_MOUNTED)) {
-                Main.notifyError(_2('Failed to launch “%s”').format(this.name), e.message);
+        } catch (err) {
+            if (!err.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_MOUNTED)) {
+                Main.notifyError(_('Failed to launch “%s”').format(this.name), err.message);
                 return;
             }
 
             let source = {
-                get_icon: () => this.icon
+                get_icon: () => this.icon,
             };
             let op = new ShellMountOperation.ShellMountOperation(source);
             try {
@@ -61,7 +61,7 @@ class PlaceInfo {
                     this._ensureMountAndLaunch(context, false);
             } catch (e) {
                 if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.FAILED_HANDLED))
-                    Main.notifyError(_2('Failed to mount volume for “%s”').format(this.name), e.message);
+                    Main.notifyError(_('Failed to mount volume for “%s”').format(this.name), e.message);
             } finally {
                 op.close();
             }
@@ -74,18 +74,21 @@ class PlaceInfo {
     }
 
     getIcon() {
-        this.file.query_info_async('standard::icon', 0, 0, null,
-                                   (file, result) => {
-                                       try {
-                                           let info = file.query_info_finish(result);
-                                           this.icon = info.get_icon();
-                                           this.emit('changed');
-                                       } catch (e) {
-                                           if (e instanceof Gio.IOErrorEnum)
-                                               return;
-                                           throw e;
-                                       }
-                                   });
+        this.file.query_info_async('standard::icon',
+            Gio.FileQueryInfoFlags.NONE,
+            0,
+            null,
+            (file, result) => {
+                try {
+                    let info = file.query_info_finish(result);
+                    this.icon = info.get_icon();
+                    this.emit('changed');
+                } catch (e) {
+                    if (e instanceof Gio.IOErrorEnum)
+                        return;
+                    throw e;
+                }
+            });
 
         // return a generic icon for this kind for now, until we have the
         // icon from the query info above
@@ -145,7 +148,7 @@ Signals.addSignalMethods(PlaceInfo.prototype);
 
 class RootInfo extends PlaceInfo {
     _init() {
-        super._init('devices', Gio.File.new_for_path('/'), _2("Computer"));
+        super._init('devices', Gio.File.new_for_path('/'), _("Computer"));
 
         let busName = 'org.freedesktop.hostname1';
         let objPath = '/org/freedesktop/hostname1';
@@ -155,7 +158,7 @@ class RootInfo extends PlaceInfo {
 
             this._proxy = obj;
             this._proxy.connect('g-properties-changed',
-                                this._propertiesChanged.bind(this));
+                this._propertiesChanged.bind(this));
             this._propertiesChanged(obj);
         });
     }
@@ -168,7 +171,7 @@ class RootInfo extends PlaceInfo {
         // GDBusProxy will emit a g-properties-changed when hostname1 goes down
         // ignore it
         if (proxy.g_name_owner) {
-            this.name = proxy.PrettyHostname || _2("Computer");
+            this.name = proxy.PrettyHostname || _("Computer");
             this.emit('changed');
         }
     }
@@ -199,16 +202,17 @@ class PlaceDeviceInfo extends PlaceInfo {
     eject() {
         let unmountArgs = [
             Gio.MountUnmountFlags.NONE,
-            (new ShellMountOperation.ShellMountOperation(this._mount)).mountOp,
-            null // Gio.Cancellable
+            new ShellMountOperation.ShellMountOperation(this._mount).mountOp,
+            null, // Gio.Cancellable
         ];
 
-        if (this._mount.can_eject())
+        if (this._mount.can_eject()) {
             this._mount.eject_with_operation(...unmountArgs,
-                                             this._ejectFinish.bind(this));
-        else
+                this._ejectFinish.bind(this));
+        } else {
             this._mount.unmount_with_operation(...unmountArgs,
-                                               this._unmountFinish.bind(this));
+                this._unmountFinish.bind(this));
+        }
     }
 
     _ejectFinish(mount, result) {
@@ -228,10 +232,10 @@ class PlaceDeviceInfo extends PlaceInfo {
     }
 
     _reportFailure(exception) {
-        let msg = _2("Ejecting drive “%s” failed:").format(this._mount.get_name());
+        let msg = _("Ejecting drive “%s” failed:").format(this._mount.get_name());
         Main.notifyError(msg, exception.message);
     }
-};
+}
 
 class PlaceVolumeInfo extends PlaceInfo {
     _init(kind, volume) {
@@ -257,7 +261,7 @@ class PlaceVolumeInfo extends PlaceInfo {
     getIcon() {
         return this._volume.get_icon();
     }
-};
+}
 
 const DEFAULT_DIRECTORIES = [
     GLib.UserDirectory.DIRECTORY_DOCUMENTS,
@@ -277,9 +281,8 @@ var PlacesManager = class {
         };
 
 //        this._settings = new Gio.Settings({ schema_id: BACKGROUND_SCHEMA });
-//        this._showDesktopIconsChangedId =
-//            this._settings.connect('changed::show-desktop-icons',
-//                                   this._updateSpecials.bind(this));
+//        this._showDesktopIconsChangedId = this._settings.connect(
+//            'changed::show-desktop-icons', this._updateSpecials.bind(this));
         this._updateSpecials();
 
         /*
@@ -321,7 +324,7 @@ var PlacesManager = class {
             'mount-changed',
             'drive-connected',
             'drive-disconnected',
-            'drive-changed'
+            'drive-changed',
         ];
 
         this._volumeMonitorSignals = [];
@@ -354,23 +357,23 @@ var PlacesManager = class {
 
         this._places.special.push(new PlaceInfo('special',
                                                 Gio.File.new_for_path(homePath),
-                                                _2("Home")));
+                                                _("Home")));
 
         this._places.special.push(new PlaceInfo('special',
                                                 Gio.File.new_for_uri('recent:///'),
-                                                _("Recent Files")));
+                                                _S("Recent Files")));
 
         this._places.special.push(new PlaceInfo('special',
                                                 Gio.File.new_for_uri('other-locations:///'),
-                                                _("Other Locations")));
+                                                _S("Other Locations")));
 
         this._places.special.push(new PlaceInfo('special', // XXX
                                                 Gio.File.new_for_uri('starred:///'),
-                                                _("Favorite files")));
+                                                _S("Favorite files")));
 
         this._places.special.push(new PlaceInfo('special',
                                                 Gio.File.new_for_uri('trash:///'),
-                                                _("Trash")));
+                                                _S("Trash")));
 
         let specials = [];
         let dirs = DEFAULT_DIRECTORIES.slice();
@@ -380,7 +383,7 @@ var PlacesManager = class {
 
         for (let i = 0; i < dirs.length; i++) {
             let specialPath = GLib.get_user_special_dir(dirs[i]);
-            if (specialPath == null || specialPath == homePath)
+            if (!specialPath || specialPath === homePath)
                 continue;
 
             let file = Gio.File.new_for_path(specialPath), info;
@@ -412,10 +415,11 @@ var PlacesManager = class {
 
         /* Add standard places */
         this._places.devices.push(new RootInfo());
-        this._places.network.push(new PlaceInfo('network',
-                                                Gio.File.new_for_uri('network:///'),
-                                                _2("Browse Network"),
-                                                'network-workgroup'));
+        this._places.network.push(new PlaceInfo(
+            'network',
+            Gio.File.new_for_uri('network:///'),
+            _("Browse Network"),
+            'network-workgroup'));
 
         /* first go through all connected drives */
         let drives = this._volumeMonitor.get_connected_drives();
@@ -428,7 +432,7 @@ var PlacesManager = class {
                     networkVolumes.push(volumes[j]);
                 } else {
                     let mount = volumes[j].get_mount();
-                    if (mount != null)
+                    if (mount)
                         this._addMount('devices', mount);
                 }
             }
@@ -437,7 +441,7 @@ var PlacesManager = class {
         /* add all volumes that is not associated with a drive */
         let volumes = this._volumeMonitor.get_volumes();
         for (let i = 0; i < volumes.length; i++) {
-            if (volumes[i].get_drive() != null)
+            if (volumes[i].get_drive())
                 continue;
 
             let identifier = volumes[i].get_identifier('class');
@@ -445,7 +449,7 @@ var PlacesManager = class {
                 networkVolumes.push(volumes[i]);
             } else {
                 let mount = volumes[i].get_mount();
-                if (mount != null)
+                if (mount)
                     this._addMount('devices', mount);
             }
         }
@@ -476,9 +480,8 @@ var PlacesManager = class {
             this._addVolume('network', networkVolumes[i]);
         }
 
-        for (let i = 0; i < networkMounts.length; i++) {
+        for (let i = 0; i < networkMounts.length; i++)
             this._addMount('network', networkMounts[i]);
-        }
 
         this.emit('devices-updated');
         this.emit('network-updated');
@@ -509,7 +512,7 @@ var PlacesManager = class {
         for (let i = 0; i < lines.length; i++) {
             let line = lines[i];
             let components = line.split(' ');
-            let bookmark = components[0];
+            let [bookmark] = components;
 
             if (!bookmark)
                 continue;
@@ -519,16 +522,16 @@ var PlacesManager = class {
                 continue;
 
             let duplicate = false;
-            for (let i = 0; i < this._places.special.length; i++) {
-                if (file.equal(this._places.special[i].file)) {
+            for (let j = 0; j < this._places.special.length; j++) {
+                if (file.equal(this._places.special[j].file)) {
                     duplicate = true;
                     break;
                 }
             }
             if (duplicate)
                 continue;
-            for (let i = 0; i < bookmarks.length; i++) {
-                if (file.equal(bookmarks[i].file)) {
+            for (let j = 0; j < bookmarks.length; j++) {
+                if (file.equal(bookmarks[j].file)) {
                     duplicate = true;
                     break;
                 }
@@ -581,3 +584,4 @@ var PlacesManager = class {
     }
 };
 Signals.addSignalMethods(PlacesManager.prototype);
+
