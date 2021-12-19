@@ -10,9 +10,9 @@ const Me = ExtensionUtils.getCurrentExtension();
 const HeaderBox = Me.imports.headerBox;
 const PlaceDisplay = Me.imports.placeDisplay;
 
-const ViewBookmarks = Me.imports.viewBookmarks;
-const ViewRecent = Me.imports.viewRecent;
-const ViewDesktop = Me.imports.viewDesktop;
+const ViewBookmarks = Me.imports.contentLists.viewBookmarks;
+const ViewRecent = Me.imports.contentLists.viewRecent;
+const ViewDesktop = Me.imports.contentLists.viewDesktop;
 
 const Gettext = imports.gettext.domain('places-files-desktop');
 const _ = Gettext.gettext;
