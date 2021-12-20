@@ -1,4 +1,4 @@
-// extension.js
+// licensed under GPL3
 
 const St = imports.gi.St;
 const Main = imports.ui.main;
@@ -91,53 +91,71 @@ function updateLayoutLayout() {
 	} else {
 		Main.layoutManager._backgroundGroup.remove_actor(MyLayout.actor);
 	}
-	
+
 	disconnectOverviewSignals();
-	
+
 	POSITION = SETTINGS.get_string('position');
 	SIGNAUX_OVERVIEW = [];
-	
-	if (POSITION == 'overview') {
-		Main.layoutManager.overviewGroup.add_actor(MyLayout.actor);
-		// XXX dans ce contexte, qu'est this ?
-		SIGNAUX_OVERVIEW[0] = global.workspaceManager.connect(
-		                   'notify::n-workspaces', updateVisibility.bind(this));
-		SIGNAUX_OVERVIEW[1] = global.display.connect('restacked',
-		                                           updateVisibility.bind(this));
-		SIGNAUX_OVERVIEW[2] = global.window_manager.connect('switch-workspace',
-		                                           updateVisibility.bind(this));
-		SIGNAUX_OVERVIEW[3] = Main.overview.viewSelector._showAppsButton.connect(
-		                        'notify::checked', updateVisibility.bind(this));
-		SIGNAUX_OVERVIEW[4] = Main.overview.viewSelector._text.connect(
-		                           'text-changed', updateVisibility.bind(this));
-		SIGNAUX_OVERVIEW[5] = Main.overview.connect('showing',
-		                                           updateVisibility.bind(this));
-	} else {
+
+	if (POSITION == 'desktop') {
 		Main.layoutManager._backgroundGroup.add_actor(MyLayout.actor);
 		MyLayout.show();
-	}
+		return;
+	} // else {
+
+	Main.layoutManager.overviewGroup.add_actor(MyLayout.actor);
+
+	// Update when the number of workspaces changes
+	SIGNAUX_OVERVIEW[0] = global.workspaceManager.connect(
+		'notify::n-workspaces',
+		updateVisibility.bind(this)
+	);
+
+	// Update when the number of windows in the workspace changes
+	SIGNAUX_OVERVIEW[1] = global.display.connect(
+		'restacked',
+		updateVisibility.bind(this)
+	);
+
+	// Update when the user switches to another workspace
+	SIGNAUX_OVERVIEW[2] = global.window_manager.connect(
+		'switch-workspace',
+		updateVisibility.bind(this)
+	);
+
+	// Update when the appgrid is shown/hidden
+	SIGNAUX_OVERVIEW[3] = Main.overview.viewSelector._showAppsButton.connect(
+		'notify::checked',
+		updateVisibility.bind(this)
+	);
+
+	// Update when the search results are shown/hidden
+	SIGNAUX_OVERVIEW[4] = Main.overview.viewSelector._text.connect(
+		'text-changed',
+		updateVisibility.bind(this)
+	);
+
+	// Update when the overview is shown/hidden
+	SIGNAUX_OVERVIEW[5] = Main.overview.connect(
+		'showing',
+		updateVisibility.bind(this)
+	);
 }
 
 //------------------------------------------------------------------------------
 
 class ConvenientLayout {
 	constructor () {
-		this.actor = new St.BoxLayout({ //main actor of the extension
+		this.actor = new St.BoxLayout({
 			vertical: false,
 		});
-		
-		this.box_0 = new St.BoxLayout({ vertical: true });
-		this.box_m = new St.BoxLayout({ vertical: true });
-		this.box_1 = new St.BoxLayout({ vertical: false });
-		this.box_2 = new St.BoxLayout({ vertical: false });
-		this.box_3 = new St.BoxLayout({ vertical: true });
-		
-		this.actor.add(this.box_0);
-		this.box_m.add(this.box_1);
-		this.box_m.add(this.box_2);
-		this.actor.add(this.box_m);
-		this.actor.add(this.box_3);
-		
+
+		this.box_left = new St.BoxLayout({ vertical: true });
+		this.box_right = new St.BoxLayout({ vertical: true });
+
+		this.actor.add(this.box_left);
+		this.actor.add(this.box_right);
+
 		// this.active_positions = SETTINGS.get_strv('active-positions');
 		this.adaptToMonitor();
 	}
@@ -159,10 +177,11 @@ class ConvenientLayout {
 		// TODO build only the useful ones
 		
 		
+		this.adaptInternalWidgets();
 	}
 
 	adaptToMonitor () {
-		//change global position and size of the main actor
+		// change global position and size of the main actor
 		PADDING = [
 			SETTINGS.get_int('top-padding'),
 			SETTINGS.get_int('bottom-padding'),
@@ -182,38 +201,11 @@ class ConvenientLayout {
 	}
 
 	adaptInternalWidgets () {
-		let has0 = false;
-		let has1 = false;
-		let has2 = false;
-		let has3 = false;
-		
-//		FIXME le stacking de 2 listes échoue
-
-//		if (this.actor.width < this.actor.height) {
-//			this.actor.vertical = true;
-//			// TODO
-//		} else {
-			// XXX améliorable
-			// pas touche à la hauteur de box_1 et box_2
+		if (this.actor.width < this.actor.height) {
+			this.actor.vertical = true;
+		} else {
 			this.actor.vertical = false;
-			this.box_0.height = this.actor.height;
-			this.box_m.height = this.actor.height;
-			this.box_3.height = this.actor.height;
-			if (has0 && has3 && (has1 || has2)) {
-				this.box_0.width = Math.floor(this.actor.width * 0.3);
-				this.box_m.width = Math.floor(this.actor.width * 0.4);
-				this.box_3.width = Math.floor(this.actor.width * 0.3);
-			} else if (has0 && has3) {
-				this.box_0.width = Math.floor(this.actor.width * 0.5);
-				this.box_3.width = Math.floor(this.actor.width * 0.5);
-			} else if (has0 && (has1 || has2)) {
-				this.box_0.width = Math.floor(this.actor.width * 0.5);
-				this.box_m.width = Math.floor(this.actor.width * 0.5);
-			} else if (has3 && (has1 || has2)) {
-				this.box_m.width = Math.floor(this.actor.width * 0.5);
-				this.box_3.width = Math.floor(this.actor.width * 0.5);
-			}
-//		}
+		}
 	}
 };
 
@@ -229,7 +221,7 @@ function enable() {
 		SETTINGS.get_int('right-padding')
 	];
 
-	if (MyLayout == null) { // FIXME n'est pas compatible avec l'idée de changer ses paramètres
+	if (MyLayout == null) {
 		MyLayout = new ConvenientLayout();
 		MyLayout.fill_with_widgets();
 	}
@@ -259,15 +251,15 @@ function disable() {
 		Main.layoutManager.overviewGroup.remove_actor(MyLayout.actor);
 	} else {
 		Main.layoutManager._backgroundGroup.remove_actor(MyLayout.actor);
-	} // FIXME ce n'est pas charlie de garder l'acteur en mémoire
+	}
 
-//	log('disabling signals for places-and-files-on-desktop');
+	// log('disabling signals for places-and-files-on-desktop');
 	for (var i = 0; i < SIGNAUX_PARAM.length; i++) {
 		SETTINGS.disconnect(SIGNAUX_PARAM[i]);
 	}
 	Main.layoutManager.disconnect(SIGNAL_MONITOR);
 	disconnectOverviewSignals()
-//	log('signals for places-and-files-on-desktop disabled');
+	// log('signals for places-and-files-on-desktop disabled');
 }
 
 //------------------------------------------------------------------------------

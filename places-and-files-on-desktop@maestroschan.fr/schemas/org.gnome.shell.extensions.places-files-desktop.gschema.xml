@@ -44,7 +44,7 @@
 			<description>The number of pixels left empty at the bottom (for a bottom dock for example).</description>
 		</key>
 		<key type="s" name="position">
-			<default>"desktop"</default>
+			<default>"overview"</default>
 			<summary>Where the extension should display its shit</summary>
 			<description>Accepted values are "desktop" and "overview".</description>
 		</key>
