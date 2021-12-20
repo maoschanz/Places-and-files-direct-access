@@ -20,10 +20,10 @@ const _ = Gettext.gettext;
 //------------------------------------------------------------------------------
 
 var SETTINGS;
-let PADDING = [];
+let PADDINGS = [];
 let POSITION;
-let SIGNAUX_OVERVIEW = [];
-let SIGNAUX_PARAM = [];
+let SIGNALS_OVERVIEW = [];
+let SIGNALS_PARAM = [];
 let SIGNAL_MONITOR;
 
 let MyLayout = null;
@@ -37,13 +37,13 @@ function init() {
 
 //------------------------------------------------------------------------------
 
-/*
-	Called when the user performs an action which affects the visibility of
-	`MyLayout` in the case its actor has been added to the `overviewGroup` (this
-	function is NOT called when it's on the desktop).
-	Such an action can be: opening or closing a window, changing the current
-	workspace, beginning a search, or opening the applications grid.
-*/
+/**
+ * Called when the user performs an action which affects the visibility of
+ * `MyLayout` in the case its actor has been added to the `overviewGroup` (this
+ * function is NOT called when it's on the desktop).
+ * Such an action can be: opening or closing a window, changing the current
+ * workspace, beginning a search, or opening the applications grid.
+ */
 function updateVisibility() {
 	if (Main.overview.viewSelector._activePage != Main.overview.viewSelector._workspacesPage) {
 		MyLayout.hide();
@@ -58,32 +58,27 @@ function updateVisibility() {
 	}
 }
 
-//------------------------------------------------------------------------------
-
-/*
-	Disconnect all signals in SIGNAUX_OVERVIEW
-*/
+/**
+ * Disconnect all signals in SIGNALS_OVERVIEW
+ */
 function disconnectOverviewSignals() {
-	if (SIGNAUX_OVERVIEW.length != 0) {
-		global.workspaceManager.disconnect(SIGNAUX_OVERVIEW[0]);
-		global.display.disconnect(SIGNAUX_OVERVIEW[1]);
-		global.window_manager.disconnect(SIGNAUX_OVERVIEW[2]);
-		Main.overview.viewSelector._showAppsButton.disconnect(SIGNAUX_OVERVIEW[3]);
-		Main.overview.viewSelector._text.disconnect(SIGNAUX_OVERVIEW[4]);
-		Main.overview.disconnect(SIGNAUX_OVERVIEW[5]);
+	if (SIGNALS_OVERVIEW.length != 0) {
+		global.workspaceManager.disconnect(SIGNALS_OVERVIEW[0]);
+		global.display.disconnect(SIGNALS_OVERVIEW[1]);
+		global.window_manager.disconnect(SIGNALS_OVERVIEW[2]);
+		Main.overview.viewSelector._showAppsButton.disconnect(SIGNALS_OVERVIEW[3]);
+		Main.overview.viewSelector._text.disconnect(SIGNALS_OVERVIEW[4]);
+		Main.overview.disconnect(SIGNALS_OVERVIEW[5]);
 	}
-	SIGNAUX_OVERVIEW = []
+	SIGNALS_OVERVIEW = []
 }
 
-//------------------------------------------------------------------------------
-
-/*
-	Called when the user set a new layout position.
-	It almost corresponds to a "disable and then enable again", except that
-	`MyLayout` isn't rebuild from its constructor, but is just moved to the new
-	position.
-*/
-function updateLayoutLayout() {
+/**
+ * Called when the user set a new layout position (desktop/overview).
+ * `MyLayout` isn't rebuild from its constructor, but is just moved to the new
+ * position.
+ */
+function updateLayoutPosition() {
 	if (POSITION == '') {
 		// do nothing
 	} else if (POSITION == 'overview') {
@@ -95,7 +90,7 @@ function updateLayoutLayout() {
 	disconnectOverviewSignals();
 
 	POSITION = SETTINGS.get_string('position');
-	SIGNAUX_OVERVIEW = [];
+	SIGNALS_OVERVIEW = [];
 
 	if (POSITION == 'desktop') {
 		Main.layoutManager._backgroundGroup.add_actor(MyLayout.actor);
@@ -106,43 +101,43 @@ function updateLayoutLayout() {
 	Main.layoutManager.overviewGroup.add_actor(MyLayout.actor);
 
 	// Update when the number of workspaces changes
-	SIGNAUX_OVERVIEW[0] = global.workspaceManager.connect(
+	SIGNALS_OVERVIEW[0] = global.workspaceManager.connect(
 		'notify::n-workspaces',
 		updateVisibility.bind(this)
 	);
 
 	// Update when the number of windows in the workspace changes
-	SIGNAUX_OVERVIEW[1] = global.display.connect(
+	SIGNALS_OVERVIEW[1] = global.display.connect(
 		'restacked',
 		updateVisibility.bind(this)
 	);
 
 	// Update when the user switches to another workspace
-	SIGNAUX_OVERVIEW[2] = global.window_manager.connect(
+	SIGNALS_OVERVIEW[2] = global.window_manager.connect(
 		'switch-workspace',
 		updateVisibility.bind(this)
 	);
 
 	// Update when the appgrid is shown/hidden
-	SIGNAUX_OVERVIEW[3] = Main.overview.viewSelector._showAppsButton.connect(
+	SIGNALS_OVERVIEW[3] = Main.overview.viewSelector._showAppsButton.connect(
 		'notify::checked',
 		updateVisibility.bind(this)
 	);
 
 	// Update when the search results are shown/hidden
-	SIGNAUX_OVERVIEW[4] = Main.overview.viewSelector._text.connect(
+	SIGNALS_OVERVIEW[4] = Main.overview.viewSelector._text.connect(
 		'text-changed',
 		updateVisibility.bind(this)
 	);
 
 	// Update when the overview is shown/hidden
-	SIGNAUX_OVERVIEW[5] = Main.overview.connect(
+	SIGNALS_OVERVIEW[5] = Main.overview.connect(
 		'showing',
 		updateVisibility.bind(this)
 	);
 }
 
-//------------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
 class ConvenientLayout {
 	constructor () {
@@ -182,7 +177,7 @@ class ConvenientLayout {
 
 	adaptToMonitor () {
 		// change global position and size of the main actor
-		PADDING = [
+		PADDINGS = [
 			SETTINGS.get_int('top-padding'),
 			SETTINGS.get_int('bottom-padding'),
 			SETTINGS.get_int('left-padding'),
@@ -190,11 +185,11 @@ class ConvenientLayout {
 		];
 	
 		let monitor = Main.layoutManager.primaryMonitor;
-		this.actor.width = Math.floor(monitor.width - (PADDING[2] + PADDING[3]));
-		this.actor.height = Math.floor(monitor.height - (PADDING[0] + PADDING[1]));
+		this.actor.width = Math.floor(monitor.width - (PADDINGS[2] + PADDINGS[3]));
+		this.actor.height = Math.floor(monitor.height - (PADDINGS[0] + PADDINGS[1]));
 		this.actor.set_position(
-			monitor.x + Math.floor(PADDING[2]),
-			monitor.y + Math.floor(PADDING[0])
+			monitor.x + Math.floor(PADDINGS[2]),
+			monitor.y + Math.floor(PADDINGS[0])
 		);
 		
 		this.adaptInternalWidgets();
@@ -209,12 +204,12 @@ class ConvenientLayout {
 	}
 };
 
-//------------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
 function enable() {
 	SETTINGS = ExtensionUtils.getSettings();
 	POSITION = '';
-	PADDING = [
+	PADDINGS = [
 		SETTINGS.get_int('top-padding'),
 		SETTINGS.get_int('bottom-padding'),
 		SETTINGS.get_int('left-padding'),
@@ -226,22 +221,22 @@ function enable() {
 		MyLayout.fill_with_widgets();
 	}
 
-	SIGNAUX_PARAM = [];
-	SIGNAUX_PARAM[0] = SETTINGS.connect('changed::top-padding',
+	SIGNALS_PARAM = [];
+	SIGNALS_PARAM[0] = SETTINGS.connect('changed::top-padding',
 	                                    MyLayout.adaptToMonitor.bind(MyLayout));
-	SIGNAUX_PARAM[1] = SETTINGS.connect('changed::bottom-padding',
+	SIGNALS_PARAM[1] = SETTINGS.connect('changed::bottom-padding',
 	                                    MyLayout.adaptToMonitor.bind(MyLayout));
-	SIGNAUX_PARAM[2] = SETTINGS.connect('changed::left-padding',
+	SIGNALS_PARAM[2] = SETTINGS.connect('changed::left-padding',
 	                                    MyLayout.adaptToMonitor.bind(MyLayout));
-	SIGNAUX_PARAM[3] = SETTINGS.connect('changed::right-padding',
+	SIGNALS_PARAM[3] = SETTINGS.connect('changed::right-padding',
 	                                    MyLayout.adaptToMonitor.bind(MyLayout));
-	SIGNAUX_PARAM[4] = SETTINGS.connect('changed::position',
-	                                         updateLayoutLayout.bind(MyLayout));
+	SIGNALS_PARAM[4] = SETTINGS.connect('changed::position',
+	                                       updateLayoutPosition.bind(MyLayout));
 
 	SIGNAL_MONITOR = Main.layoutManager.connect('monitors-changed',
 	                                    MyLayout.adaptToMonitor.bind(MyLayout));
 
-	updateLayoutLayout();
+	updateLayoutPosition();
 }
 
 //------------------------------------------------------------------------------
@@ -254,13 +249,13 @@ function disable() {
 	}
 
 	// log('disabling signals for places-and-files-on-desktop');
-	for (var i = 0; i < SIGNAUX_PARAM.length; i++) {
-		SETTINGS.disconnect(SIGNAUX_PARAM[i]);
+	for (var i = 0; i < SIGNALS_PARAM.length; i++) {
+		SETTINGS.disconnect(SIGNALS_PARAM[i]);
 	}
 	Main.layoutManager.disconnect(SIGNAL_MONITOR);
 	disconnectOverviewSignals()
 	// log('signals for places-and-files-on-desktop disabled');
 }
 
-//------------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 

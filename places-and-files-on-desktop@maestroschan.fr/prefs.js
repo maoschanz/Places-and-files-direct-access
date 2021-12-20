@@ -49,8 +49,8 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 			SETTINGS.set_int('icon-size', value);
 		});
 
-		this._addContentColumn('left');
-		this._addContentColumn('right');
+		this._addContentColumn(builder, 'left');
+		this._addContentColumn(builder, 'right');
 
 		let number_recent = builder.get_object('number_recent');
 		number_recent.set_value(SETTINGS.get_int('number-of-recent-files'));
@@ -60,7 +60,7 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 		});
 	},
 
-	_addContentColumn(side) {
+	_addContentColumn(builder, side) {
 		let value;
 
 		let radio_content1 = builder.get_object('radio_' + side + '_content');
@@ -84,9 +84,9 @@ const PlacesOnDesktopSettingsWidget = new GObject.Class({
 
 		//----------------------------------------------------------------------
 
-		let radio_searchbar1 = builder.get_object('radio' + side + 'searchbar');
-		let radio_searchbar2 = builder.get_object('radio' + side + 'searchbar2');
-		let radio_searchbar3 = builder.get_object('radio' + side + 'searchbar3');
+		let radio_searchbar1 = builder.get_object('radio_' + side + '_searchbar');
+		let radio_searchbar2 = builder.get_object('radio_' + side + '_searchbar2');
+		let radio_searchbar3 = builder.get_object('radio_' + side + '_searchbar3');
 
 		value = SETTINGS.get_string('searchbar-' + side);
 		radio_searchbar1.set_active(value === 'top');
